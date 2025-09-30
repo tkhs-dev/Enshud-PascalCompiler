@@ -1,0 +1,9 @@
+* text=auto
+*.sh text eol=lf
+*.bat text eol=crlf
+*.pdf binary
+*.jar binary
+*.ans text eol=lf
+*.cas text eol=lf
+*.pas text eol=lf
+*.ts text eol=lf
