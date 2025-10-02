@@ -29,6 +29,5 @@ public class Lexer {
 	 */
 	public String run(final String inputFileName, final String outputFileName) {
 		return "";
-
 	}
 }
