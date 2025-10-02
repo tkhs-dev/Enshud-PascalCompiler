@@ -1,0 +1,38 @@
+# https://taskfile.dev
+
+version: '3'
+
+dotenv:
+  - .env
+
+tasks:
+  jenkins-build:
+    internal: true
+    cmds:
+      - curl -X POST -u 09B23081:{{.API_TOKEN}} https://dev.ics.es.osaka-u.ac.jp/jenkins/job/09B23081/job/{{.JOB_NAME}}/build --form 'delay="20sec"'
+  jenkins-s0:
+    cmds:
+      - task: jenkins-build
+        vars:
+          JOB_NAME: s0.trial
+  jenkins-s1:
+    cmds:
+      - task: jenkins-build
+        vars:
+          JOB_NAME: s1.lexer
+  jenkins-s2:
+    cmds:
+      - task: jenkins-build
+        vars:
+          JOB_NAME: s2.parser
+  jenkins-s3:
+    cmds:
+      - task: jenkins-build
+        vars:
+          JOB_NAME: s3.checker
+  jenkins-s4:
+    cmds:
+      - task: jenkins-build
+        vars:
+          JOB_NAME: s4.compiler
+

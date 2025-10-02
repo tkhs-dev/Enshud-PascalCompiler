@@ -60,3 +60,5 @@ RemoteSystemsTempFiles/
 ehthumbs.db
 Thumbs.db
 
+.env*
+
