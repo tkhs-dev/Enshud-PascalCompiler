@@ -32,7 +32,6 @@ public class Trial {
 
 		File file = new File(inputFileName);
 		if (file.exists()) {
-			// ファイルが存在する場合、行数をカウントして返す
 			try (java.io.BufferedReader reader = new java.io.BufferedReader(new java.io.FileReader(file))) {
 				int lineCount = 0;
 				while (reader.readLine() != null) {
