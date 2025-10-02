@@ -1,5 +1,7 @@
 package enshud.s0.trial;
 
+import java.io.File;
+
 public class Trial {
 
 	/**
@@ -28,8 +30,22 @@ public class Trial {
 	 */
 	public String run(final String inputFileName) {
 
-		// TODO
-		return "";
-
+		File file = new File(inputFileName);
+		if (file.exists()) {
+			// ファイルが存在する場合、行数をカウントして返す
+			try (java.io.BufferedReader reader = new java.io.BufferedReader(new java.io.FileReader(file))) {
+				int lineCount = 0;
+				while (reader.readLine() != null) {
+					lineCount++;
+				}
+				return Integer.toString(lineCount);
+			} catch (java.io.IOException e) {
+				e.printStackTrace();
+				return "Error reading file";
+			}
+		} else {
+			// ファイルが存在しない場合
+			return "File not found";
+		}
 	}
 }
