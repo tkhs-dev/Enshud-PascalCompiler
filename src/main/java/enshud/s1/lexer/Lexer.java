@@ -28,9 +28,7 @@ public class Lexer {
 	 * @param outputFileName 出力tsファイル名
 	 */
 	public String run(final String inputFileName, final String outputFileName) {
-
 		// TODO
 		return "";
-
 	}
 }
