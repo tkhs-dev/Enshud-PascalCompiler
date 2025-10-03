@@ -49,7 +49,7 @@ public class TokenDef {
     public static final TokenDef DOT = new TokenDef(42, "SDOT", 3, "\\.");
     public static final TokenDef IDENT = new TokenDef(43, "SIDENTIFIER", 5, "[a-zA-Z_][a-zA-Z0-9_]*");
     public static final TokenDef CONSTANT = new TokenDef(44, "SCONSTANT", 2, "[0-9]+");
-    public static final TokenDef STRING = new TokenDef(45, "SSTRING", 1, "'([^']|'')*'");
+    public static final TokenDef STRING = new TokenDef(45, "SSTRING", 1, "'([^']|'')*('|\\n)");
 
     public static final List<TokenDef> Tokens = List.of(
             COMMENT,
