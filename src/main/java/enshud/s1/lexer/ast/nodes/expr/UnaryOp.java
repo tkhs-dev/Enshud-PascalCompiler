@@ -4,7 +4,7 @@ import enshud.s1.lexer.ast.AstVisitor;
 
 public class UnaryOp extends Expr {
     public enum Op {
-        PLUS, MINUS
+        PLUS, MINUS, NOT
     }
 
     public final Op op;
