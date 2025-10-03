@@ -1,0 +1,19 @@
+package enshud.s1.lexer.ast.nodes;
+
+import enshud.s1.lexer.ast.AstVisitor;
+import enshud.s1.lexer.ast.nodes.stmt.Stmt;
+
+import java.util.List;
+
+public class CompoundStmt extends Stmt {
+    public final List<Stmt> stmts;
+
+    public CompoundStmt(List<Stmt> stmts) {
+        this.stmts = stmts;
+    }
+
+    @Override
+    public <T> T accept(AstVisitor<T> visitor) {
+        return visitor.visit(this);
+    }
+}
