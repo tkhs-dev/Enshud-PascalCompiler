@@ -1,5 +1,12 @@
 package enshud.s1.lexer;
 
+import enshud.pascal.TokenDef;
+import enshud.token.Token;
+import enshud.token.TokenFile;
+
+import java.io.IOException;
+import java.util.List;
+
 public class Lexer {
 
 	/**
@@ -27,7 +34,79 @@ public class Lexer {
 	 * @param inputFileName 入力pasファイル名
 	 * @param outputFileName 出力tsファイル名
 	 */
+
 	public String run(final String inputFileName, final String outputFileName) {
-		return "";
+		Tokenizer tokenizer;
+		String input = "";
+		List<Token> tokens = new java.util.ArrayList<>();
+		try {
+			input = new String(java.nio.file.Files.readAllBytes(java.nio.file.Paths.get(inputFileName)));
+			tokenizer = new Tokenizer(input);
+			while (tokenizer.hasNext()) {
+				Token token = tokenizer.nextToken();
+				if (token != null) {
+					tokens.add(token);
+				} else {
+					break;
+				}
+			}
+		} catch (java.io.IOException e) {
+			return "File not found";
+		}
+		try {
+			TokenFile.SaveTokens(outputFileName, tokens);
+		} catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+		return "OK";
+    }
+}
+
+class Tokenizer {
+	private String input;
+	private int position;
+
+    public Tokenizer(String input) {
+		this.input = input;
+		this.position = 0;
+	}
+
+	public boolean hasNext() {
+		return position < input.length();
+	}
+
+	public Token nextToken() {
+		int whiteSpaceLength = 0;
+		while (position + whiteSpaceLength < input.length() && Character.isWhitespace(input.charAt(position + whiteSpaceLength))) {
+			whiteSpaceLength++;
+		}
+
+		String remainingInput = input.substring(position).trim();
+
+		for(TokenDef token : TokenDef.SortedTokens) {
+			java.util.regex.Pattern pattern = java.util.regex.Pattern.compile("^" + token.regex);
+			java.util.regex.Matcher matcher = pattern.matcher(remainingInput);
+			if (matcher.find()) {
+				String matched = matcher.group();
+				int startIndex = remainingInput.indexOf(matched);
+				if (startIndex != 0) {
+					// マッチした部分が先頭にない場合はスキップ
+					continue;
+				}
+				position += whiteSpaceLength;
+				int brCount = 0;
+				String processedInput = input.substring(0, position);
+				for (char c : processedInput.toCharArray()) {
+					if (c == '\n') brCount++;
+				}
+				int lineNumber = brCount + 1;
+				position += startIndex + matched.length();
+				if (token == TokenDef.COMMENT) {
+					return nextToken();
+				}
+				return new Token(matched, token.tokenName, token.id, lineNumber);
+			}
+		}
+		return null;
 	}
 }
