@@ -1,4 +1,4 @@
-package enshud.s1.lexer.ast.nodes.expr;
+package enshud.pascal.ast.nodes.expr;
 
 public abstract class VarNode extends Expr {
 }

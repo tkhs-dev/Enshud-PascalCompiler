@@ -1,11 +1,11 @@
-package enshud.s1.lexer.ast;
+package enshud.pascal.ast;
 
-import enshud.s1.lexer.ast.nodes.*;
-import enshud.s1.lexer.ast.nodes.expr.*;
-import enshud.s1.lexer.ast.nodes.stmt.Assignment;
-import enshud.s1.lexer.ast.nodes.stmt.Call;
-import enshud.s1.lexer.ast.nodes.stmt.Read;
-import enshud.s1.lexer.ast.nodes.stmt.Write;
+import enshud.pascal.ast.nodes.*;
+import enshud.pascal.ast.nodes.expr.*;
+import enshud.pascal.ast.nodes.stmt.Assignment;
+import enshud.pascal.ast.nodes.stmt.Call;
+import enshud.pascal.ast.nodes.stmt.Read;
+import enshud.pascal.ast.nodes.stmt.Write;
 
 public interface AstVisitor<T> {
     // プログラム全体

@@ -1,7 +1,7 @@
-package enshud.s1.lexer.ast.nodes.stmt;
+package enshud.pascal.ast.nodes.stmt;
 
-import enshud.s1.lexer.ast.AstVisitor;
-import enshud.s1.lexer.ast.nodes.expr.Expr;
+import enshud.pascal.ast.AstVisitor;
+import enshud.pascal.ast.nodes.expr.Expr;
 
 import java.util.List;
 

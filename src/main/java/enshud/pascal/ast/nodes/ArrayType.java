@@ -1,6 +1,6 @@
-package enshud.s1.lexer.ast.nodes;
+package enshud.pascal.ast.nodes;
 
-import enshud.s1.lexer.ast.AstVisitor;
+import enshud.pascal.ast.AstVisitor;
 
 public class ArrayType extends TypeNode {
     public final int lowerBound;

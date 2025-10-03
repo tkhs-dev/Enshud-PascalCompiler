@@ -1,8 +1,8 @@
-package enshud.s1.lexer.ast.nodes.expr;
+package enshud.pascal.ast.nodes.expr;
 
-import enshud.s1.lexer.ast.AstVisitor;
-import enshud.s1.lexer.ast.nodes.CompoundStmt;
-import enshud.s1.lexer.ast.nodes.stmt.Stmt;
+import enshud.pascal.ast.AstVisitor;
+import enshud.pascal.ast.nodes.CompoundStmt;
+import enshud.pascal.ast.nodes.stmt.Stmt;
 
 public class If extends Stmt {
     public final Expr condition;

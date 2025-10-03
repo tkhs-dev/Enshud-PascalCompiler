@@ -1,6 +1,6 @@
-package enshud.s1.lexer.ast.nodes;
+package enshud.pascal.ast.nodes;
 
-import enshud.s1.lexer.ast.AstVisitor;
+import enshud.pascal.ast.AstVisitor;
 
 public class Program extends AstNode {
     public final String name;

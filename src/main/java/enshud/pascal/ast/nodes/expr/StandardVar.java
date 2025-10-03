@@ -1,11 +1,11 @@
-package enshud.s1.lexer.ast.nodes;
+package enshud.pascal.ast.nodes.expr;
 
-import enshud.s1.lexer.ast.AstVisitor;
+import enshud.pascal.ast.AstVisitor;
 
-public class StandardType extends TypeNode {
+public class StandardVar extends VarNode {
     public final String name;
 
-    public StandardType(String name) {
+    public StandardVar(String name) {
         this.name = name;
     }
 

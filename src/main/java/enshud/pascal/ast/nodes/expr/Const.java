@@ -1,6 +1,6 @@
-package enshud.s1.lexer.ast.nodes.expr;
+package enshud.pascal.ast.nodes.expr;
 
-import enshud.s1.lexer.ast.AstVisitor;
+import enshud.pascal.ast.AstVisitor;
 
 public class Const extends Expr {
     public final Object value;
