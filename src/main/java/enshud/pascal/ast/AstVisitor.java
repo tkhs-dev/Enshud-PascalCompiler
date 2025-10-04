@@ -2,10 +2,7 @@ package enshud.pascal.ast;
 
 import enshud.pascal.ast.nodes.*;
 import enshud.pascal.ast.nodes.expr.*;
-import enshud.pascal.ast.nodes.stmt.Assignment;
-import enshud.pascal.ast.nodes.stmt.Call;
-import enshud.pascal.ast.nodes.stmt.Read;
-import enshud.pascal.ast.nodes.stmt.Write;
+import enshud.pascal.ast.nodes.stmt.*;
 
 public interface AstVisitor<T> {
     // プログラム全体

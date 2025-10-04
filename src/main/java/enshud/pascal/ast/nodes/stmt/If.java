@@ -1,8 +1,8 @@
-package enshud.pascal.ast.nodes.expr;
+package enshud.pascal.ast.nodes.stmt;
 
 import enshud.pascal.ast.AstVisitor;
 import enshud.pascal.ast.nodes.CompoundStmt;
-import enshud.pascal.ast.nodes.stmt.Stmt;
+import enshud.pascal.ast.nodes.expr.Expr;
 
 public class If extends Stmt {
     public final Expr condition;
