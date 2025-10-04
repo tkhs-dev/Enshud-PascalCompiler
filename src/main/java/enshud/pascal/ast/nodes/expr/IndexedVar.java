@@ -6,7 +6,8 @@ public class IndexedVar extends VarNode {
     public final String name;
     public final Expr index;
 
-    public IndexedVar(String name, Expr index) {
+    public IndexedVar(Position position, String name, Expr index) {
+        super(position);
         this.name = name;
         this.index = index;
     }

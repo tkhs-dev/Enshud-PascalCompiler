@@ -8,7 +8,8 @@ import java.util.List;
 public class CompoundStmt extends Stmt {
     public final List<Stmt> stmts;
 
-    public CompoundStmt(List<Stmt> stmts) {
+    public CompoundStmt(Position position, List<Stmt> stmts) {
+        super(position);
         this.stmts = stmts;
     }
 

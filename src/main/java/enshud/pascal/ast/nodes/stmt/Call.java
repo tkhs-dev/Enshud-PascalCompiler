@@ -9,7 +9,8 @@ public class Call extends Stmt {
     public final String name;
     public final List<Expr> args;
 
-    public Call(String name, List<Expr> args) {
+    public Call(Position position, String name, List<Expr> args) {
+        super(position);
         this.name = name;
         this.args = args;
     }

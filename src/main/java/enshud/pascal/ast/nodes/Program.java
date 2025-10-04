@@ -7,7 +7,8 @@ public class Program extends AstNode {
     public final Block block;
     public final CompoundStmt statement;
 
-    public Program(String name, Block block, CompoundStmt statement) {
+    public Program(Position position, String name, Block block, CompoundStmt statement) {
+        super(position);
         this.name = name;
         this.block = block;
         this.statement = statement;

@@ -9,7 +9,8 @@ public class If extends Stmt {
     public final CompoundStmt thenBranch;
     public final CompoundStmt elseBranch; // can be null
 
-    public If(Expr condition, CompoundStmt thenBranch, CompoundStmt elseBranch) {
+    public If(Position position, Expr condition, CompoundStmt thenBranch, CompoundStmt elseBranch) {
+        super(position);
         this.condition = condition;
         this.thenBranch = thenBranch;
         this.elseBranch = elseBranch;

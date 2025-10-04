@@ -30,12 +30,12 @@ public class AstParser {
         return null;
     }
 
-    private String expect(TokenDef expect) throws AstParseException {
+    private Token expect(TokenDef expect) throws AstParseException {
         Token token = consume();
         if (token == null || token.id != expect.id) {
             throw new AstParseException("Expected " + expect.tokenName + " but get " + token.token + " instead", token);
         }
-        return token.token;
+        return token;
     }
 
     private boolean check(TokenDef check) {
@@ -48,19 +48,23 @@ public class AstParser {
     }
 
     private Program parseProgram() {
-        expect(TokenDef.PROGRAM);
-        String programName = expect(TokenDef.IDENT);
+        Token start = expect(TokenDef.PROGRAM);
+        String programName = expect(TokenDef.IDENT).token;
         expect(TokenDef.SEMICOLON);
         Block block = parseBlock();
         CompoundStmt stmt = parseCompoundStmt();
-        expect(TokenDef.DOT);
-        return new Program(programName, block, stmt);
+        Token end = expect(TokenDef.DOT);
+        AstNode.Position position = AstNode.Position.fromToken(start, end);
+        return new Program(position, programName, block, stmt);
     }
 
     private Block parseBlock() {
+        Token start = peek();
         List<VarDecl> varDecls = parseVarDecls();
         List<SubProgDecl> subProgDecls = parseSubProgDecls();
-        return new Block(varDecls, subProgDecls);
+        Token end = peek();
+        AstNode.Position position = AstNode.Position.fromToken(start, end);
+        return new Block(position, varDecls, subProgDecls);
     }
 
     private List<VarDecl> parseVarDecls() {
@@ -68,19 +72,22 @@ public class AstParser {
         if (check(TokenDef.VAR)) {
             consume(); // 'var'
             do {
+                Token start = peek();
                 List<String> varNames = new java.util.ArrayList<>();
-                varNames.add(expect(TokenDef.IDENT));
+                varNames.add(expect(TokenDef.IDENT).token);
                 while (check(TokenDef.COMMA)) {
                     consume(); // ','
-                    varNames.add(expect(TokenDef.IDENT));
+                    varNames.add(expect(TokenDef.IDENT).token);
                 }
                 expect(TokenDef.COLON); // ':'
                 TypeNode varType = parseType();
                 expect(TokenDef.SEMICOLON); // ';'
-                varDecls.add(new VarDecl(varNames, varType));
+                Token end = peek();
+                AstNode.Position position = AstNode.Position.fromToken(start, end);
+                varDecls.add(new VarDecl(position, varNames, varType));
             } while (check(TokenDef.IDENT));
         }
-        return null;
+        return varDecls;
     }
 
     private TypeNode parseType() {
@@ -93,28 +100,33 @@ public class AstParser {
 
     private StandardType parseStandardType() {
         if (check(TokenDef.INTEGER) || check(TokenDef.CHAR) || check(TokenDef.BOOLEAN)) {
-            return new StandardType(consume().token);
+            Token start = peek();
+            AstNode.Position position = AstNode.Position.fromToken(start, start);
+            return new StandardType(position, consume().token);
         } else {
             throw new AstParseException("Expected standard type", peek());
         }
     }
 
     private ArrayType parseArrayType() {
+        Token start = peek();
         consume(); // 'array'
         expect(TokenDef.LBRACKET); // '['
         int lower = 0;
         int upper = 0;
         try {
-            lower = Integer.parseInt(expect(TokenDef.CONSTANT));
+            lower = Integer.parseInt(expect(TokenDef.CONSTANT).token);
             expect(TokenDef.RANGE); // '..'
-            upper = Integer.parseInt(expect(TokenDef.CONSTANT));
+            upper = Integer.parseInt(expect(TokenDef.CONSTANT).token);
         } catch (NumberFormatException e) {
             throw new AstParseException("Array size must be a number", peek());
         }
         expect(TokenDef.RBRACKET); // ']'
         expect(TokenDef.OF); // 'of'
         StandardType elementType = parseStandardType();
-        return new ArrayType(lower, upper, elementType);
+        Token end = peek();
+        AstNode.Position position = AstNode.Position.fromToken(start, end);
+        return new ArrayType(position, lower, upper, elementType);
     }
 
     private List<SubProgDecl> parseSubProgDecls() {
@@ -127,19 +139,25 @@ public class AstParser {
     }
 
     private SubProgDecl parseSubProgDecl() {
+        Token start = peek();
         SubProgHeader header = parseSubProgHeader();
         List<VarDecl> varDecls = parseVarDecls();
         CompoundStmt statement = parseCompoundStmt();
-        return new SubProgDecl(header, varDecls, statement);
+        Token end = peek();
+        AstNode.Position position = AstNode.Position.fromToken(start, end);
+        return new SubProgDecl(position, header, varDecls, statement);
     }
 
     private SubProgHeader parseSubProgHeader() {
         if (check(TokenDef.PROCEDURE)) {
+            Token start = peek();
             consume(); // 'procedure'
-            String name = expect(TokenDef.IDENT);
+            String name = expect(TokenDef.IDENT).token;
             List<FormalParam> params = parseFormalParams();
             expect(TokenDef.SEMICOLON); // ';'
-            return new SubProgHeader(name, params);
+            Token end = peek();
+            AstNode.Position position = AstNode.Position.fromToken(start, end);
+            return new SubProgHeader(position, name, params);
         } else {
             throw new AstParseException("Expected procedure", peek());
         }
@@ -150,15 +168,18 @@ public class AstParser {
         if (check(TokenDef.LPAREN)) {
             consume(); // '('
             do {
+                Token start = peek();
                 List<String> paramNames = new java.util.ArrayList<>();
-                paramNames.add(expect(TokenDef.IDENT));
+                paramNames.add(expect(TokenDef.IDENT).token);
                 while (check(TokenDef.COMMA)) {
                     consume(); // ','
-                    paramNames.add(expect(TokenDef.IDENT));
+                    paramNames.add(expect(TokenDef.IDENT).token);
                 }
                 expect(TokenDef.COLON); // ':'
                 TypeNode type = parseType();
-                params.add(new FormalParam(paramNames, type));
+                Token end = peek();
+                AstNode.Position position = AstNode.Position.fromToken(start, end);
+                params.add(new FormalParam(position, paramNames, type));
                 if (!check(TokenDef.SEMICOLON)) {
                     break;
                 }
@@ -170,6 +191,7 @@ public class AstParser {
     }
 
     private CompoundStmt parseCompoundStmt() {
+        Token start = peek();
         expect(TokenDef.BEGIN);
         List<Stmt> statements = new java.util.ArrayList<>();
         do {
@@ -184,7 +206,9 @@ public class AstParser {
             }
         } while (true);
         expect(TokenDef.END);
-        return new CompoundStmt(statements);
+        Token end = peek();
+        AstNode.Position position = AstNode.Position.fromToken(start, end);
+        return new CompoundStmt(position, statements);
     }
 
     private Stmt parseStatement() {
@@ -213,14 +237,18 @@ public class AstParser {
     }
 
     private Assignment parseAssignment() {
+        Token start = peek();
         VarNode var = parseVar();
         expect(TokenDef.ASSIGN); // ':='
         Expr expr = parseExpr();
-        return new Assignment(var, expr);
+        Token end = peek();
+        AstNode.Position position = AstNode.Position.fromToken(start, end);
+        return new Assignment(position, var, expr);
     }
 
     private Call parseCall() {
-        String name = expect(TokenDef.IDENT);
+        Token start = peek();
+        String name = expect(TokenDef.IDENT).token;
         List<Expr> args = new java.util.ArrayList<>();
         if (check(TokenDef.LPAREN)) {
             consume(); // '('
@@ -233,10 +261,13 @@ public class AstParser {
             }
             expect(TokenDef.RPAREN); // ')'
         }
-        return new Call(name, args);
+        Token end = peek();
+        AstNode.Position position = AstNode.Position.fromToken(start, end);
+        return new Call(position, name, args);
     }
 
     private Write parseWrite() {
+        Token start = peek();
         expect(TokenDef.WRITELN);
         List<Expr> exprs = new java.util.ArrayList<>();
         if (check(TokenDef.LPAREN)) {
@@ -250,23 +281,29 @@ public class AstParser {
             }
             expect(TokenDef.RPAREN); // ')'
         }
-        return new Write(exprs);
+        Token end = peek();
+        AstNode.Position position = AstNode.Position.fromToken(start, end);
+        return new Write(position, exprs);
     }
 
     private Read parseRead() {
+        Token start = peek();
         expect(TokenDef.READLN);
         List<String> varNames = new java.util.ArrayList<>();
         expect(TokenDef.LPAREN); // '('
-        varNames.add(expect(TokenDef.IDENT));
+        varNames.add(expect(TokenDef.IDENT).token);
         while (check(TokenDef.COMMA)) {
             consume(); // ','
-            varNames.add(expect(TokenDef.IDENT));
+            varNames.add(expect(TokenDef.IDENT).token);
         }
         expect(TokenDef.RPAREN); // ')'
-        return new Read(varNames);
+        Token end = peek();
+        AstNode.Position position = AstNode.Position.fromToken(start, end);
+        return new Read(position, varNames);
     }
 
     private If parseIf() {
+        Token start = peek();
         expect(TokenDef.IF);
         Expr condition = parseExpr();
         expect(TokenDef.THEN);
@@ -276,15 +313,20 @@ public class AstParser {
             consume(); // 'else'
             elseStmt = parseCompoundStmt();
         }
-        return new If(condition, thenStmt, elseStmt);
+        Token end = peek();
+        AstNode.Position position = AstNode.Position.fromToken(start, end);
+        return new If(position, condition, thenStmt, elseStmt);
     }
 
     private While parseWhile() {
+        Token start = peek();
         expect(TokenDef.WHILE);
         Expr condition = parseExpr();
         expect(TokenDef.DO);
         CompoundStmt body = parseCompoundStmt();
-        return new While(condition, body);
+        Token end = peek();
+        AstNode.Position position = AstNode.Position.fromToken(start, end);
+        return new While(position, condition, body);
     }
 
     private Expr parseExpr() {
@@ -292,6 +334,7 @@ public class AstParser {
     }
 
     private Expr parseBinaryOp() {
+        Token start = peek();
         Expr left = parseUnaryOp();
         while (check(TokenDef.PLUS) || check(TokenDef.MINUS) || check(TokenDef.STAR) || check(TokenDef.DIV) || check(TokenDef.MOD) ||
                 check(TokenDef.EQ) || check(TokenDef.NEQ) || check(TokenDef.LT) || check(TokenDef.LTE) ||
@@ -328,7 +371,9 @@ public class AstParser {
             } else {
                 throw new AstParseException("Invalid binary operator", token);
             }
-            left = new BinaryOp(op, left, right);
+            Token end = peek();
+            AstNode.Position position = AstNode.Position.fromToken(start, end);
+            left = new BinaryOp(position, op, left, right);
         }
         return left;
     }
@@ -347,7 +392,8 @@ public class AstParser {
             } else {
                 throw new AstParseException("Invalid unary operator", token);
             }
-            return new UnaryOp(op, expr);
+            AstNode.Position position = AstNode.Position.fromToken(token, peek());
+            return new UnaryOp(position, op, expr);
         } else {
             return parsePrimary();
         }
@@ -362,38 +408,48 @@ public class AstParser {
         } else if (check(TokenDef.IDENT)) {
             return parseVar();
         } else if (check(TokenDef.CONSTANT)) {
-            String constToken = expect(TokenDef.CONSTANT);
+            Token start = peek();
+            String constToken = expect(TokenDef.CONSTANT).token;
             try {
                 int intValue = Integer.parseInt(constToken);
-                return new Const(intValue);
+                AstNode.Position position = AstNode.Position.fromToken(start, start);
+                return new Const(position, intValue);
             } catch (NumberFormatException e) {
                 throw new AstParseException("Invalid constant", peek());
             }
         } else if (check(TokenDef.TRUE)) {
-            consume(); // 'true'
-            return new Const(true);
+            Token start = consume(); // 'true'
+            AstNode.Position position = AstNode.Position.fromToken(start, start);
+            return new Const(position, true);
         } else if (check(TokenDef.FALSE)) {
-            consume(); // 'false'
-            return new Const(false);
+            Token start = consume(); // 'false'
+            AstNode.Position position = AstNode.Position.fromToken(start, start);
+            return new Const(position, false);
         } else if (check(TokenDef.STRING)) {
-            String strValue = expect(TokenDef.STRING);
-            // Remove the surrounding quotes
+            Token start = peek();
+            String strValue = expect(TokenDef.STRING).token;
+            // Remove the prefix quote and suffix quote/br
             strValue = strValue.substring(1, strValue.length() - 1);
-            return new Const(strValue);
+            AstNode.Position position = AstNode.Position.fromToken(start, start);
+            return new Const(position, strValue);
         } else {
             throw new AstParseException("Invalid primary expression", peek());
         }
     }
 
     private VarNode parseVar() {
-        String varName = expect(TokenDef.IDENT);
+        Token start = peek();
+        String varName = expect(TokenDef.IDENT).token;
         if (check(TokenDef.LBRACKET)) {
             consume(); // '['
             Expr index = parseExpr();
             expect(TokenDef.RBRACKET); // ']'
-            return new IndexedVar(varName, index);
+            Token end = peek();
+            AstNode.Position position = AstNode.Position.fromToken(start, end);
+            return new IndexedVar(position, varName, index);
         } else {
-            return new StandardVar(varName);
+            AstNode.Position position = AstNode.Position.fromToken(start, start);
+            return new StandardVar(position, varName);
         }
     }
 

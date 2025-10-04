@@ -5,7 +5,8 @@ import enshud.pascal.ast.AstVisitor;
 public class StandardVar extends VarNode {
     public final String name;
 
-    public StandardVar(String name) {
+    public StandardVar(Position position, String name) {
+        super(position);
         this.name = name;
     }
 

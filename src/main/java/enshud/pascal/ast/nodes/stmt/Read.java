@@ -7,7 +7,8 @@ import java.util.List;
 public class Read extends Stmt {
     public final List<String> varNames;
 
-    public Read(List<String> varNames) {
+    public Read(Position position, List<String> varNames) {
+        super(position);
         this.varNames = varNames;
     }
 

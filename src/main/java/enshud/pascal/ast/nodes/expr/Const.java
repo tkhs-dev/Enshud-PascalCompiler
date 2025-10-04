@@ -5,7 +5,8 @@ import enshud.pascal.ast.AstVisitor;
 public class Const extends Expr {
     public final Object value;
 
-    public Const(Object value) {
+    public Const(Position position, Object value) {
+        super(position);
         this.value = value;
     }
 

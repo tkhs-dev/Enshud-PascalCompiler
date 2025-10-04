@@ -5,7 +5,8 @@ import enshud.pascal.ast.AstVisitor;
 public class StandardType extends TypeNode {
     public final String name;
 
-    public StandardType(String name) {
+    public StandardType(Position position, String name) {
+        super(position);
         this.name = name;
     }
 

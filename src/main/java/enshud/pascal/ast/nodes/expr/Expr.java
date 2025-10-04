@@ -5,4 +5,7 @@ import enshud.pascal.ast.nodes.AstNode;
 // Expression
 public abstract class Expr extends AstNode {
 
+    public Expr(Position position) {
+        super(position);
+    }
 }

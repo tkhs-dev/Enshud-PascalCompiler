@@ -9,7 +9,8 @@ public class SubProgDecl extends AstNode {
     public final List<VarDecl> varDecls;
     public final CompoundStmt statement;
 
-    public SubProgDecl(SubProgHeader header, List<VarDecl> varDecls, CompoundStmt statement) {
+    public SubProgDecl(Position position, SubProgHeader header, List<VarDecl> varDecls, CompoundStmt statement) {
+        super(position);
         this.header = header;
         this.varDecls = varDecls;
         this.statement = statement;

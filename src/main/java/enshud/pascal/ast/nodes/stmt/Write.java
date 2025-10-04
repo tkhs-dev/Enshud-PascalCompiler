@@ -8,7 +8,8 @@ import java.util.List;
 public class Write extends Stmt {
     public final List<Expr> exprs;
 
-    public Write(List<Expr> exprs) {
+    public Write(Position position, List<Expr> exprs) {
+        super(position);
         this.exprs = exprs;
     }
 

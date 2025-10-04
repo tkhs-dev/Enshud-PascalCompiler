@@ -7,7 +7,8 @@ public class ArrayType extends TypeNode {
     public final int upperBound;
     public final StandardType elementType;
 
-    public ArrayType(int lowerBound, int upperBound, StandardType elementType) {
+    public ArrayType(Position position, int lowerBound, int upperBound, StandardType elementType) {
+        super(position);
         this.lowerBound = lowerBound;
         this.upperBound = upperBound;
         this.elementType = elementType;

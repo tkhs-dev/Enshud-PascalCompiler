@@ -8,7 +8,8 @@ public class Assignment extends Stmt {
     public final VarNode var;
     public final Expr expr;
 
-    public Assignment(VarNode var, Expr expr) {
+    public Assignment(Position position, VarNode var, Expr expr) {
+        super(position);
         this.var = var;
         this.expr = expr;
     }

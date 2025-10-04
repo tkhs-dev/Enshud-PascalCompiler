@@ -8,7 +8,8 @@ public class While extends Stmt {
     public final Expr condition;
     public final CompoundStmt body;
 
-    public While(Expr condition, CompoundStmt body) {
+    public While(Position position, Expr condition, CompoundStmt body) {
+        super(position);
         this.condition = condition;
         this.body = body;
     }

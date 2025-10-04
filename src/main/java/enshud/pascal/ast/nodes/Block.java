@@ -8,7 +8,8 @@ public class Block extends AstNode {
     public final List<VarDecl> varDecls;
     public final List<SubProgDecl> subProgDecls;
 
-    public Block(List<VarDecl> varDecls, List<SubProgDecl> subProgDecls) {
+    public Block(Position position, List<VarDecl> varDecls, List<SubProgDecl> subProgDecls) {
+        super(position);
         this.varDecls = varDecls;
         this.subProgDecls = subProgDecls;
     }

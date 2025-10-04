@@ -8,7 +8,8 @@ public class FormalParam extends AstNode {
     public final List<String> params;
     public final TypeNode type; // 型
 
-    public FormalParam(List<String> params, TypeNode type) {
+    public FormalParam(Position position, List<String> params, TypeNode type) {
+        super(position);
         this.params = params;
         this.type = type;
     }

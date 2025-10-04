@@ -10,7 +10,8 @@ public class UnaryOp extends Expr {
     public final Op op;
     public final Expr operand;
 
-    public UnaryOp(Op op, Expr operand) {
+    public UnaryOp(Position position, Op op, Expr operand) {
+        super(position);
         this.op = op;
         this.operand = operand;
     }

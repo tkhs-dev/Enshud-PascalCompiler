@@ -13,7 +13,8 @@ public class BinaryOp extends Expr {
     public final Expr left;
     public final Expr right;
 
-    public BinaryOp(Op op, Expr left, Expr right) {
+    public BinaryOp(Position position, Op op, Expr left, Expr right) {
+        super(position);
         this.op = op;
         this.left = left;
         this.right = right;
