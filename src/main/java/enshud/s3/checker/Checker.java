@@ -70,7 +70,7 @@ public class Checker {
     }
 }
 
-class SemanticCheckVisitor implements IAstVisitor {
+class SemanticCheckVisitor implements IAstVisitor<Object> {
     private final Deque<Map<String, Type>> scopes = new ArrayDeque<>();
     private final Set<String> procedures = new HashSet<>();
 
