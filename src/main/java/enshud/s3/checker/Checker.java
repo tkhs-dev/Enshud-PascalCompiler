@@ -1,5 +1,19 @@
 package enshud.s3.checker;
 
+import enshud.pascal.ast.AstParseException;
+import enshud.pascal.ast.AstParser;
+import enshud.pascal.ast.IAstVisitor;
+import enshud.pascal.ast.nodes.*;
+import enshud.pascal.ast.nodes.expr.*;
+import enshud.pascal.ast.nodes.stmt.*;
+import enshud.pascal.type.Type;
+import enshud.token.FileFormatException;
+import enshud.token.Token;
+import enshud.token.TokenFile;
+
+import java.io.IOException;
+import java.util.*;
+
 public class Checker {
 
 	/**
@@ -37,9 +51,285 @@ public class Checker {
 	 * @param inputFileName 入力tsファイル名
 	 */
 	public String run(final String inputFileName) {
+        try {
+            TokenFile tf = new TokenFile(inputFileName);
+            List<Token> tokens = tf.getTokens();
+            AstParser parser = new AstParser(tokens);
+            AstNode ast = parser.parse();
+            SemanticCheckVisitor visitor = new SemanticCheckVisitor();
+            ast.accept(visitor);
+            // 構文解析が成功した場合
+            return "OK";
+        } catch (FileFormatException | IOException e) {
+            return "File not found";
+        } catch (AstParseException e) {
+            return "Syntax error: line " + e.token.line;
+        } catch (SemanticException e) {
+            return "Semantic error: line " + e.line;
+        }
+    }
+}
 
-		// TODO
-		return "";
+class SemanticCheckVisitor implements IAstVisitor {
+    private final Deque<Map<String, Type>> scopes = new ArrayDeque<>();
+    private final Set<String> procedures = new HashSet<>();
 
-	}
+    private void enterScope() {
+        scopes.push(new HashMap<>());
+    }
+
+    private void exitScope() {
+        scopes.pop();
+    }
+
+    private void declareVariable(String name, Type type, int line) {
+        Map<String, Type> currentScope = scopes.peek();
+        if (currentScope.containsKey(name)) {
+            throw new SemanticException("Variable already declared: " + name, line);
+        }
+        System.out.println("Declared variable: " + name + " of type " + type + " at line " + line);
+        currentScope.put(name, type);
+    }
+
+    private void declareProcedure(String name, int line) {
+        if (procedures.contains(name)) {
+            throw new SemanticException("Procedure already declared: " + name, line);
+        }
+        procedures.add(name);
+    }
+
+    private Type lookupVariable(String name, int line) {
+        for (Map<String, Type> scope : scopes) {
+            if (scope.containsKey(name)) {
+                return scope.get(name);
+            }
+        }
+        throw new SemanticException("Undeclared variable: " + name, line);
+    }
+
+    @Override
+    public Void visit(Program node) {
+        enterScope();
+        node.block.accept(this);
+        node.statement.accept(this);
+        exitScope();
+        return null;
+    }
+
+    @Override
+    public Void visit(Block node) {
+        for (VarDecl varDecl : node.varDecls) {
+            varDecl.accept(this);
+        }
+        for (SubProgDecl subProgDecl : node.subProgDecls) {
+            subProgDecl.accept(this);
+        }
+        return null;
+    }
+
+    @Override
+    public Void visit(VarDecl node) {
+        Type type = (Type) node.varType.accept(this);
+        for (String varName : node.varNames) {
+            declareVariable(varName, type, node.getPosition().startLine);
+        }
+        return null;
+    }
+
+    @Override
+    public Void visit(SubProgDecl node) {
+        enterScope();
+        node.header.accept(this);
+        for (VarDecl varDecl : node.varDecls) {
+            varDecl.accept(this);
+        }
+        node.statement.accept(this);
+        exitScope();
+        return null;
+    }
+
+    @Override
+    public Void visit(SubProgHeader node) {
+        declareProcedure(node.name, node.getPosition().startLine);
+        for (FormalParam param : node.params) {
+            param.accept(this);
+        }
+        return null;
+    }
+
+    @Override
+    public Void visit(FormalParam node) {
+        Type type = (Type) node.type.accept(this);
+        for (String paramName : node.params) {
+            declareVariable(paramName, type, node.getPosition().startLine);
+        }
+        return null;
+    }
+
+    @Override
+    public Type visit(ArrayType node) {
+        Type elementType = (Type) node.elementType.accept(this);
+        return new enshud.pascal.type.ArrayType(node.lowerBound, node.upperBound, elementType);
+    }
+
+    @Override
+    public Type visit(StandardType node) {
+        switch (node.name) {
+            case "integer":
+                return Type.INTEGER;
+            case "char":
+                return Type.CHAR;
+            case "boolean":
+                return Type.BOOLEAN;
+            default:
+                throw new SemanticException("Unknown type: " + node.name, node.getPosition().startLine);
+        }
+    }
+
+    @Override
+    public Void visit(CompoundStmt node) {
+        enterScope();
+        for (Stmt stmt : node.stmts) {
+            stmt.accept(this);
+        }
+        exitScope();
+        return null;
+    }
+
+    @Override
+    public Void visit(Assignment node) {
+        Type expr = (Type) node.expr.accept(this);
+        Type var = (Type) node.var.accept(this);
+        if (!expr.equals(var)) {
+            throw new SemanticException("Type mismatch in assignment: " + expr + " vs " + var, node.getPosition().startLine);
+        }
+        return null;
+    }
+
+    @Override
+    public Void visit(Call node) {
+        for (Expr arg : node.args) {
+            arg.accept(this);
+        }
+        if (!procedures.contains(node.name)) {
+            throw new SemanticException("Undeclared procedure: " + node.name, node.getPosition().startLine);
+        }
+        return null;
+    }
+
+    @Override
+    public Void visit(Write node) {
+        for (Expr expr : node.exprs) {
+            expr.accept(this);
+        }
+        return null;
+    }
+
+    @Override
+    public Void visit(Read node) {
+        return null;
+    }
+
+    @Override
+    public Void visit(If node) {
+        Type condition = (Type) node.condition.accept(this);
+        node.thenBranch.accept(this);
+        if (node.elseBranch != null) {
+            node.elseBranch.accept(this);
+        }
+        if (!condition.equals(Type.BOOLEAN)) {
+            throw new SemanticException("Condition in IF must be BOOLEAN", node.getPosition().startLine);
+        }
+        return null;
+    }
+
+    @Override
+    public Void visit(While node) {
+        Type condition = (Type) node.condition.accept(this);
+        node.body.accept(this);
+        if (!condition.equals(Type.BOOLEAN)) {
+            throw new SemanticException("Condition in WHILE must be BOOLEAN", node.getPosition().startLine);
+        }
+        return null;
+    }
+
+    @Override
+    public Type visit(BinaryOp node) {
+        Type left = (Type) node.left.accept(this);
+        Type right = (Type) node.right.accept(this);
+
+        if (right == null) {
+            return left;
+        }
+
+        if (!left.equals(right)) {
+            // 型が異なる場合のエラー処理
+            System.out.println("Type mismatch: " + left + " vs " + right + " at line " + node.getPosition().startLine + " for operator " + node.op);
+            throw new SemanticException("Type mismatch", node.getPosition().startLine);
+        }
+
+        switch (node.op) {
+            case ADD:
+            case SUB:
+            case MUL:
+            case DIV:
+            case MOD:
+                if (!left.equals(Type.INTEGER) || !right.equals(Type.INTEGER)) {
+                    throw new SemanticException("Type mismatch in arithmetic operation", node.getPosition().startLine);
+                }
+                return Type.INTEGER;
+            case AND:
+            case OR:
+                if (!left.equals(Type.BOOLEAN) || !right.equals(Type.BOOLEAN)) {
+                    throw new SemanticException("Type mismatch in logical operation", node.getPosition().startLine);
+                }
+                return Type.BOOLEAN;
+            case EQ:
+            case NEQ:
+            case LT:
+            case LTE:
+            case GT:
+            case GTE:
+                return Type.BOOLEAN;
+            default:
+                throw new SemanticException("Unknown binary operator", node.getPosition().startLine);
+        }
+    }
+
+    @Override
+    public Type visit(Const node) {
+        return node.type;
+    }
+
+    @Override
+    public Type visit(UnaryOp node) {
+        return (Type) node.operand.accept(this);
+    }
+
+    @Override
+    public Type visit(StandardVar node) {
+        return lookupVariable(node.name, node.getPosition().startLine);
+    }
+
+    @Override
+    public Type visit(IndexedVar node) {
+        Type indexType = (Type) node.index.accept(this);
+        if (!indexType.equals(Type.INTEGER)) {
+            throw new SemanticException("Array index must be of type INTEGER", node.getPosition().startLine);
+        }
+        Type arrayType = lookupVariable(node.name, node.getPosition().startLine);
+        if (!(arrayType instanceof enshud.pascal.type.ArrayType)) {
+            throw new SemanticException("Variable is not an array: " + node.name, node.getPosition().startLine);
+        }
+        return ((enshud.pascal.type.ArrayType) arrayType).elementType;
+    }
+}
+
+class SemanticException extends RuntimeException {
+    public final int line;
+
+    public SemanticException(String message, int line) {
+        super(message);
+        this.line = line;
+    }
 }
