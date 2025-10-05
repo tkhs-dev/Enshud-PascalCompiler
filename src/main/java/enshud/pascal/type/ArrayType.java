@@ -20,4 +20,9 @@ public class ArrayType extends Type {
                 this.upperBound == other.upperBound &&
                 this.elementType.equals(other.elementType);
     }
+
+    @Override
+    public String toString() {
+        return "Array[" + lowerBound + ".." + upperBound + "] of " + elementType.toString();
+    }
 }

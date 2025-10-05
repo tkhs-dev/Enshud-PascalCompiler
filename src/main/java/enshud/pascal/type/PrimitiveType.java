@@ -6,4 +6,9 @@ public class PrimitiveType extends Type {
     public PrimitiveType(String name) {
         this.name = name;
     }
+
+    @Override
+    public String toString() {
+        return name;
+    }
 }
