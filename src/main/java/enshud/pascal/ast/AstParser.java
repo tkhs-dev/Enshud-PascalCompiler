@@ -4,6 +4,7 @@ import enshud.pascal.TokenDef;
 import enshud.pascal.ast.nodes.*;
 import enshud.pascal.ast.nodes.expr.*;
 import enshud.pascal.ast.nodes.stmt.*;
+import enshud.pascal.type.Type;
 import enshud.token.Token;
 
 import java.util.List;
@@ -411,27 +412,27 @@ public class AstParser {
             Token start = peek();
             String constToken = expect(TokenDef.CONSTANT).token;
             try {
-                int intValue = Integer.parseInt(constToken);
+                Integer.parseInt(constToken);
                 AstNode.Position position = AstNode.Position.fromToken(start, start);
-                return new Const(position, intValue);
+                return new Const(position, constToken, Type.INTEGER);
             } catch (NumberFormatException e) {
                 throw new AstParseException("Invalid constant", peek());
             }
         } else if (check(TokenDef.TRUE)) {
             Token start = consume(); // 'true'
             AstNode.Position position = AstNode.Position.fromToken(start, start);
-            return new Const(position, true);
+            return new Const(position, "true", Type.BOOLEAN);
         } else if (check(TokenDef.FALSE)) {
             Token start = consume(); // 'false'
             AstNode.Position position = AstNode.Position.fromToken(start, start);
-            return new Const(position, false);
+            return new Const(position, "false", Type.BOOLEAN);
         } else if (check(TokenDef.STRING)) {
             Token start = peek();
             String strValue = expect(TokenDef.STRING).token;
             // Remove the prefix quote and suffix quote/br
             strValue = strValue.substring(1, strValue.length() - 1);
             AstNode.Position position = AstNode.Position.fromToken(start, start);
-            return new Const(position, strValue);
+            return new Const(position, strValue, new enshud.pascal.type.ArrayType(1, strValue.length(), Type.CHAR));
         } else {
             throw new AstParseException("Invalid primary expression", peek());
         }

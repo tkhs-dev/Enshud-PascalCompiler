@@ -4,11 +4,13 @@ import enshud.pascal.ast.IAstVisitor;
 import enshud.pascal.type.Type;
 
 public class Const extends Expr {
-    public final Object value;
+    public final String value;
+    public final Type type;
 
-    public Const(Position position, Object value) {
+    public Const(Position position, String value, Type type) {
         super(position);
         this.value = value;
+        this.type = type;
     }
 
     @Override
