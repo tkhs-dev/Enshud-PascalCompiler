@@ -87,7 +87,6 @@ class SemanticCheckVisitor implements IAstVisitor<Object> {
         if (currentScope.containsKey(name)) {
             throw new SemanticException("Variable already declared: " + name, line);
         }
-        System.out.println("Declared variable: " + name + " of type " + type + " at line " + line);
         currentScope.put(name, type);
     }
 
