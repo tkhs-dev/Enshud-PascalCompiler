@@ -450,7 +450,7 @@ public class AstParser {
     private static final Map<TokenDef, OperatorInfo> BINARY_OPERATORS = new HashMap<>();
 
     static {
-        // precedence: 大きいほど強い結合
+        // priority: 大きいほど強い結合
         BINARY_OPERATORS.put(TokenDef.OR, new OperatorInfo(BinaryOp.Op.OR, 1, false));
         BINARY_OPERATORS.put(TokenDef.AND, new OperatorInfo(BinaryOp.Op.AND, 2, false));
 
