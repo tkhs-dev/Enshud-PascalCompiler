@@ -7,7 +7,9 @@ import enshud.pascal.ast.nodes.stmt.*;
 import enshud.pascal.type.Type;
 import enshud.token.Token;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class AstParser {
     private final List<Token> tokens;
@@ -331,47 +333,23 @@ public class AstParser {
     }
 
     private Expr parseExpr() {
-        return parseBinaryOp();
+        return parseBinaryOp(1);
     }
 
-    private Expr parseBinaryOp() {
+    private Expr parseBinaryOp(int minPriority) {
         Token start = peek();
         Expr left = parseUnaryOp();
-        while (check(TokenDef.PLUS) || check(TokenDef.MINUS) || check(TokenDef.STAR) || check(TokenDef.DIV) || check(TokenDef.MOD) ||
-                check(TokenDef.EQ) || check(TokenDef.NEQ) || check(TokenDef.LT) || check(TokenDef.LTE) ||
-                check(TokenDef.GT) || check(TokenDef.GTE) || check(TokenDef.AND) || check(TokenDef.OR)) {
-            Token token = consume();
-            Expr right = parseUnaryOp();
-            BinaryOp.Op op;
-            if (token.id == TokenDef.PLUS.id) {
-                op = BinaryOp.Op.ADD;
-            } else if (token.id == TokenDef.MINUS.id) {
-                op = BinaryOp.Op.SUB;
-            } else if (token.id == TokenDef.STAR.id) {
-                op = BinaryOp.Op.MUL;
-            } else if (token.id == TokenDef.DIV.id) {
-                op = BinaryOp.Op.DIV;
-            } else if (token.id == TokenDef.MOD.id) {
-                op = BinaryOp.Op.MOD;
-            } else if (token.id == TokenDef.EQ.id) {
-                op = BinaryOp.Op.EQ;
-            } else if (token.id == TokenDef.NEQ.id) {
-                op = BinaryOp.Op.NEQ;
-            } else if (token.id == TokenDef.LT.id) {
-                op = BinaryOp.Op.LT;
-            } else if (token.id == TokenDef.LTE.id) {
-                op = BinaryOp.Op.LTE;
-            } else if (token.id == TokenDef.GT.id) {
-                op = BinaryOp.Op.GT;
-            } else if (token.id == TokenDef.GTE.id) {
-                op = BinaryOp.Op.GTE;
-            } else if (token.id == TokenDef.AND.id) {
-                op = BinaryOp.Op.AND;
-            } else if (token.id == TokenDef.OR.id) {
-                op = BinaryOp.Op.OR;
-            } else {
-                throw new AstParseException("Invalid binary operator", token);
+        while (true) {
+            OperatorInfo opInfo = BINARY_OPERATORS.get(TokenDef.getTokenDef(peek().id));
+
+            if (opInfo == null || opInfo.priority < minPriority) {
+                break;
             }
+            consume(); // operator
+
+            int nextMinPriority = opInfo.rightAssociative ? opInfo.priority : opInfo.priority + 1;
+            Expr right = parseBinaryOp(nextMinPriority);
+            BinaryOp.Op op = opInfo.op;
             Token end = peek();
             AstNode.Position position = AstNode.Position.fromToken(start, end);
             left = new BinaryOp(position, op, left, right);
@@ -432,6 +410,9 @@ public class AstParser {
             // Remove the prefix quote and suffix quote/br
             strValue = strValue.substring(1, strValue.length() - 1);
             AstNode.Position position = AstNode.Position.fromToken(start, start);
+            if (strValue.length() == 1) {
+                return new Const(position, strValue, Type.CHAR);
+            }
             return new Const(position, strValue, new enshud.pascal.type.ArrayType(1, strValue.length(), Type.CHAR));
         } else {
             throw new AstParseException("Invalid primary expression", peek());
@@ -454,5 +435,38 @@ public class AstParser {
         }
     }
 
+    private static class OperatorInfo {
+        final BinaryOp.Op op;
+        final int priority;
+        final boolean rightAssociative;
+
+        OperatorInfo(BinaryOp.Op op, int priority, boolean rightAssociative) {
+            this.op = op;
+            this.priority = priority;
+            this.rightAssociative = rightAssociative;
+        }
+    }
+
+    private static final Map<TokenDef, OperatorInfo> BINARY_OPERATORS = new HashMap<>();
+
+    static {
+        // precedence: 大きいほど強い結合
+        BINARY_OPERATORS.put(TokenDef.OR, new OperatorInfo(BinaryOp.Op.OR, 1, false));
+        BINARY_OPERATORS.put(TokenDef.AND, new OperatorInfo(BinaryOp.Op.AND, 2, false));
+
+        BINARY_OPERATORS.put(TokenDef.EQ, new OperatorInfo(BinaryOp.Op.EQ, 3, false));
+        BINARY_OPERATORS.put(TokenDef.NEQ, new OperatorInfo(BinaryOp.Op.NEQ, 3, false));
+        BINARY_OPERATORS.put(TokenDef.LT, new OperatorInfo(BinaryOp.Op.LT, 3, false));
+        BINARY_OPERATORS.put(TokenDef.LTE, new OperatorInfo(BinaryOp.Op.LTE, 3, false));
+        BINARY_OPERATORS.put(TokenDef.GT, new OperatorInfo(BinaryOp.Op.GT, 3, false));
+        BINARY_OPERATORS.put(TokenDef.GTE, new OperatorInfo(BinaryOp.Op.GTE, 3, false));
+
+        BINARY_OPERATORS.put(TokenDef.PLUS, new OperatorInfo(BinaryOp.Op.ADD, 4, false));
+        BINARY_OPERATORS.put(TokenDef.MINUS, new OperatorInfo(BinaryOp.Op.SUB, 4, false));
+
+        BINARY_OPERATORS.put(TokenDef.STAR, new OperatorInfo(BinaryOp.Op.MUL, 5, false));
+        BINARY_OPERATORS.put(TokenDef.DIV, new OperatorInfo(BinaryOp.Op.DIV, 5, false));
+        BINARY_OPERATORS.put(TokenDef.MOD, new OperatorInfo(BinaryOp.Op.MOD, 5, false));
+    }
 
 }

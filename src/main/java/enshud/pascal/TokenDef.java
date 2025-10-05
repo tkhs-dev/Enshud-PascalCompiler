@@ -85,4 +85,21 @@ public class TokenDef {
         this.priority = priority;
         this.regex = regex;
     }
+
+    public static TokenDef getTokenDef(int id) {
+        for (TokenDef token : Tokens) {
+            if (token.id == id) {
+                return token;
+            }
+        }
+        return null; // 見つからなかった場合はnullを返す
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        TokenDef tokenDef = (TokenDef) o;
+        return id == tokenDef.id;
+    }
 }
