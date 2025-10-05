@@ -1,6 +1,6 @@
 package enshud.pascal.ast.nodes.stmt;
 
-import enshud.pascal.ast.AstVisitor;
+import enshud.pascal.ast.IAstVisitor;
 import enshud.pascal.ast.nodes.expr.Expr;
 import enshud.pascal.ast.nodes.expr.VarNode;
 
@@ -15,7 +15,7 @@ public class Assignment extends Stmt {
     }
 
     @Override
-    public <T> T accept(AstVisitor<T> visitor) {
+    public <T> T accept(IAstVisitor<T> visitor) {
         return visitor.visit(this);
     }
 }

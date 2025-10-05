@@ -1,6 +1,6 @@
 package enshud.pascal.ast.nodes;
 
-import enshud.pascal.ast.AstVisitor;
+import enshud.pascal.ast.IAstVisitor;
 import enshud.token.Token;
 
 // 抽象構文木ノード
@@ -15,7 +15,7 @@ public abstract class AstNode {
         return position;
     }
 
-    public abstract <T> T accept(AstVisitor<T> visitor);
+    public abstract <T> T accept(IAstVisitor<T> visitor);
 
     public static class Position {
         public final int startLine;

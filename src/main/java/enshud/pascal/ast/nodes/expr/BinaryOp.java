@@ -1,6 +1,6 @@
 package enshud.pascal.ast.nodes.expr;
 
-import enshud.pascal.ast.AstVisitor;
+import enshud.pascal.ast.IAstVisitor;
 
 public class BinaryOp extends Expr {
     public enum Op {
@@ -21,7 +21,7 @@ public class BinaryOp extends Expr {
     }
 
     @Override
-    public <T> T accept(AstVisitor<T> visitor) {
+    public <T> T accept(IAstVisitor<T> visitor) {
         return visitor.visit(this);
     }
 }

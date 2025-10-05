@@ -1,6 +1,6 @@
 package enshud.pascal.ast.nodes.expr;
 
-import enshud.pascal.ast.AstVisitor;
+import enshud.pascal.ast.IAstVisitor;
 
 public class StandardVar extends VarNode {
     public final String name;
@@ -11,7 +11,7 @@ public class StandardVar extends VarNode {
     }
 
     @Override
-    public <T> T accept(AstVisitor<T> visitor) {
+    public <T> T accept(IAstVisitor<T> visitor) {
         return visitor.visit(this);
     }
 }

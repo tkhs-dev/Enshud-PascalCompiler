@@ -1,6 +1,6 @@
 package enshud.pascal.ast.nodes;
 
-import enshud.pascal.ast.AstVisitor;
+import enshud.pascal.ast.IAstVisitor;
 
 public class ArrayType extends TypeNode {
     public final int lowerBound;
@@ -15,7 +15,7 @@ public class ArrayType extends TypeNode {
     }
 
     @Override
-    public <T> T accept(AstVisitor<T> visitor) {
+    public <T> T accept(IAstVisitor<T> visitor) {
         return visitor.visit(this);
     }
 }

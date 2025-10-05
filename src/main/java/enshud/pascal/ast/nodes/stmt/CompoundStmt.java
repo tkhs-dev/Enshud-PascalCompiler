@@ -1,7 +1,6 @@
-package enshud.pascal.ast.nodes;
+package enshud.pascal.ast.nodes.stmt;
 
-import enshud.pascal.ast.AstVisitor;
-import enshud.pascal.ast.nodes.stmt.Stmt;
+import enshud.pascal.ast.IAstVisitor;
 
 import java.util.List;
 
@@ -14,7 +13,7 @@ public class CompoundStmt extends Stmt {
     }
 
     @Override
-    public <T> T accept(AstVisitor<T> visitor) {
+    public <T> T accept(IAstVisitor<T> visitor) {
         return visitor.visit(this);
     }
 }

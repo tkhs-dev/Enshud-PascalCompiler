@@ -1,7 +1,6 @@
 package enshud.pascal.ast.nodes.stmt;
 
-import enshud.pascal.ast.AstVisitor;
-import enshud.pascal.ast.nodes.CompoundStmt;
+import enshud.pascal.ast.IAstVisitor;
 import enshud.pascal.ast.nodes.expr.Expr;
 
 public class If extends Stmt {
@@ -17,7 +16,7 @@ public class If extends Stmt {
     }
 
     @Override
-    public <T> T accept(AstVisitor<T> visitor) {
+    public <T> T accept(IAstVisitor<T> visitor) {
         return visitor.visit(this);
     }
 }

@@ -1,6 +1,7 @@
 package enshud.pascal.ast.nodes;
 
-import enshud.pascal.ast.AstVisitor;
+import enshud.pascal.ast.IAstVisitor;
+import enshud.pascal.ast.nodes.stmt.CompoundStmt;
 
 public class Program extends AstNode {
     public final String name;
@@ -15,7 +16,7 @@ public class Program extends AstNode {
     }
 
     @Override
-    public <T> T accept(AstVisitor<T> visitor) {
+    public <T> T accept(IAstVisitor<T> visitor) {
         return visitor.visit(this);
     }
 }

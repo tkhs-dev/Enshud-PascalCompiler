@@ -4,7 +4,7 @@ import enshud.pascal.ast.nodes.*;
 import enshud.pascal.ast.nodes.expr.*;
 import enshud.pascal.ast.nodes.stmt.*;
 
-public interface AstVisitor<T> {
+public interface IAstVisitor<T> {
     // プログラム全体
     T visit(Program node);
 
