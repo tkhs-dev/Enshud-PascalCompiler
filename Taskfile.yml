@@ -35,4 +35,13 @@ tasks:
       - task: jenkins-build
         vars:
           JOB_NAME: s4.compiler
+  build:
+    cmds:
+      - gradlew clean build
+  compile-pascal:
+    cmds:
+      - java -jar build/libs/enshud.jar lexer    pascal-src/data1.pas tmp/out.ts
+      - java -jar build/libs/enshud.jar parser   tmp/out.ts
+      - java -jar build/libs/enshud.jar checker  tmp/out.ts
+      - java -jar build/libs/enshud.jar compiler tmp/out.ts tmp/out.s
 
