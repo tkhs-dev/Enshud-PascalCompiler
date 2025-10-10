@@ -40,7 +40,7 @@ tasks:
       - gradlew clean build
   compile-pascal:
     cmds:
-      - java -jar build/libs/enshud.jar lexer    data-ex/pas/semerr01.pas tmp/out.ts
+      - java -jar build/libs/enshud.jar lexer    data-ex/pas/normal01.pas tmp/out.ts
       - java -jar build/libs/enshud.jar parser   tmp/out.ts
       - java -jar build/libs/enshud.jar checker  tmp/out.ts
       - java -jar build/libs/enshud.jar compiler tmp/out.ts tmp/out.s

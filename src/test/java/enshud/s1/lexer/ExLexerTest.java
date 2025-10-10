@@ -1,21 +1,17 @@
 package enshud.s1.lexer;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.io.IOException;
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
-import java.util.Random;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.MethodOrderer.MethodName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 import org.junit.jupiter.api.Timeout;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Lexerの追加単体テストクラス.
@@ -59,10 +55,10 @@ public class ExLexerTest {
     }
 
     @Test
-    public void testInvalidIdentifier() throws IOException {
+    public void testInvalidIdentifier() {
         final String nonExistFile = "data-ex/pas/lexerr01.pas";
 
         final String out = new Lexer().run(nonExistFile, TMP_TS);
-        assertThat(out).isEqualTo("Error");
+        assertThat(out).isEqualTo("Invalid identifier: line 3");
     }
 }
