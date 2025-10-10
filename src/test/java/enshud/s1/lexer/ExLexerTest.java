@@ -57,4 +57,12 @@ public class ExLexerTest {
         assertThat(actual).hasSameTextualContentAs(expected);
         assertThat(out).isEqualTo("OK");
     }
+
+    @Test
+    public void testInvalidIdentifier() throws IOException {
+        final String nonExistFile = "data-ex/pas/lexerr01.pas";
+
+        final String out = new Lexer().run(nonExistFile, TMP_TS);
+        assertThat(out).isEqualTo("Error");
+    }
 }

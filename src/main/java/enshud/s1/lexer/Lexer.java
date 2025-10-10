@@ -39,6 +39,11 @@ public class Lexer {
 		Tokenizer tokenizer;
 		String input = "";
 		List<Token> tokens = new java.util.ArrayList<>();
+		// ファイルが存在するか確認
+		if (!java.nio.file.Files.exists(java.nio.file.Paths.get(inputFileName))) {
+			return "File not found";
+		}
+
 		try {
 			input = new String(java.nio.file.Files.readAllBytes(java.nio.file.Paths.get(inputFileName)));
 			tokenizer = new Tokenizer(input);
@@ -50,14 +55,14 @@ public class Lexer {
 					break;
 				}
 			}
-		} catch (java.io.IOException e) {
-			return "File not found";
-		}
-		try {
+
 			TokenFile.SaveTokens(outputFileName, tokens);
-		} catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+		} catch (TokenizerException e) {
+			return "Invalid identifier: line " + e.lineNumber;
+		} catch (Exception e) {
+			e.printStackTrace();
+			return "Error";
+		}
 		return "OK";
     }
 }
@@ -75,7 +80,7 @@ class Tokenizer {
 		return position < input.length();
 	}
 
-	public Token nextToken() {
+	public Token nextToken() throws TokenizerException {
 		int whiteSpaceLength = 0;
 		while (position + whiteSpaceLength < input.length() && Character.isWhitespace(input.charAt(position + whiteSpaceLength))) {
 			whiteSpaceLength++;
@@ -107,6 +112,20 @@ class Tokenizer {
 				return new Token(matched, token.tokenName, token.id, lineNumber);
 			}
 		}
+		// 識別子はアルファベットのみで構成されるため，残りがあってかつここに到達した場合は不正な識別子
+		if (!remainingInput.isEmpty()) {
+			int lineNumber = input.substring(0, position).split("\n").length + 1;
+			throw new TokenizerException("Invalid identifier at line " + lineNumber, lineNumber);
+		}
 		return null;
+	}
+}
+
+class TokenizerException extends Exception {
+	int lineNumber;
+
+	public TokenizerException(String message, int lineNumber) {
+		super(message);
+		this.lineNumber = lineNumber;
 	}
 }
