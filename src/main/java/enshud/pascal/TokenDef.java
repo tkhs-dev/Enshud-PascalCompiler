@@ -2,54 +2,54 @@ package enshud.pascal;
 
 import java.util.List;
 
-public class TokenDef {
-    public static final TokenDef COMMENT = new TokenDef(-1, "SCOMMENT", 1, "\\{[^}]*\\}");
-    public static final TokenDef AND = new TokenDef(0, "SAND", 3, "and\\b");
-    public static final TokenDef ARRAY = new TokenDef(1, "SARRAY", 3, "array\\b");
-    public static final TokenDef BEGIN = new TokenDef(2, "SBEGIN", 3, "begin\\b");
-    public static final TokenDef BOOLEAN = new TokenDef(3, "SBOOLEAN", 3, "boolean\\b");
-    public static final TokenDef CHAR = new TokenDef(4, "SCHAR", 3, "char\\b");
-    public static final TokenDef DIV = new TokenDef(5, "SDIVD", 3, "div\\b|/");
-    public static final TokenDef DO = new TokenDef(6, "SDO", 3, "do\\b");
-    public static final TokenDef ELSE = new TokenDef(7, "SELSE", 3, "else\\b");
-    public static final TokenDef END = new TokenDef(8, "SEND", 3, "end\\b");
-    public static final TokenDef FALSE = new TokenDef(9, "SFALSE", 3, "false\\b");
-    public static final TokenDef IF = new TokenDef(10, "SIF", 3, "if\\b");
-    public static final TokenDef INTEGER = new TokenDef(11, "SINTEGER", 3, "integer\\b");
-    public static final TokenDef MOD = new TokenDef(12, "SMOD", 3, "mod\\b");
-    public static final TokenDef NOT = new TokenDef(13, "SNOT", 3, "not\\b");
-    public static final TokenDef OF = new TokenDef(14, "SOF", 3, "of\\b");
-    public static final TokenDef OR = new TokenDef(15, "SOR", 3, "or\\b");
-    public static final TokenDef PROCEDURE = new TokenDef(16, "SPROCEDURE", 3, "procedure\\b");
-    public static final TokenDef PROGRAM = new TokenDef(17, "SPROGRAM", 3, "program\\b");
-    public static final TokenDef READLN = new TokenDef(18, "SREADLN", 3, "readln\\b");
-    public static final TokenDef THEN = new TokenDef(19, "STHEN", 3, "then\\b");
-    public static final TokenDef TRUE = new TokenDef(20, "STRUE", 3, "true\\b");
-    public static final TokenDef VAR = new TokenDef(21, "SVAR", 3, "var\\b");
-    public static final TokenDef WHILE = new TokenDef(22, "SWHILE", 3, "while\\b");
-    public static final TokenDef WRITELN = new TokenDef(23, "SWRITELN", 3, "writeln\\b");
-    public static final TokenDef EQ = new TokenDef(24, "SEQUAL", 4, "=");
-    public static final TokenDef NEQ = new TokenDef(25, "SNOTEQUAL", 3, "<>");
-    public static final TokenDef LT = new TokenDef(26, "SLESS", 4, "<");
-    public static final TokenDef LTE = new TokenDef(27, "SLESSEQUAL", 3, "<=");
-    public static final TokenDef GTE = new TokenDef(28, "SGREATEQUAL", 3, ">=");
-    public static final TokenDef GT = new TokenDef(29, "SGREAT", 4, ">");
-    public static final TokenDef PLUS = new TokenDef(30, "SPLUS", 3, "\\+");
-    public static final TokenDef MINUS = new TokenDef(31, "SMINUS", 3, "-");
-    public static final TokenDef STAR = new TokenDef(32, "SSTAR", 3, "\\*");
-    public static final TokenDef LPAREN = new TokenDef(33, "SLPAREN", 3, "\\(");
-    public static final TokenDef RPAREN = new TokenDef(34, "SRPAREN", 3, "\\)");
-    public static final TokenDef LBRACKET = new TokenDef(35, "SLBRACKET", 3, "\\[");
-    public static final TokenDef RBRACKET = new TokenDef(36, "SRBRACKET", 3, "\\]");
-    public static final TokenDef SEMICOLON = new TokenDef(37, "SSEMICOLON", 3, ";");
-    public static final TokenDef COLON = new TokenDef(38, "SCOLON", 4, ":");
-    public static final TokenDef RANGE = new TokenDef(39, "SRANGE", 3, "\\.\\.");
-    public static final TokenDef ASSIGN = new TokenDef(40, "SASSIGN", 3, ":=");
-    public static final TokenDef COMMA = new TokenDef(41, "SCOMMA", 3, ",");
-    public static final TokenDef DOT = new TokenDef(42, "SDOT", 4, "\\.");
-    public static final TokenDef IDENT = new TokenDef(43, "SIDENTIFIER", 5, "[a-zA-Z][a-zA-Z0-9]*\\b");
-    public static final TokenDef CONSTANT = new TokenDef(44, "SCONSTANT", 3, "[0-9]+");
-    public static final TokenDef STRING = new TokenDef(45, "SSTRING", 2, "'([^']|'')*('|\\n)");
+public enum TokenDef {
+    COMMENT(-1, "SCOMMENT", 1, "\\{[^}]*\\}"),
+    AND(0, "SAND", 3, "and\\b"),
+    ARRAY(1, "SARRAY", 3, "array\\b"),
+    BEGIN(2, "SBEGIN", 3, "begin\\b"),
+    BOOLEAN(3, "SBOOLEAN", 3, "boolean\\b"),
+    CHAR(4, "SCHAR", 3, "char\\b"),
+    DIV(5, "SDIVD", 3, "div\\b|/"),
+    DO(6, "SDO", 3, "do\\b"),
+    ELSE(7, "SELSE", 3, "else\\b"),
+    END(8, "SEND", 3, "end\\b"),
+    FALSE(9, "SFALSE", 3, "false\\b"),
+    IF(10, "SIF", 3, "if\\b"),
+    INTEGER(11, "SINTEGER", 3, "integer\\b"),
+    MOD(12, "SMOD", 3, "mod\\b"),
+    NOT(13, "SNOT", 3, "not\\b"),
+    OF(14, "SOF", 3, "of\\b"),
+    OR(15, "SOR", 3, "or\\b"),
+    PROCEDURE(16, "SPROCEDURE", 3, "procedure\\b"),
+    PROGRAM(17, "SPROGRAM", 3, "program\\b"),
+    READLN(18, "SREADLN", 3, "readln\\b"),
+    THEN(19, "STHEN", 3, "then\\b"),
+    TRUE(20, "STRUE", 3, "true\\b"),
+    VAR(21, "SVAR", 3, "var\\b"),
+    WHILE(22, "SWHILE", 3, "while\\b"),
+    WRITELN(23, "SWRITELN", 3, "writeln\\b"),
+    EQ(24, "SEQUAL", 4, "="),
+    NEQ(25, "SNOTEQUAL", 3, "<>"),
+    LT(26, "SLESS", 4, "<"),
+    LTE(27, "SLESSEQUAL", 3, "<="),
+    GTE(28, "SGREATEQUAL", 3, ">="),
+    GT(29, "SGREAT", 4, ">"),
+    PLUS(30, "SPLUS", 3, "\\+"),
+    MINUS(31, "SMINUS", 3, "-"),
+    STAR(32, "SSTAR", 3, "\\*"),
+    LPAREN(33, "SLPAREN", 3, "\\("),
+    RPAREN(34, "SRPAREN", 3, "\\)"),
+    LBRACKET(35, "SLBRACKET", 3, "\\["),
+    RBRACKET(36, "SRBRACKET", 3, "\\]"),
+    SEMICOLON(37, "SSEMICOLON", 3, ";"),
+    COLON(38, "SCOLON", 4, ":"),
+    RANGE(39, "SRANGE", 3, "\\.\\."),
+    ASSIGN(40, "SASSIGN", 3, ":="),
+    COMMA(41, "SCOMMA", 3, ","),
+    DOT(42, "SDOT", 4, "\\."),
+    IDENT(43, "SIDENTIFIER", 5, "[a-zA-Z][a-zA-Z0-9]*\\b"),
+    CONSTANT(44, "SCONSTANT", 3, "[0-9]+"),
+    STRING(45, "SSTRING", 2, "'([^']|'')*('|\\n)");
 
     public static final List<TokenDef> Tokens = List.of(
             COMMENT,
@@ -93,13 +93,5 @@ public class TokenDef {
             }
         }
         return null; // 見つからなかった場合はnullを返す
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        TokenDef tokenDef = (TokenDef) o;
-        return id == tokenDef.id;
     }
 }
