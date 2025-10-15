@@ -70,21 +70,31 @@ public class Lexer {
 class Tokenizer {
 	private String input;
 	private int position;
+    private int lineNumber;
 
     public Tokenizer(String input) {
 		this.input = input;
 		this.position = 0;
+        this.lineNumber = 1;
 	}
 
 	public boolean hasNext() {
-		return position < input.length();
+        // 空白や改行しかない場合もfalseを返す
+        int tmpPos = position;
+        while (tmpPos < input.length() && Character.isWhitespace(input.charAt(tmpPos))) {
+            tmpPos++;
+        }
+        return tmpPos < input.length();
 	}
 
 	public Token nextToken() throws TokenizerException {
-		int whiteSpaceLength = 0;
-		while (position + whiteSpaceLength < input.length() && Character.isWhitespace(input.charAt(position + whiteSpaceLength))) {
-			whiteSpaceLength++;
-		}
+        while (position < input.length() && Character.isWhitespace(input.charAt(position))) {
+            // 空白や改行をスキップ
+            position++;
+            if (input.charAt(position - 1) == '\n') {
+                lineNumber++;
+            }
+        }
 
 		String remainingInput = input.substring(position).trim();
 
@@ -98,13 +108,6 @@ class Tokenizer {
 					// マッチした部分が先頭にない場合はスキップ
 					continue;
 				}
-				position += whiteSpaceLength;
-				int brCount = 0;
-				String processedInput = input.substring(0, position);
-				for (char c : processedInput.toCharArray()) {
-					if (c == '\n') brCount++;
-				}
-				int lineNumber = brCount + 1;
 				position += startIndex + matched.length();
 				if (token == TokenDef.COMMENT) {
 					return nextToken();
