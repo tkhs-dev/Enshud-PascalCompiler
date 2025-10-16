@@ -50,7 +50,7 @@ public class Lexer {
                 tokens.add(tokenizer.nextToken());
 			}
 
-			TokenFile.SaveTokens(outputFileName, tokens);
+			TokenFile.saveTokens(outputFileName, tokens);
 		} catch (TokenizerException e) {
 			return "Invalid identifier: line " + e.lineNumber;
 		} catch (Exception e) {

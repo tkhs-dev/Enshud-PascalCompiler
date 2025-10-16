@@ -1,6 +1,5 @@
 package enshud.token;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
@@ -31,7 +30,7 @@ public class TokenFile {
         }
     }
 
-    public static void SaveTokens(String fileName, List<Token> tokens) throws IOException{
+    public static void saveTokens(String fileName, List<Token> tokens) throws IOException{
         try (java.io.BufferedWriter writer = new java.io.BufferedWriter(new java.io.FileWriter(fileName))) {
             for (Token token : tokens) {
                 writer.write(String.format("%s\t%s\t%d\t%d\n", token.token, token.tokenName, token.id, token.line));
