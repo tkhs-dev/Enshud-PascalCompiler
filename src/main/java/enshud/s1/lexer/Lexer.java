@@ -4,7 +4,6 @@ import enshud.pascal.TokenDef;
 import enshud.token.Token;
 import enshud.token.TokenFile;
 
-import java.io.IOException;
 import java.util.List;
 
 public class Lexer {
@@ -48,12 +47,7 @@ public class Lexer {
 			input = new String(java.nio.file.Files.readAllBytes(java.nio.file.Paths.get(inputFileName)));
 			tokenizer = new Tokenizer(input);
 			while (tokenizer.hasNext()) {
-				Token token = tokenizer.nextToken();
-				if (token != null) {
-					tokens.add(token);
-				} else {
-					break;
-				}
+                tokens.add(tokenizer.nextToken());
 			}
 
 			TokenFile.SaveTokens(outputFileName, tokens);
@@ -98,6 +92,10 @@ class Tokenizer {
 
 		String remainingInput = input.substring(position).trim();
 
+        if(remainingInput.isEmpty()) {
+            return null;
+        }
+
 		for(TokenDef token : TokenDef.SortedTokens) {
 			java.util.regex.Pattern pattern = java.util.regex.Pattern.compile("^" + token.regex);
 			java.util.regex.Matcher matcher = pattern.matcher(remainingInput);
@@ -116,11 +114,7 @@ class Tokenizer {
 			}
 		}
 		// 識別子はアルファベットのみで構成されるため，残りがあってかつここに到達した場合は不正な識別子
-		if (!remainingInput.isEmpty()) {
-			int lineNumber = input.substring(0, position).split("\n").length + 1;
-			throw new TokenizerException("Invalid identifier at line " + lineNumber, lineNumber);
-		}
-		return null;
+        throw new TokenizerException("Invalid identifier at line " + lineNumber, lineNumber);
 	}
 }
 

@@ -59,6 +59,6 @@ public class ExLexerTest {
         final String nonExistFile = "data-ex/pas/lexerr01.pas";
 
         final String out = new Lexer().run(nonExistFile, TMP_TS);
-        assertThat(out).isEqualTo("Invalid identifier: line 3");
+        assertThat(out).isEqualTo("Invalid identifier: line 2");
     }
 }
