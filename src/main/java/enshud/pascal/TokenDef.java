@@ -79,7 +79,7 @@ public enum TokenDef {
     public final String regex; // 正規表現
 
     // コンストラクタ
-    private TokenDef(int Id, String tokenName, int priority, String regex) {
+    TokenDef(int Id, String tokenName, int priority, String regex) {
         this.id = Id;
         this.tokenName = tokenName;
         this.priority = priority;
