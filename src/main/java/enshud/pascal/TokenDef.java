@@ -1,5 +1,6 @@
 package enshud.pascal;
 
+import java.util.Arrays;
 import java.util.List;
 
 public enum TokenDef {
@@ -51,19 +52,7 @@ public enum TokenDef {
     CONSTANT(44, "SCONSTANT", 3, "[0-9]+"),
     STRING(45, "SSTRING", 2, "'([^']|'')*('|\\n)");
 
-    public static final List<TokenDef> Tokens = List.of(
-            COMMENT,
-            AND, ARRAY, BEGIN, BOOLEAN, CHAR, DIV, DO, ELSE, END, FALSE,
-            IF, INTEGER, MOD, NOT, OF, OR, PROCEDURE, PROGRAM, READLN, THEN,
-            TRUE, VAR, WHILE, WRITELN,
-            EQ, NEQ, LT, LTE, GTE, GT,
-            PLUS, MINUS, STAR,
-            LPAREN, RPAREN, LBRACKET, RBRACKET,
-            SEMICOLON, COLON, RANGE, ASSIGN, COMMA, DOT,
-            IDENT, CONSTANT, STRING
-    );
-
-    public static final List<TokenDef> SortedTokens = Tokens.stream()
+    public static final List<TokenDef> SortedTokens = Arrays.stream(values())
             .sorted((t1, t2) -> {
                 if (t1.priority != t2.priority) {
                     return Integer.compare(t1.priority, t2.priority); // 優先度で比較
@@ -87,7 +76,7 @@ public enum TokenDef {
     }
 
     public static TokenDef getTokenDef(int id) {
-        for (TokenDef token : Tokens) {
+        for (TokenDef token : values()) {
             if (token.id == id) {
                 return token;
             }
