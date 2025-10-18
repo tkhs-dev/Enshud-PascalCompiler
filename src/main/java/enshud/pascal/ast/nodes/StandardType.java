@@ -2,6 +2,8 @@ package enshud.pascal.ast.nodes;
 
 import enshud.pascal.ast.IAstVisitor;
 
+import java.util.List;
+
 public class StandardType extends TypeNode {
     public final String name;
 
@@ -13,5 +15,10 @@ public class StandardType extends TypeNode {
     @Override
     public <T> T accept(IAstVisitor<T> visitor) {
         return visitor.visit(this);
+    }
+
+    @Override
+    public List<AstNode> getChildren() {
+        return List.of();
     }
 }

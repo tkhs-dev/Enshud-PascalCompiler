@@ -3,6 +3,8 @@ package enshud.pascal.ast.nodes;
 import enshud.pascal.ast.IAstVisitor;
 import enshud.pascal.ast.nodes.stmt.CompoundStmt;
 
+import java.util.List;
+
 public class Program extends AstNode {
     public final String name;
     public final Block block;
@@ -18,5 +20,10 @@ public class Program extends AstNode {
     @Override
     public <T> T accept(IAstVisitor<T> visitor) {
         return visitor.visit(this);
+    }
+
+    @Override
+    public List<AstNode> getChildren() {
+        return List.of(block, statement);
     }
 }

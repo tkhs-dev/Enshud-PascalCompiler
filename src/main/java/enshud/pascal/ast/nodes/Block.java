@@ -18,4 +18,9 @@ public class Block extends AstNode {
     public <T> T accept(IAstVisitor<T> visitor) {
         return visitor.visit(this);
     }
+
+    @Override
+    public List<AstNode> getChildren() {
+        return List.of();
+    }
 }

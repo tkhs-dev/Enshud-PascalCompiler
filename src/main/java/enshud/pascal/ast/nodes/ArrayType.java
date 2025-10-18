@@ -2,6 +2,8 @@ package enshud.pascal.ast.nodes;
 
 import enshud.pascal.ast.IAstVisitor;
 
+import java.util.List;
+
 public class ArrayType extends TypeNode {
     public final int lowerBound;
     public final int upperBound;
@@ -17,5 +19,10 @@ public class ArrayType extends TypeNode {
     @Override
     public <T> T accept(IAstVisitor<T> visitor) {
         return visitor.visit(this);
+    }
+
+    @Override
+    public List<AstNode> getChildren() {
+        return List.of();
     }
 }

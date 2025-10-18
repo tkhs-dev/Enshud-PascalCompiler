@@ -1,8 +1,11 @@
 package enshud.pascal.ast.nodes.stmt;
 
 import enshud.pascal.ast.IAstVisitor;
+import enshud.pascal.ast.nodes.AstNode;
 import enshud.pascal.ast.nodes.expr.Expr;
 import enshud.pascal.ast.nodes.expr.VarNode;
+
+import java.util.List;
 
 public class Assignment extends Stmt {
     public final VarNode var;
@@ -17,5 +20,10 @@ public class Assignment extends Stmt {
     @Override
     public <T> T accept(IAstVisitor<T> visitor) {
         return visitor.visit(this);
+    }
+
+    @Override
+    public List<AstNode> getChildren() {
+        return List.of();
     }
 }
