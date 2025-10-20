@@ -1,6 +1,15 @@
 package enshud.s4.compiler;
 
 import enshud.casl.CaslSimulator;
+import enshud.pascal.ast.AstParseException;
+import enshud.pascal.ast.AstParser;
+import enshud.pascal.ast.nodes.AstNode;
+import enshud.token.FileFormatException;
+import enshud.token.Token;
+import enshud.token.TokenFile;
+
+import java.io.IOException;
+import java.util.List;
 
 public class Compiler {
 
@@ -10,7 +19,7 @@ public class Compiler {
 	 */
 	public static void main(final String[] args) {
 		// Compilerを実行してcasを生成する
-		System.out.println(new Compiler().run("data/ts/normal01.ts", "tmp/out.cas"));
+		System.out.println(new Compiler().run("data/ts/normal15.ts", "tmp/out.cas"));
 
 		// 上記casを，CASLアセンブラ & COMETシミュレータで実行する
 		CaslSimulator.run("tmp/out.cas", "tmp/out.ans");
@@ -33,9 +42,19 @@ public class Compiler {
 	 * @param outputFileName 出力casファイル名
 	 */
 	public String run(final String inputFileName, final String outputFileName) {
-
-		// TODO
-		return "";
-
+        try {
+            TokenFile tf = new TokenFile(inputFileName);
+            List<Token> tokens = tf.getTokens();
+            AstParser parser = new AstParser(tokens);
+            AstNode ast = parser.parse();
+            var prog = IrConverter.convert(ast);
+            prog.getFunctions().forEach(System.out::println);
+            // 構文解析が成功した場合
+            return "OK";
+        } catch (FileFormatException | IOException e) {
+            return "File not found";
+        } catch (AstParseException e) {
+            return "Syntax error: line " + e.token.line;
+        }
 	}
 }

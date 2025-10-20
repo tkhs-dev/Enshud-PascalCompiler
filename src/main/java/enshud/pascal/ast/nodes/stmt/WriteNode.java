@@ -6,14 +6,12 @@ import enshud.pascal.ast.nodes.expr.Expr;
 
 import java.util.List;
 
-public class Call extends Stmt {
-    public final String name;
-    public final List<Expr> args;
+public class WriteNode extends Stmt {
+    public final List<Expr> exprs;
 
-    public Call(Position position, String name, List<Expr> args) {
+    public WriteNode(Position position, List<Expr> exprs) {
         super(position);
-        this.name = name;
-        this.args = args;
+        this.exprs = exprs;
     }
 
     @Override
@@ -23,6 +21,6 @@ public class Call extends Stmt {
 
     @Override
     public List<AstNode> getChildren() {
-        return List.copyOf(args);
+        return List.of();
     }
 }

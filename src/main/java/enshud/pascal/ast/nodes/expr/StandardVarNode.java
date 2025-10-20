@@ -1,13 +1,14 @@
-package enshud.pascal.ast.nodes;
+package enshud.pascal.ast.nodes.expr;
 
 import enshud.pascal.ast.IAstVisitor;
+import enshud.pascal.ast.nodes.AstNode;
 
 import java.util.List;
 
-public class StandardType extends TypeNode {
+public class StandardVarNode extends VarNode {
     public final String name;
 
-    public StandardType(Position position, String name) {
+    public StandardVarNode(Position position, String name) {
         super(position);
         this.name = name;
     }

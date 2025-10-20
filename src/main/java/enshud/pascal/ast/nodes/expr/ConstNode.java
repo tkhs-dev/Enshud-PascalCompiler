@@ -6,11 +6,11 @@ import enshud.pascal.type.Type;
 
 import java.util.List;
 
-public class Const extends Expr {
+public class ConstNode extends Expr {
     public final String value;
     public final Type type;
 
-    public Const(Position position, String value, Type type) {
+    public ConstNode(Position position, String value, Type type) {
         super(position);
         this.value = value;
         this.type = type;

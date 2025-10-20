@@ -1,19 +1,20 @@
 package enshud.s4.compiler.ir;
 
 import enshud.s4.compiler.ir.operand.Operand;
+import enshud.s4.compiler.ir.operand.Temp;
 
 public class BinaryOp extends Ir {
     public enum OpType {
-        ADD, SUB, MUL, DIV,
-        AND, OR,
-        EQ, NEQ, LT, LEQ, GT, GEQ
+        ADD, SUB, MUL, DIV, MOD,
+        AND, OR, XOR,
+        EQ, NEQ, LT, LTE, GT, GTE
     }
 
     public final OpType opType;
-    public final Operand left;
+    public final Temp left;
     public final Operand right;
 
-    public BinaryOp(OpType opType, Operand left, Operand right) {
+    public BinaryOp(OpType opType, Temp left, Operand right) {
         this.opType = opType;
         this.left = left;
         this.right = right;
@@ -22,5 +23,10 @@ public class BinaryOp extends Ir {
     @Override
     public <T> T accept(IIrVisitor<T> visitor) {
         return visitor.visit(this);
+    }
+
+    @Override
+    public String toString() {
+        return String.format("BinaryOp: %s, %s, %s", opType, left, right);
     }
 }

@@ -50,28 +50,28 @@ public class AstParser {
         return parseProgram();
     }
 
-    private Program parseProgram() {
+    private ProgramNode parseProgram() {
         Token start = expect(TokenDef.PROGRAM);
         String programName = expect(TokenDef.IDENT).token;
         expect(TokenDef.SEMICOLON);
-        Block block = parseBlock();
-        CompoundStmt stmt = parseCompoundStmt();
+        BlockNode block = parseBlock();
+        CompoundStmtNode stmt = parseCompoundStmt();
         Token end = expect(TokenDef.DOT);
         AstNode.Position position = AstNode.Position.fromToken(start, end);
-        return new Program(position, programName, block, stmt);
+        return new ProgramNode(position, programName, block, stmt);
     }
 
-    private Block parseBlock() {
+    private BlockNode parseBlock() {
         Token start = peek();
-        List<VarDecl> varDecls = parseVarDecls();
-        List<SubProgDecl> subProgDecls = parseSubProgDecls();
+        List<VarDeclNode> varDecls = parseVarDecls();
+        List<SubProgDeclNode> subProgDecls = parseSubProgDecls();
         Token end = peek();
         AstNode.Position position = AstNode.Position.fromToken(start, end);
-        return new Block(position, varDecls, subProgDecls);
+        return new BlockNode(position, varDecls, subProgDecls);
     }
 
-    private List<VarDecl> parseVarDecls() {
-        List<VarDecl> varDecls = new java.util.ArrayList<>();
+    private List<VarDeclNode> parseVarDecls() {
+        List<VarDeclNode> varDecls = new java.util.ArrayList<>();
         if (check(TokenDef.VAR)) {
             consume(); // 'var'
             do {
@@ -87,7 +87,7 @@ public class AstParser {
                 expect(TokenDef.SEMICOLON); // ';'
                 Token end = peek();
                 AstNode.Position position = AstNode.Position.fromToken(start, end);
-                varDecls.add(new VarDecl(position, varNames, varType));
+                varDecls.add(new VarDeclNode(position, varNames, varType));
             } while (check(TokenDef.IDENT));
         }
         return varDecls;
@@ -101,17 +101,17 @@ public class AstParser {
         }
     }
 
-    private StandardType parseStandardType() {
+    private StandardTypeNode parseStandardType() {
         if (check(TokenDef.INTEGER) || check(TokenDef.CHAR) || check(TokenDef.BOOLEAN)) {
             Token start = peek();
             AstNode.Position position = AstNode.Position.fromToken(start, start);
-            return new StandardType(position, consume().token);
+            return new StandardTypeNode(position, consume().token);
         } else {
             throw new AstParseException("Expected standard type", peek());
         }
     }
 
-    private ArrayType parseArrayType() {
+    private ArrayTypeNode parseArrayType() {
         Token start = peek();
         consume(); // 'array'
         expect(TokenDef.LBRACKET); // '['
@@ -126,14 +126,14 @@ public class AstParser {
         }
         expect(TokenDef.RBRACKET); // ']'
         expect(TokenDef.OF); // 'of'
-        StandardType elementType = parseStandardType();
+        StandardTypeNode elementType = parseStandardType();
         Token end = peek();
         AstNode.Position position = AstNode.Position.fromToken(start, end);
-        return new ArrayType(position, lower, upper, elementType);
+        return new ArrayTypeNode(position, lower, upper, elementType);
     }
 
-    private List<SubProgDecl> parseSubProgDecls() {
-        List<SubProgDecl> subProgDecls = new java.util.ArrayList<>();
+    private List<SubProgDeclNode> parseSubProgDecls() {
+        List<SubProgDeclNode> subProgDecls = new java.util.ArrayList<>();
         while (check(TokenDef.PROCEDURE)) {
             subProgDecls.add(parseSubProgDecl());
             expect(TokenDef.SEMICOLON);
@@ -141,33 +141,33 @@ public class AstParser {
         return subProgDecls;
     }
 
-    private SubProgDecl parseSubProgDecl() {
+    private SubProgDeclNode parseSubProgDecl() {
         Token start = peek();
-        SubProgHeader header = parseSubProgHeader();
-        List<VarDecl> varDecls = parseVarDecls();
-        CompoundStmt statement = parseCompoundStmt();
+        SubProgHeaderNode header = parseSubProgHeader();
+        List<VarDeclNode> varDecls = parseVarDecls();
+        CompoundStmtNode statement = parseCompoundStmt();
         Token end = peek();
         AstNode.Position position = AstNode.Position.fromToken(start, end);
-        return new SubProgDecl(position, header, varDecls, statement);
+        return new SubProgDeclNode(position, header, varDecls, statement);
     }
 
-    private SubProgHeader parseSubProgHeader() {
+    private SubProgHeaderNode parseSubProgHeader() {
         if (check(TokenDef.PROCEDURE)) {
             Token start = peek();
             consume(); // 'procedure'
             String name = expect(TokenDef.IDENT).token;
-            List<FormalParam> params = parseFormalParams();
+            List<FormalParamNode> params = parseFormalParams();
             expect(TokenDef.SEMICOLON); // ';'
             Token end = peek();
             AstNode.Position position = AstNode.Position.fromToken(start, end);
-            return new SubProgHeader(position, name, params);
+            return new SubProgHeaderNode(position, name, params);
         } else {
             throw new AstParseException("Expected procedure", peek());
         }
     }
 
-    private List<FormalParam> parseFormalParams() {
-        List<FormalParam> params = new java.util.ArrayList<>();
+    private List<FormalParamNode> parseFormalParams() {
+        List<FormalParamNode> params = new java.util.ArrayList<>();
         if (check(TokenDef.LPAREN)) {
             consume(); // '('
             do {
@@ -182,7 +182,7 @@ public class AstParser {
                 TypeNode type = parseType();
                 Token end = peek();
                 AstNode.Position position = AstNode.Position.fromToken(start, end);
-                params.add(new FormalParam(position, paramNames, type));
+                params.add(new FormalParamNode(position, paramNames, type));
                 if (!check(TokenDef.SEMICOLON)) {
                     break;
                 }
@@ -193,7 +193,7 @@ public class AstParser {
         return params;
     }
 
-    private CompoundStmt parseCompoundStmt() {
+    private CompoundStmtNode parseCompoundStmt() {
         Token start = peek();
         expect(TokenDef.BEGIN);
         List<Stmt> statements = new java.util.ArrayList<>();
@@ -211,7 +211,7 @@ public class AstParser {
         expect(TokenDef.END);
         Token end = peek();
         AstNode.Position position = AstNode.Position.fromToken(start, end);
-        return new CompoundStmt(position, statements);
+        return new CompoundStmtNode(position, statements);
     }
 
     private Stmt parseStatement() {
@@ -239,17 +239,17 @@ public class AstParser {
         }
     }
 
-    private Assignment parseAssignment() {
+    private AssignmentNode parseAssignment() {
         Token start = peek();
         VarNode var = parseVar();
         expect(TokenDef.ASSIGN); // ':='
         Expr expr = parseExpr();
         Token end = peek();
         AstNode.Position position = AstNode.Position.fromToken(start, end);
-        return new Assignment(position, var, expr);
+        return new AssignmentNode(position, var, expr);
     }
 
-    private Call parseCall() {
+    private CallNode parseCall() {
         Token start = peek();
         String name = expect(TokenDef.IDENT).token;
         List<Expr> args = new java.util.ArrayList<>();
@@ -266,10 +266,10 @@ public class AstParser {
         }
         Token end = peek();
         AstNode.Position position = AstNode.Position.fromToken(start, end);
-        return new Call(position, name, args);
+        return new CallNode(position, name, args);
     }
 
-    private Write parseWrite() {
+    private WriteNode parseWrite() {
         Token start = peek();
         expect(TokenDef.WRITELN);
         List<Expr> exprs = new java.util.ArrayList<>();
@@ -286,10 +286,10 @@ public class AstParser {
         }
         Token end = peek();
         AstNode.Position position = AstNode.Position.fromToken(start, end);
-        return new Write(position, exprs);
+        return new WriteNode(position, exprs);
     }
 
-    private Read parseRead() {
+    private ReadNode parseRead() {
         Token start = peek();
         expect(TokenDef.READLN);
         List<String> varNames = new java.util.ArrayList<>();
@@ -302,34 +302,34 @@ public class AstParser {
         expect(TokenDef.RPAREN); // ')'
         Token end = peek();
         AstNode.Position position = AstNode.Position.fromToken(start, end);
-        return new Read(position, varNames);
+        return new ReadNode(position, varNames);
     }
 
-    private If parseIf() {
+    private IfNode parseIf() {
         Token start = peek();
         expect(TokenDef.IF);
         Expr condition = parseExpr();
         expect(TokenDef.THEN);
-        CompoundStmt thenStmt = parseCompoundStmt();
-        CompoundStmt elseStmt = null;
+        CompoundStmtNode thenStmt = parseCompoundStmt();
+        CompoundStmtNode elseStmt = null;
         if (check(TokenDef.ELSE)) {
             consume(); // 'else'
             elseStmt = parseCompoundStmt();
         }
         Token end = peek();
         AstNode.Position position = AstNode.Position.fromToken(start, end);
-        return new If(position, condition, thenStmt, elseStmt);
+        return new IfNode(position, condition, thenStmt, elseStmt);
     }
 
-    private While parseWhile() {
+    private WhileNode parseWhile() {
         Token start = peek();
         expect(TokenDef.WHILE);
         Expr condition = parseExpr();
         expect(TokenDef.DO);
-        CompoundStmt body = parseCompoundStmt();
+        CompoundStmtNode body = parseCompoundStmt();
         Token end = peek();
         AstNode.Position position = AstNode.Position.fromToken(start, end);
-        return new While(position, condition, body);
+        return new WhileNode(position, condition, body);
     }
 
     private Expr parseExpr() {
@@ -349,10 +349,10 @@ public class AstParser {
 
             int nextMinPriority = opInfo.rightAssociative ? opInfo.priority : opInfo.priority + 1;
             Expr right = parseBinaryOp(nextMinPriority);
-            BinaryOp.Op op = opInfo.op;
+            BinaryOpNode.Op op = opInfo.op;
             Token end = peek();
             AstNode.Position position = AstNode.Position.fromToken(start, end);
-            left = new BinaryOp(position, op, left, right);
+            left = new BinaryOpNode(position, op, left, right);
         }
         return left;
     }
@@ -361,18 +361,18 @@ public class AstParser {
         if (check(TokenDef.PLUS) || check(TokenDef.MINUS) || check(TokenDef.NOT)) {
             Token token = consume();
             Expr expr = parsePrimary();
-            UnaryOp.Op op;
+            UnaryOpNode.Op op;
             if (token.id == TokenDef.PLUS.id) {
-                op = UnaryOp.Op.PLUS;
+                op = UnaryOpNode.Op.PLUS;
             } else if (token.id == TokenDef.MINUS.id) {
-                op = UnaryOp.Op.MINUS;
+                op = UnaryOpNode.Op.MINUS;
             } else if (token.id == TokenDef.NOT.id) {
-                op = UnaryOp.Op.NOT;
+                op = UnaryOpNode.Op.NOT;
             } else {
                 throw new AstParseException("Invalid unary operator", token);
             }
             AstNode.Position position = AstNode.Position.fromToken(token, peek());
-            return new UnaryOp(position, op, expr);
+            return new UnaryOpNode(position, op, expr);
         } else {
             return parsePrimary();
         }
@@ -392,18 +392,18 @@ public class AstParser {
             try {
                 Integer.parseInt(constToken);
                 AstNode.Position position = AstNode.Position.fromToken(start, start);
-                return new Const(position, constToken, Type.INTEGER);
+                return new ConstNode(position, constToken, Type.INTEGER);
             } catch (NumberFormatException e) {
                 throw new AstParseException("Invalid constant", peek());
             }
         } else if (check(TokenDef.TRUE)) {
             Token start = consume(); // 'true'
             AstNode.Position position = AstNode.Position.fromToken(start, start);
-            return new Const(position, "true", Type.BOOLEAN);
+            return new ConstNode(position, "true", Type.BOOLEAN);
         } else if (check(TokenDef.FALSE)) {
             Token start = consume(); // 'false'
             AstNode.Position position = AstNode.Position.fromToken(start, start);
-            return new Const(position, "false", Type.BOOLEAN);
+            return new ConstNode(position, "false", Type.BOOLEAN);
         } else if (check(TokenDef.STRING)) {
             Token start = peek();
             String strValue = expect(TokenDef.STRING).token;
@@ -411,9 +411,9 @@ public class AstParser {
             strValue = strValue.substring(1, strValue.length() - 1);
             AstNode.Position position = AstNode.Position.fromToken(start, start);
             if (strValue.length() == 1) {
-                return new Const(position, strValue, Type.CHAR);
+                return new ConstNode(position, strValue, Type.CHAR);
             }
-            return new Const(position, strValue, new enshud.pascal.type.ArrayType(1, strValue.length(), Type.CHAR));
+            return new ConstNode(position, strValue, new enshud.pascal.type.ArrayType(1, strValue.length(), Type.CHAR));
         } else {
             throw new AstParseException("Invalid primary expression", peek());
         }
@@ -428,19 +428,19 @@ public class AstParser {
             expect(TokenDef.RBRACKET); // ']'
             Token end = peek();
             AstNode.Position position = AstNode.Position.fromToken(start, end);
-            return new IndexedVar(position, varName, index);
+            return new IndexedVarNode(position, varName, index);
         } else {
             AstNode.Position position = AstNode.Position.fromToken(start, start);
-            return new StandardVar(position, varName);
+            return new StandardVarNode(position, varName);
         }
     }
 
     private static class OperatorInfo {
-        final BinaryOp.Op op;
+        final BinaryOpNode.Op op;
         final int priority;
         final boolean rightAssociative;
 
-        OperatorInfo(BinaryOp.Op op, int priority, boolean rightAssociative) {
+        OperatorInfo(BinaryOpNode.Op op, int priority, boolean rightAssociative) {
             this.op = op;
             this.priority = priority;
             this.rightAssociative = rightAssociative;
@@ -451,22 +451,22 @@ public class AstParser {
 
     static {
         // priority: 大きいほど強い結合
-        BINARY_OPERATORS.put(TokenDef.OR, new OperatorInfo(BinaryOp.Op.OR, 1, false));
-        BINARY_OPERATORS.put(TokenDef.AND, new OperatorInfo(BinaryOp.Op.AND, 2, false));
+        BINARY_OPERATORS.put(TokenDef.OR, new OperatorInfo(BinaryOpNode.Op.OR, 1, false));
+        BINARY_OPERATORS.put(TokenDef.AND, new OperatorInfo(BinaryOpNode.Op.AND, 2, false));
 
-        BINARY_OPERATORS.put(TokenDef.EQ, new OperatorInfo(BinaryOp.Op.EQ, 3, false));
-        BINARY_OPERATORS.put(TokenDef.NEQ, new OperatorInfo(BinaryOp.Op.NEQ, 3, false));
-        BINARY_OPERATORS.put(TokenDef.LT, new OperatorInfo(BinaryOp.Op.LT, 3, false));
-        BINARY_OPERATORS.put(TokenDef.LTE, new OperatorInfo(BinaryOp.Op.LTE, 3, false));
-        BINARY_OPERATORS.put(TokenDef.GT, new OperatorInfo(BinaryOp.Op.GT, 3, false));
-        BINARY_OPERATORS.put(TokenDef.GTE, new OperatorInfo(BinaryOp.Op.GTE, 3, false));
+        BINARY_OPERATORS.put(TokenDef.EQ, new OperatorInfo(BinaryOpNode.Op.EQ, 3, false));
+        BINARY_OPERATORS.put(TokenDef.NEQ, new OperatorInfo(BinaryOpNode.Op.NEQ, 3, false));
+        BINARY_OPERATORS.put(TokenDef.LT, new OperatorInfo(BinaryOpNode.Op.LT, 3, false));
+        BINARY_OPERATORS.put(TokenDef.LTE, new OperatorInfo(BinaryOpNode.Op.LTE, 3, false));
+        BINARY_OPERATORS.put(TokenDef.GT, new OperatorInfo(BinaryOpNode.Op.GT, 3, false));
+        BINARY_OPERATORS.put(TokenDef.GTE, new OperatorInfo(BinaryOpNode.Op.GTE, 3, false));
 
-        BINARY_OPERATORS.put(TokenDef.PLUS, new OperatorInfo(BinaryOp.Op.ADD, 4, false));
-        BINARY_OPERATORS.put(TokenDef.MINUS, new OperatorInfo(BinaryOp.Op.SUB, 4, false));
+        BINARY_OPERATORS.put(TokenDef.PLUS, new OperatorInfo(BinaryOpNode.Op.ADD, 4, false));
+        BINARY_OPERATORS.put(TokenDef.MINUS, new OperatorInfo(BinaryOpNode.Op.SUB, 4, false));
 
-        BINARY_OPERATORS.put(TokenDef.STAR, new OperatorInfo(BinaryOp.Op.MUL, 5, false));
-        BINARY_OPERATORS.put(TokenDef.DIV, new OperatorInfo(BinaryOp.Op.DIV, 5, false));
-        BINARY_OPERATORS.put(TokenDef.MOD, new OperatorInfo(BinaryOp.Op.MOD, 5, false));
+        BINARY_OPERATORS.put(TokenDef.STAR, new OperatorInfo(BinaryOpNode.Op.MUL, 5, false));
+        BINARY_OPERATORS.put(TokenDef.DIV, new OperatorInfo(BinaryOpNode.Op.DIV, 5, false));
+        BINARY_OPERATORS.put(TokenDef.MOD, new OperatorInfo(BinaryOpNode.Op.MOD, 5, false));
     }
 
 }

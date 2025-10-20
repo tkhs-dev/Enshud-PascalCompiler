@@ -6,47 +6,49 @@ import enshud.pascal.ast.nodes.stmt.*;
 
 public interface IAstVisitor<T> {
     // プログラム全体
-    T visit(Program node);
+    T visit(ProgramNode node);
 
     // ブロック
-    T visit(Block node);
+    T visit(BlockNode node);
 
     // 変数宣言
-    T visit(VarDecl node);
+    T visit(VarDeclNode node);
 
     // 副プログラム宣言
-    T visit(SubProgDecl node);
+    T visit(SubProgDeclNode node);
 
-    T visit(SubProgHeader node);
+    T visit(SubProgHeaderNode node);
 
-    T visit(FormalParam node);
+    T visit(FormalParamNode node);
 
     // 型
-    T visit(ArrayType node);
+    T visit(ArrayTypeNode node);
 
-    T visit(StandardType node);
+    T visit(StandardTypeNode node);
 
     // 文
-    T visit(CompoundStmt node);
+    T visit(CompoundStmtNode node);
 
-    T visit(Assignment node);
+    T visit(AssignmentNode node);
 
-    T visit(Call node);
+    T visit(CallNode node);
 
-    T visit(Write node);
+    T visit(WriteNode node);
 
-    T visit(Read node);
+    T visit(ReadNode node);
 
-    T visit(If node);
+    T visit(IfNode node);
 
-    T visit(While node);
+    T visit(WhileNode node);
 
     // 式
-    T visit(BinaryOp node);
-    T visit(Const node);
-    T visit(UnaryOp node);
+    T visit(BinaryOpNode node);
 
-    T visit(StandardVar node);
+    T visit(ConstNode node);
 
-    T visit(IndexedVar node);
+    T visit(UnaryOpNode node);
+
+    T visit(StandardVarNode node);
+
+    T visit(IndexedVarNode node);
 }

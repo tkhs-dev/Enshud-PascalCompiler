@@ -5,18 +5,22 @@ import enshud.pascal.ast.nodes.AstNode;
 
 import java.util.List;
 
-public class UnaryOp extends Expr {
+public class BinaryOpNode extends Expr {
     public enum Op {
-        PLUS, MINUS, NOT
+        ADD, SUB, MUL, DIV, MOD,
+        EQ, NEQ, LT, LTE, GT, GTE,
+        AND, OR
     }
 
     public final Op op;
-    public final Expr operand;
+    public final Expr left;
+    public final Expr right;
 
-    public UnaryOp(Position position, Op op, Expr operand) {
+    public BinaryOpNode(Position position, Op op, Expr left, Expr right) {
         super(position);
         this.op = op;
-        this.operand = operand;
+        this.left = left;
+        this.right = right;
     }
 
     @Override

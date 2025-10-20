@@ -2,15 +2,18 @@ package enshud.pascal.ast.nodes.stmt;
 
 import enshud.pascal.ast.IAstVisitor;
 import enshud.pascal.ast.nodes.AstNode;
+import enshud.pascal.ast.nodes.expr.Expr;
 
 import java.util.List;
 
-public class CompoundStmt extends Stmt {
-    public final List<Stmt> stmts;
+public class WhileNode extends Stmt {
+    public final Expr condition;
+    public final CompoundStmtNode body;
 
-    public CompoundStmt(Position position, List<Stmt> stmts) {
+    public WhileNode(Position position, Expr condition, CompoundStmtNode body) {
         super(position);
-        this.stmts = stmts;
+        this.condition = condition;
+        this.body = body;
     }
 
     @Override

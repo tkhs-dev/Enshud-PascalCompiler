@@ -1,17 +1,22 @@
-package enshud.pascal.ast.nodes.stmt;
+package enshud.pascal.ast.nodes.expr;
 
 import enshud.pascal.ast.IAstVisitor;
 import enshud.pascal.ast.nodes.AstNode;
-import enshud.pascal.ast.nodes.expr.Expr;
 
 import java.util.List;
 
-public class Write extends Stmt {
-    public final List<Expr> exprs;
+public class UnaryOpNode extends Expr {
+    public enum Op {
+        PLUS, MINUS, NOT
+    }
 
-    public Write(Position position, List<Expr> exprs) {
+    public final Op op;
+    public final Expr operand;
+
+    public UnaryOpNode(Position position, Op op, Expr operand) {
         super(position);
-        this.exprs = exprs;
+        this.op = op;
+        this.operand = operand;
     }
 
     @Override

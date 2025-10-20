@@ -4,11 +4,11 @@ import enshud.pascal.ast.IAstVisitor;
 
 import java.util.List;
 
-public class VarDecl extends AstNode {
+public class VarDeclNode extends AstNode {
     public List<String> varNames;
     public TypeNode varType; // "int" or "char"
 
-    public VarDecl(Position position, List<String> varNames, TypeNode varType) {
+    public VarDeclNode(Position position, List<String> varNames, TypeNode varType) {
         super(position);
         this.varNames = varNames;
         this.varType = varType;

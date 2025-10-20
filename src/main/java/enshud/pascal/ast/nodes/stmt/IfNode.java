@@ -6,12 +6,12 @@ import enshud.pascal.ast.nodes.expr.Expr;
 
 import java.util.List;
 
-public class If extends Stmt {
+public class IfNode extends Stmt {
     public final Expr condition;
-    public final CompoundStmt thenBranch;
-    public final CompoundStmt elseBranch; // can be null
+    public final CompoundStmtNode thenBranch;
+    public final CompoundStmtNode elseBranch; // can be null
 
-    public If(Position position, Expr condition, CompoundStmt thenBranch, CompoundStmt elseBranch) {
+    public IfNode(Position position, Expr condition, CompoundStmtNode thenBranch, CompoundStmtNode elseBranch) {
         super(position);
         this.condition = condition;
         this.thenBranch = thenBranch;

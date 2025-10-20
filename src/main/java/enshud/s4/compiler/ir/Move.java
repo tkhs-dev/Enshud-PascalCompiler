@@ -16,4 +16,9 @@ public class Move extends Ir {
     public <T> T accept(IIrVisitor<T> visitor) {
         return visitor.visit(this);
     }
+
+    @Override
+    public String toString() {
+        return String.format("Move: %s <- %s", dest, src);
+    }
 }

@@ -4,14 +4,14 @@ import enshud.pascal.ast.IAstVisitor;
 
 import java.util.List;
 
-public class SubProgHeader extends AstNode {
-    public final String name; // サブルーチン名
-    public final List<FormalParam> params;
+public class FormalParamNode extends AstNode {
+    public final List<String> params;
+    public final TypeNode type; // 型
 
-    public SubProgHeader(Position position, String name, List<FormalParam> params) {
+    public FormalParamNode(Position position, List<String> params, TypeNode type) {
         super(position);
-        this.name = name;
         this.params = params;
+        this.type = type;
     }
 
     @Override
@@ -21,6 +21,6 @@ public class SubProgHeader extends AstNode {
 
     @Override
     public List<AstNode> getChildren() {
-        return List.of();
+        return List.of(type);
     }
 }

@@ -5,12 +5,12 @@ import enshud.pascal.ast.nodes.AstNode;
 
 import java.util.List;
 
-public class Read extends Stmt {
-    public final List<String> varNames;
+public class CompoundStmtNode extends Stmt {
+    public final List<Stmt> stmts;
 
-    public Read(Position position, List<String> varNames) {
+    public CompoundStmtNode(Position position, List<Stmt> stmts) {
         super(position);
-        this.varNames = varNames;
+        this.stmts = stmts;
     }
 
     @Override
@@ -20,6 +20,6 @@ public class Read extends Stmt {
 
     @Override
     public List<AstNode> getChildren() {
-        return List.of();
+        return List.copyOf(stmts);
     }
 }

@@ -107,7 +107,7 @@ class SemanticCheckVisitor implements IAstVisitor<Object> {
     }
 
     @Override
-    public Void visit(Program node) {
+    public Void visit(ProgramNode node) {
         enterScope();
         node.block.accept(this);
         node.statement.accept(this);
@@ -116,18 +116,18 @@ class SemanticCheckVisitor implements IAstVisitor<Object> {
     }
 
     @Override
-    public Void visit(Block node) {
-        for (VarDecl varDecl : node.varDecls) {
+    public Void visit(BlockNode node) {
+        for (VarDeclNode varDecl : node.varDecls) {
             varDecl.accept(this);
         }
-        for (SubProgDecl subProgDecl : node.subProgDecls) {
+        for (SubProgDeclNode subProgDecl : node.subProgDecls) {
             subProgDecl.accept(this);
         }
         return null;
     }
 
     @Override
-    public Void visit(VarDecl node) {
+    public Void visit(VarDeclNode node) {
         Type type = (Type) node.varType.accept(this);
         for (String varName : node.varNames) {
             declareVariable(varName, type, node.getPosition().startLine);
@@ -136,10 +136,10 @@ class SemanticCheckVisitor implements IAstVisitor<Object> {
     }
 
     @Override
-    public Void visit(SubProgDecl node) {
+    public Void visit(SubProgDeclNode node) {
         enterScope();
         node.header.accept(this);
-        for (VarDecl varDecl : node.varDecls) {
+        for (VarDeclNode varDecl : node.varDecls) {
             varDecl.accept(this);
         }
         node.statement.accept(this);
@@ -148,16 +148,16 @@ class SemanticCheckVisitor implements IAstVisitor<Object> {
     }
 
     @Override
-    public Void visit(SubProgHeader node) {
+    public Void visit(SubProgHeaderNode node) {
         declareProcedure(node.name, node.getPosition().startLine);
-        for (FormalParam param : node.params) {
+        for (FormalParamNode param : node.params) {
             param.accept(this);
         }
         return null;
     }
 
     @Override
-    public Void visit(FormalParam node) {
+    public Void visit(FormalParamNode node) {
         Type type = (Type) node.type.accept(this);
         for (String paramName : node.params) {
             declareVariable(paramName, type, node.getPosition().startLine);
@@ -166,13 +166,13 @@ class SemanticCheckVisitor implements IAstVisitor<Object> {
     }
 
     @Override
-    public Type visit(ArrayType node) {
+    public Type visit(ArrayTypeNode node) {
         Type elementType = (Type) node.elementType.accept(this);
         return new enshud.pascal.type.ArrayType(node.lowerBound, node.upperBound, elementType);
     }
 
     @Override
-    public Type visit(StandardType node) {
+    public Type visit(StandardTypeNode node) {
         switch (node.name) {
             case "integer":
                 return Type.INTEGER;
@@ -186,7 +186,7 @@ class SemanticCheckVisitor implements IAstVisitor<Object> {
     }
 
     @Override
-    public Void visit(CompoundStmt node) {
+    public Void visit(CompoundStmtNode node) {
         enterScope();
         for (Stmt stmt : node.stmts) {
             stmt.accept(this);
@@ -196,7 +196,7 @@ class SemanticCheckVisitor implements IAstVisitor<Object> {
     }
 
     @Override
-    public Void visit(Assignment node) {
+    public Void visit(AssignmentNode node) {
         Type expr = (Type) node.expr.accept(this);
         Type var = (Type) node.var.accept(this);
         if (!expr.equals(var)) {
@@ -206,7 +206,7 @@ class SemanticCheckVisitor implements IAstVisitor<Object> {
     }
 
     @Override
-    public Void visit(Call node) {
+    public Void visit(CallNode node) {
         for (Expr arg : node.args) {
             arg.accept(this);
         }
@@ -217,7 +217,7 @@ class SemanticCheckVisitor implements IAstVisitor<Object> {
     }
 
     @Override
-    public Void visit(Write node) {
+    public Void visit(WriteNode node) {
         for (Expr expr : node.exprs) {
             expr.accept(this);
         }
@@ -225,12 +225,12 @@ class SemanticCheckVisitor implements IAstVisitor<Object> {
     }
 
     @Override
-    public Void visit(Read node) {
+    public Void visit(ReadNode node) {
         return null;
     }
 
     @Override
-    public Void visit(If node) {
+    public Void visit(IfNode node) {
         Type condition = (Type) node.condition.accept(this);
         node.thenBranch.accept(this);
         if (node.elseBranch != null) {
@@ -243,7 +243,7 @@ class SemanticCheckVisitor implements IAstVisitor<Object> {
     }
 
     @Override
-    public Void visit(While node) {
+    public Void visit(WhileNode node) {
         Type condition = (Type) node.condition.accept(this);
         node.body.accept(this);
         if (!condition.equals(Type.BOOLEAN)) {
@@ -253,7 +253,7 @@ class SemanticCheckVisitor implements IAstVisitor<Object> {
     }
 
     @Override
-    public Type visit(BinaryOp node) {
+    public Type visit(BinaryOpNode node) {
         Type left = (Type) node.left.accept(this);
         Type right = (Type) node.right.accept(this);
 
@@ -296,22 +296,22 @@ class SemanticCheckVisitor implements IAstVisitor<Object> {
     }
 
     @Override
-    public Type visit(Const node) {
+    public Type visit(ConstNode node) {
         return node.type;
     }
 
     @Override
-    public Type visit(UnaryOp node) {
+    public Type visit(UnaryOpNode node) {
         return (Type) node.operand.accept(this);
     }
 
     @Override
-    public Type visit(StandardVar node) {
+    public Type visit(StandardVarNode node) {
         return lookupVariable(node.name, node.getPosition().startLine);
     }
 
     @Override
-    public Type visit(IndexedVar node) {
+    public Type visit(IndexedVarNode node) {
         Type indexType = (Type) node.index.accept(this);
         if (!indexType.equals(Type.INTEGER)) {
             throw new SemanticException("Array index must be of type INTEGER", node.getPosition().startLine);

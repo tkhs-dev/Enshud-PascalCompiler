@@ -4,12 +4,12 @@ import enshud.pascal.ast.IAstVisitor;
 
 import java.util.List;
 
-public class ArrayType extends TypeNode {
+public class ArrayTypeNode extends TypeNode {
     public final int lowerBound;
     public final int upperBound;
-    public final StandardType elementType;
+    public final StandardTypeNode elementType;
 
-    public ArrayType(Position position, int lowerBound, int upperBound, StandardType elementType) {
+    public ArrayTypeNode(Position position, int lowerBound, int upperBound, StandardTypeNode elementType) {
         super(position);
         this.lowerBound = lowerBound;
         this.upperBound = upperBound;

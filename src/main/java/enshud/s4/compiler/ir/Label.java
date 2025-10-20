@@ -7,8 +7,17 @@ public class Label extends Ir {
         this.name = name;
     }
 
+    public static Label of(String name) {
+        return new Label(name);
+    }
+
     @Override
     public <T> T accept(IIrVisitor<T> visitor) {
         return visitor.visit(this);
+    }
+
+    @Override
+    public String toString() {
+        return String.format("%s:", name);
     }
 }

@@ -6,14 +6,14 @@ import enshud.pascal.ast.nodes.expr.Expr;
 
 import java.util.List;
 
-public class While extends Stmt {
-    public final Expr condition;
-    public final CompoundStmt body;
+public class CallNode extends Stmt {
+    public final String name;
+    public final List<Expr> args;
 
-    public While(Position position, Expr condition, CompoundStmt body) {
+    public CallNode(Position position, String name, List<Expr> args) {
         super(position);
-        this.condition = condition;
-        this.body = body;
+        this.name = name;
+        this.args = args;
     }
 
     @Override
@@ -23,6 +23,6 @@ public class While extends Stmt {
 
     @Override
     public List<AstNode> getChildren() {
-        return List.of();
+        return List.copyOf(args);
     }
 }

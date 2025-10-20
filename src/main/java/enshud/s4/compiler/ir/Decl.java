@@ -11,4 +11,9 @@ public class Decl extends Ir {
     public <T> T accept(IIrVisitor<T> visitor) {
         return visitor.visit(this);
     }
+
+    @Override
+    public String toString() {
+        return String.format("Decl: %s", varName);
+    }
 }

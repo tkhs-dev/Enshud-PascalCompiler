@@ -1,16 +1,16 @@
 package enshud.pascal.ast.nodes;
 
 import enshud.pascal.ast.IAstVisitor;
-import enshud.pascal.ast.nodes.stmt.CompoundStmt;
+import enshud.pascal.ast.nodes.stmt.CompoundStmtNode;
 
 import java.util.List;
 
-public class Program extends AstNode {
+public class ProgramNode extends AstNode {
     public final String name;
-    public final Block block;
-    public final CompoundStmt statement;
+    public final BlockNode block;
+    public final CompoundStmtNode statement;
 
-    public Program(Position position, String name, Block block, CompoundStmt statement) {
+    public ProgramNode(Position position, String name, BlockNode block, CompoundStmtNode statement) {
         super(position);
         this.name = name;
         this.block = block;
