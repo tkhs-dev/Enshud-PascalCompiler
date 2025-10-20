@@ -14,4 +14,5 @@ public interface IIrVisitor<T> {
     T visit(Return aReturn);
     T visit(Writeln writeln);
     T visit(SetArg setArg);
+    T visit(BinaryOp binaryOp);
 }
