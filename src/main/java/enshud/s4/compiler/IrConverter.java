@@ -129,6 +129,7 @@ class IrConverterVisitor implements IAstVisitor<Optional<Temp>> {
     @Override
     public Optional<Temp> visit(CallNode node) {
         var args = node.args.stream().map(arg -> arg.accept(this).get()).toList();
+        instructions.add(new Call("FUNC:"+node.name, args));
         return Optional.empty();
     }
 

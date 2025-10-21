@@ -1,7 +1,7 @@
 package enshud.s4.compiler.ir;
 
 public interface IIrVisitor<T> {
-    T visit(GetArgs ir);
+    T visit(Call ir);
     T visit(Decl ir);
     T visit(DeclArray ir);
     T visit(Jump ir);
@@ -13,6 +13,5 @@ public interface IIrVisitor<T> {
     T visit(IfNotJump ifNotJump);
     T visit(Return aReturn);
     T visit(Writeln writeln);
-    T visit(SetArg setArg);
     T visit(BinaryOp binaryOp);
 }
