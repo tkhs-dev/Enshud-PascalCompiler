@@ -18,4 +18,20 @@ public class Call extends Ir {
     public <T> T accept(IIrVisitor<T> visitor) {
         return visitor.visit(this);
     }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("Call: ").append(functionLabel);
+        if (!args.isEmpty()) {
+            sb.append(" ");
+            for (int i = 0; i < args.size(); i++) {
+                sb.append(args.get(i).toString());
+                if (i < args.size() - 1) {
+                    sb.append(", ");
+                }
+            }
+        }
+        return sb.toString();
+    }
 }
