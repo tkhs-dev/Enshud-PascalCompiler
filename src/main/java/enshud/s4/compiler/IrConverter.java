@@ -21,12 +21,17 @@ public class IrConverter {
 class IrConverterVisitor implements IAstVisitor<Optional<Temp>> {
     private final SerialManager tempManager;
     private final SerialManager labelManager;
-    private final IrProgram instructions;
+    private IrProgram currentScope;
+    private final IrProgram mainSegment;
+    private final IrProgram functionSegment;
+    private final IrProgram dataSegment;
 
     public IrConverterVisitor() {
         this.tempManager = new SerialManager("t");
         this.labelManager = new SerialManager("L");
-        this.instructions = new IrProgram();
+        this.mainSegment = new IrProgram();
+        this.functionSegment = new IrProgram();
+        this.dataSegment = new IrProgram();
     }
 
     private void visitAll(AstNode node) {
@@ -34,11 +39,12 @@ class IrConverterVisitor implements IAstVisitor<Optional<Temp>> {
     }
 
     public IrProgram getInstructions() {
-        return instructions;
+        return IrProgram.merge(mainSegment, functionSegment, dataSegment);
     }
 
     @Override
     public Optional<Temp> visit(ProgramNode node) {
+        currentScope = mainSegment;
         visitAll(node);
         return Optional.empty();
     }
@@ -60,20 +66,21 @@ class IrConverterVisitor implements IAstVisitor<Optional<Temp>> {
                     node.varNames.stream().map(name -> new DeclArray(name, t.upperBound, t.lowerBound)).toList();
             default -> throw new IllegalStateException("Unexpected value: " + node.varType);
         };
-        instructions.addAll(p);
+        currentScope.addAll(p);
         return Optional.empty();
     }
 
     @Override
     public Optional<Temp> visit(SubProgDeclNode node) {
+        currentScope = functionSegment;
         visitAll(node);
-        instructions.add(new Return());
+        currentScope = mainSegment;
         return Optional.empty();
     }
 
     @Override
     public Optional<Temp> visit(SubProgHeaderNode node) {
-        instructions.add(new Label("FUNC:"+node.name));
+        currentScope.add(new Label("FUNC:"+node.name));
         visitAll(node);
         return Optional.empty();
     }
@@ -89,7 +96,7 @@ class IrConverterVisitor implements IAstVisitor<Optional<Temp>> {
                     node.params.stream().map(name -> new DeclArray(name, t.upperBound, t.lowerBound)).toList();
             default -> throw new IllegalStateException("Unexpected value: " + node.type);
         };
-        instructions.addAll(p);
+        currentScope.addAll(p);
         return Optional.empty();
     }
 
@@ -115,11 +122,11 @@ class IrConverterVisitor implements IAstVisitor<Optional<Temp>> {
         var exprTemp = node.expr.accept(this).get();
         switch (node.var) {
             case StandardVarNode v -> {
-                instructions.add(new Move(Temp.of(v.name), exprTemp));
+                currentScope.add(new Move(Temp.of(v.name), exprTemp));
             }
             case IndexedVarNode v -> {
                 var indexTemp = v.index.accept(this).get();
-                instructions.add(new StoreIndexed(v.name, indexTemp, exprTemp));
+                currentScope.add(new StoreIndexed(v.name, indexTemp, exprTemp));
             }
             default -> throw new IllegalStateException("Unexpected value: " + node.var);
         }
@@ -129,14 +136,14 @@ class IrConverterVisitor implements IAstVisitor<Optional<Temp>> {
     @Override
     public Optional<Temp> visit(CallNode node) {
         var args = node.args.stream().map(arg -> arg.accept(this).get()).toList();
-        instructions.add(new Call("FUNC:"+node.name, args));
+        currentScope.add(new Call("FUNC:"+node.name, args));
         return Optional.empty();
     }
 
     @Override
     public Optional<Temp> visit(WriteNode node) {
         var exprTemp = node.exprs.stream().map(expr -> expr.accept(this).get()).toList();
-        instructions.add(new Writeln(exprTemp));
+        currentScope.add(new Writeln(exprTemp));
         return Optional.empty();
     }
 
@@ -153,19 +160,19 @@ class IrConverterVisitor implements IAstVisitor<Optional<Temp>> {
         var endLabel = labelManager.New();
 
         var condition = node.condition.accept(this).get();
-        instructions.add(new IfJump(condition, thenLabel));
+        currentScope.add(new IfJump(condition, thenLabel));
 
         if(node.elseBranch != null) {
-            instructions.add(Label.of(elseLabel));
+            currentScope.add(Label.of(elseLabel));
             node.elseBranch.accept(this);return Optional.empty();
         }
 
-        instructions.add(new Jump(endLabel));
+        currentScope.add(new Jump(endLabel));
 
-        instructions.add(Label.of(thenLabel));
+        currentScope.add(Label.of(thenLabel));
         node.thenBranch.accept(this);
 
-        instructions.add(Label.of(endLabel));
+        currentScope.add(Label.of(endLabel));
         return Optional.empty();
     }
 
@@ -174,11 +181,11 @@ class IrConverterVisitor implements IAstVisitor<Optional<Temp>> {
         var startLabel = labelManager.New();
         var endLabel = labelManager.New();
 
-        instructions.add(Label.of(startLabel));
+        currentScope.add(Label.of(startLabel));
         var condition = node.condition.accept(this).get();
-        instructions.add(new IfNotJump(condition, endLabel));
+        currentScope.add(new IfNotJump(condition, endLabel));
         node.body.accept(this);
-        instructions.add(Label.of(endLabel));
+        currentScope.add(Label.of(endLabel));
         return Optional.empty();
     }
 
@@ -202,7 +209,7 @@ class IrConverterVisitor implements IAstVisitor<Optional<Temp>> {
             case NEQ ->  BinaryOp.OpType.NEQ;
             case SUB ->  BinaryOp.OpType.SUB;
         };
-        instructions.add(new BinaryOp(op, leftTemp, rightTemp));
+        currentScope.add(new BinaryOp(op, leftTemp, rightTemp));
         return Optional.of(leftTemp);
     }
 
@@ -210,7 +217,7 @@ class IrConverterVisitor implements IAstVisitor<Optional<Temp>> {
     public Optional<Temp> visit(ConstNode node) {
         visitAll(node);
         Temp temp = Temp.of(tempManager.New());
-        instructions.add(new Move(temp, new Const(node.value)));
+        currentScope.add(new Move(temp, new Const(node.value)));
         return Optional.of(temp);
     }
 
@@ -220,19 +227,19 @@ class IrConverterVisitor implements IAstVisitor<Optional<Temp>> {
         switch(node.op) {
             case PLUS -> {
                 Temp temp = Temp.of(tempManager.New());
-                instructions.add(new Move(temp, operandTemp));
+                currentScope.add(new Move(temp, operandTemp));
                 return Optional.of(temp);
             }
             case MINUS -> {
                 Temp temp = Temp.of(tempManager.New());
-                instructions.add(new Move(temp, Const.ZERO));
-                instructions.add(new BinaryOp(BinaryOp.OpType.SUB, temp, operandTemp));
+                currentScope.add(new Move(temp, Const.ZERO));
+                currentScope.add(new BinaryOp(BinaryOp.OpType.SUB, temp, operandTemp));
                 return Optional.of(temp);
             }
             case NOT ->  {
                 Temp temp = Temp.of(tempManager.New());
-                instructions.add(new Move(temp, Const.MASK_16));
-                instructions.add(new BinaryOp(BinaryOp.OpType.XOR, temp, operandTemp));
+                currentScope.add(new Move(temp, Const.MASK_16));
+                currentScope.add(new BinaryOp(BinaryOp.OpType.XOR, temp, operandTemp));
                 return Optional.of(temp);
             }
             default -> throw new IllegalStateException("Unexpected value: " + node.op);
@@ -243,7 +250,7 @@ class IrConverterVisitor implements IAstVisitor<Optional<Temp>> {
     public Optional<Temp> visit(StandardVarNode node) {
         visitAll(node);
         Temp temp = Temp.of(tempManager.New());
-        instructions.add(new Move(temp, Temp.of(node.name)));
+        currentScope.add(new Move(temp, Temp.of(node.name)));
         return Optional.of(temp);
     }
 
@@ -251,7 +258,7 @@ class IrConverterVisitor implements IAstVisitor<Optional<Temp>> {
     public Optional<Temp> visit(IndexedVarNode node) {
         var index = node.index.accept(this).get();
         Temp temp = Temp.of(tempManager.New());
-        instructions.add(new LoadIndexed(temp, node.name, index));
+        currentScope.add(new LoadIndexed(temp, node.name, index));
         return Optional.of(temp);
     }
 }
