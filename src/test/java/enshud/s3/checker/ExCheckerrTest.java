@@ -30,13 +30,13 @@ public class ExCheckerrTest {
 
     @Test
     public void testNormal01() {
-        final String out = new Checker().run("data/ts/normal01.ts");
+        final String out = new Checker().run("data-ex/ts/normal01.ts");
         assertThat(out).isEqualTo("OK");
     }
 
     @Test
     public void testSemerr01() {
-        final String out = new Checker().run("data/ts/semerr01.ts");
-        assertThat(out).isEqualTo("Semantic error: line 8");
+        final String out = new Checker().run("data-ex/ts/semerr01.ts");
+        assertThat(out).isEqualTo("Semantic error: line 9");
     }
 }

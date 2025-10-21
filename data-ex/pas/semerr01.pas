@@ -1,5 +1,6 @@
 program testBasic;
-var i,j,k: integer;test: boolean;
+var i,j,k: integer;
+    test: boolean;
 
 begin
     i := 1;

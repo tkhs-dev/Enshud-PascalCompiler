@@ -1,7 +1,6 @@
 package enshud.s4.compiler;
 
 import enshud.casl.CaslSimulator;
-import enshud.s1.lexer.Lexer;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.MethodOrderer.MethodName;
 import org.junit.jupiter.api.Test;
@@ -55,7 +54,7 @@ public class ExCompilerTest {
 
     @Test
     public void testSemerr01() {
-        final String out = new Compiler().run("data/ts/semerr01.ts", TMP_CAS);
+        final String out = new Compiler().run("data-ex/ts/semerr01.ts", TMP_CAS);
         assertThat(out).isEqualTo("Semantic error: line 8");
     }
 }
