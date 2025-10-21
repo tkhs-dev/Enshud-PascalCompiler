@@ -55,6 +55,24 @@ public class ExLexerTest {
     }
 
     @Test
+    public void testSemerr02() {
+        final String out = new Lexer().run("data-ex/pas/semerr02.pas", TMP_TS);
+        final Path actual = Paths.get(TMP_TS);
+        final Path expected = Paths.get("data-ex/ts/semerr02.ts");
+        assertThat(actual).hasSameTextualContentAs(expected);
+        assertThat(out).isEqualTo("OK");
+    }
+
+    @Test
+    public void testSemerr03() {
+        final String out = new Lexer().run("data-ex/pas/semerr03.pas", TMP_TS);
+        final Path actual = Paths.get(TMP_TS);
+        final Path expected = Paths.get("data-ex/ts/semerr03.ts");
+        assertThat(actual).hasSameTextualContentAs(expected);
+        assertThat(out).isEqualTo("OK");
+    }
+
+    @Test
     public void testInvalidIdentifier() {
         final String nonExistFile = "data-ex/pas/lexerr01.pas";
 

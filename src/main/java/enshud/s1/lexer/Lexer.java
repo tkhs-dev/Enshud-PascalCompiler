@@ -14,9 +14,9 @@ public class Lexer {
 	 */
 	public static void main(final String[] args) {
 		// normalの確認
-		System.out.println(new Lexer().run("data/pas/normal01.pas", "tmp/out1.ts"));
-		System.out.println(new Lexer().run("data/pas/normal02.pas", "tmp/out2.ts"));
-		System.out.println(new Lexer().run("data/pas/normal03.pas", "tmp/out3.ts"));
+		System.out.println(new Lexer().run("data-ex/pas/semerr03.pas", "tmp/out1.ts"));
+//		System.out.println(new Lexer().run("data/pas/normal02.pas", "tmp/out2.ts"));
+//		System.out.println(new Lexer().run("data/pas/normal03.pas", "tmp/out3.ts"));
 	}
 
 	/**

@@ -72,7 +72,7 @@ public class Checker {
 
 class SemanticCheckVisitor implements IAstVisitor<Object> {
     private final Deque<Map<String, Type>> scopes = new ArrayDeque<>();
-    private final Set<String> procedures = new HashSet<>();
+    private final Map<String, SubProgDeclInfo> procedures = new HashMap<>();
 
     private void enterScope() {
         scopes.push(new HashMap<>());
@@ -90,11 +90,11 @@ class SemanticCheckVisitor implements IAstVisitor<Object> {
         currentScope.put(name, type);
     }
 
-    private void declareProcedure(String name, int line) {
-        if (procedures.contains(name)) {
+    private void declareProcedure(String name, List<Type> aparams, int line) {
+        if (procedures.containsKey(name)) {
             throw new SemanticException("Procedure already declared: " + name, line);
         }
-        procedures.add(name);
+        procedures.put(name, new SubProgDeclInfo(aparams));
     }
 
     private Type lookupVariable(String name, int line) {
@@ -149,20 +149,24 @@ class SemanticCheckVisitor implements IAstVisitor<Object> {
 
     @Override
     public Void visit(SubProgHeaderNode node) {
-        declareProcedure(node.name, node.getPosition().startLine);
+        var paramTypes = new ArrayList<Type>();
         for (FormalParamNode param : node.params) {
-            param.accept(this);
+            Type type = (Type) param.accept(this);
+            for (int i = 0; i < param.params.size(); i++) {
+                paramTypes.add(type);
+            }
         }
+        declareProcedure(node.name, paramTypes, node.getPosition().startLine);
         return null;
     }
 
     @Override
-    public Void visit(FormalParamNode node) {
+    public Type visit(FormalParamNode node) {
         Type type = (Type) node.type.accept(this);
         for (String paramName : node.params) {
             declareVariable(paramName, type, node.getPosition().startLine);
         }
-        return null;
+        return type;
     }
 
     @Override
@@ -207,11 +211,19 @@ class SemanticCheckVisitor implements IAstVisitor<Object> {
 
     @Override
     public Void visit(CallNode node) {
-        for (Expr arg : node.args) {
-            arg.accept(this);
-        }
-        if (!procedures.contains(node.name)) {
+        var argTypes = node.args.stream()
+                .map(arg -> (Type) arg.accept(this))
+                .toList();
+        if (!procedures.containsKey(node.name)) {
             throw new SemanticException("Undeclared procedure: " + node.name, node.getPosition().startLine);
+        }
+        if (procedures.get(node.name).paramTypes.size() != node.args.size()) {
+            throw new SemanticException("Argument count mismatch in procedure call: " + node.name, node.getPosition().startLine);
+        }
+        if (!procedures.get(node.name).paramTypes.isEmpty() && !procedures.get(node.name).paramTypes.stream().allMatch(
+                type -> type.equals(argTypes.get(procedures.get(node.name).paramTypes.indexOf(type)))
+        )) {
+            throw new SemanticException("Argument type mismatch in procedure call: " + node.name, node.getPosition().startLine);
         }
         return null;
     }
@@ -263,7 +275,6 @@ class SemanticCheckVisitor implements IAstVisitor<Object> {
 
         if (!left.equals(right)) {
             // 型が異なる場合のエラー処理
-            System.out.println("Type mismatch: " + left + " vs " + right + " at line " + node.getPosition().startLine + " for operator " + node.op);
             throw new SemanticException("Type mismatch", node.getPosition().startLine);
         }
 
@@ -321,6 +332,14 @@ class SemanticCheckVisitor implements IAstVisitor<Object> {
             throw new SemanticException("Variable is not an array: " + node.name, node.getPosition().startLine);
         }
         return ((enshud.pascal.type.ArrayType) arrayType).elementType;
+    }
+
+    class SubProgDeclInfo {
+        public final List<Type> paramTypes;
+
+        public SubProgDeclInfo(List<Type> paramTypes) {
+            this.paramTypes = paramTypes;
+        }
     }
 }
 

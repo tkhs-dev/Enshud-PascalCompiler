@@ -39,4 +39,16 @@ public class ExCheckerrTest {
         final String out = new Checker().run("data-ex/ts/semerr01.ts");
         assertThat(out).isEqualTo("Semantic error: line 9");
     }
+
+    @Test
+    public void testSemerr02() {
+        final String out = new Checker().run("data-ex/ts/semerr02.ts");
+        assertThat(out).isEqualTo("Semantic error: line 15");
+    }
+
+    @Test
+    public void testSemerr03() {
+        final String out = new Checker().run("data-ex/ts/semerr03.ts");
+        assertThat(out).isEqualTo("Semantic error: line 15");
+    }
 }

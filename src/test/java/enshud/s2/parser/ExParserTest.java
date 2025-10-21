@@ -37,7 +37,19 @@ public class ExParserTest {
 
     @Test
     public void testSemerr01() {
-        final String out = new Parser().run("data-ex/ts/semerr.ts");
+        final String out = new Parser().run("data-ex/ts/semerr01.ts");
+        assertThat(out).isEqualTo("OK");
+    }
+
+    @Test
+    public void testSemerr02() {
+        final String out = new Parser().run("data-ex/ts/semerr02.ts");
+        assertThat(out).isEqualTo("OK");
+    }
+
+    @Test
+    public void testSemerr03() {
+        final String out = new Parser().run("data-ex/ts/semerr03.ts");
         assertThat(out).isEqualTo("OK");
     }
 }
