@@ -1,10 +1,9 @@
-package enshud.s4.compiler;
+package enshud.s4.compiler.ir;
 
 import enshud.pascal.ast.IAstVisitor;
 import enshud.pascal.ast.nodes.*;
 import enshud.pascal.ast.nodes.expr.*;
 import enshud.pascal.ast.nodes.stmt.*;
-import enshud.s4.compiler.ir.*;
 import enshud.s4.compiler.ir.operand.Const;
 import enshud.s4.compiler.ir.operand.Temp;
 
@@ -160,7 +159,7 @@ class IrConverterVisitor implements IAstVisitor<Optional<Temp>> {
         var endLabel = labelManager.New();
 
         var condition = node.condition.accept(this).get();
-        currentScope.add(new IfJump(condition, thenLabel));
+        currentScope.add(new Jump(thenLabel, condition, Jump.TYPE_TRUE));
 
         if(node.elseBranch != null) {
             currentScope.add(Label.of(elseLabel));
@@ -183,7 +182,7 @@ class IrConverterVisitor implements IAstVisitor<Optional<Temp>> {
 
         currentScope.add(Label.of(startLabel));
         var condition = node.condition.accept(this).get();
-        currentScope.add(new IfNotJump(condition, endLabel));
+        currentScope.add(new Jump(endLabel, condition, Jump.TYPE_FALSE));
         node.body.accept(this);
         currentScope.add(Label.of(endLabel));
         return Optional.empty();

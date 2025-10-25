@@ -1,10 +1,24 @@
 package enshud.s4.compiler.ir;
 
+import enshud.s4.compiler.ir.operand.Operand;
+
 public class Jump extends Ir {
+    public static final int TYPE_UNCONDITIONAL = 0;
+    public static final int TYPE_TRUE = 1;
+    public static final int TYPE_FALSE = 2;
+
     public final String target;
+    public final Operand condition; // 条件付きジャンプの場合の条件オペランド
+    public final int type;
+
+    public Jump(String target, Operand condition, int type) {
+        this.target = target;
+        this.condition = condition;
+        this.type = type;
+    }
 
     public Jump(String target) {
-        this.target = target;
+        this(target, null, TYPE_UNCONDITIONAL);
     }
 
     @Override

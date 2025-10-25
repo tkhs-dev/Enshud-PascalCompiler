@@ -4,6 +4,7 @@ import enshud.casl.CaslSimulator;
 import enshud.pascal.ast.AstParseException;
 import enshud.pascal.ast.AstParser;
 import enshud.pascal.ast.nodes.AstNode;
+import enshud.s4.compiler.ir.IrConverter;
 import enshud.token.FileFormatException;
 import enshud.token.Token;
 import enshud.token.TokenFile;
