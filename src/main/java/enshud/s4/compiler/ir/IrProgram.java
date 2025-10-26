@@ -1,55 +1,30 @@
 package enshud.s4.compiler.ir;
 
-import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
-import java.util.stream.Stream;
+import java.util.Map;
 
 public class IrProgram {
-    private List<Ir> functions;
+    public final IrFunction main;
+
+    public final Map<String, IrFunction> functions;
+
+    public final IrFunction data;
 
     public IrProgram() {
-        this.functions = new java.util.ArrayList<>();
+        this.main = IrFunction.empty();
+        this.functions = new HashMap<>();
+        this.data = IrFunction.empty();
     }
 
-    public void add(Ir function) {
-        this.functions.add(function);
-    }
-
-    public void addAll(List<? extends Ir> functions) {
-        this.functions.addAll(functions);
-    }
-
-    public List<Ir> getFunctions() {
-        return functions;
-    }
-
-    public void visitAll(IIrVisitor<Void> visitor) {
-        for (Ir function : functions) {
-            function.accept(visitor);
+    public List<Ir> getInstructions() {
+        List<Ir> instructions = new ArrayList<>();
+        instructions.addAll(main.getFunctions());
+        for(IrFunction f : functions.values()) {
+            instructions.addAll(f.getFunctions());
         }
+        instructions.addAll(data.getFunctions());
+        return instructions;
     }
-
-    // 与えられた順番にマージする
-    public static IrProgram merge(IrProgram... programs) {
-        return IrProgram.merge(Arrays.stream(programs));
-    }
-
-    public static IrProgram merge(List<? extends IrProgram> programs) {
-        IrProgram mergedProgram = new IrProgram();
-        for (IrProgram program : programs) {
-            mergedProgram.addAll(program.getFunctions());
-        }
-        return mergedProgram;
-    }
-
-    public static IrProgram merge(Stream<? extends IrProgram> programs) {
-        IrProgram mergedProgram = new IrProgram();
-        programs.forEach(program -> mergedProgram.addAll(program.getFunctions()));
-        return mergedProgram;
-    }
-
-    public static IrProgram empty() {
-        return new IrProgram();
-    }
-
 }

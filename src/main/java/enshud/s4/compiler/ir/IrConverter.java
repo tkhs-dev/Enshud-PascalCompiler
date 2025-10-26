@@ -13,37 +13,33 @@ public class IrConverter {
     public static IrProgram convert(AstNode astProgram) {
         IrConverterVisitor visitor = new IrConverterVisitor();
         astProgram.accept(visitor);
-        return visitor.getInstructions();
+        return visitor.getProgram();
     }
 }
 
 class IrConverterVisitor implements IAstVisitor<Optional<Temp>> {
     private final SerialManager tempManager;
     private final SerialManager labelManager;
-    private IrProgram currentScope;
-    private final IrProgram mainSegment;
-    private final IrProgram functionSegment;
-    private final IrProgram dataSegment;
+    private IrFunction currentScope;
+    private IrProgram program;
 
     public IrConverterVisitor() {
         this.tempManager = new SerialManager("t");
         this.labelManager = new SerialManager("L");
-        this.mainSegment = new IrProgram();
-        this.functionSegment = new IrProgram();
-        this.dataSegment = new IrProgram();
+        this.program = new IrProgram();
     }
 
     private void visitAll(AstNode node) {
         node.getChildren().forEach(child -> child.accept(this));
     }
 
-    public IrProgram getInstructions() {
-        return IrProgram.merge(mainSegment, functionSegment, dataSegment);
+    public IrProgram getProgram() {
+        return program;
     }
 
     @Override
     public Optional<Temp> visit(ProgramNode node) {
-        currentScope = mainSegment;
+        currentScope = program.main;
         visitAll(node);
         return Optional.empty();
     }
@@ -71,9 +67,11 @@ class IrConverterVisitor implements IAstVisitor<Optional<Temp>> {
 
     @Override
     public Optional<Temp> visit(SubProgDeclNode node) {
-        currentScope = functionSegment;
+        IrFunction func = IrFunction.empty();
+        program.functions.put(node.header.name, func);
+        currentScope = func;
         visitAll(node);
-        currentScope = mainSegment;
+        currentScope = program.main;
         return Optional.empty();
     }
 

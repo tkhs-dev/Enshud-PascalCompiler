@@ -73,6 +73,11 @@ public class CaslGenerator extends GeneratorBase<String> {
             }
 
             @Override
+            public String visit(GetArgument getArgument) {
+                return "";
+            }
+
+            @Override
             public String visit(LoadIndexed ir) {
                 return "";
             }

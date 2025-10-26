@@ -20,7 +20,7 @@ public class Compiler {
 	 */
 	public static void main(final String[] args) {
 		// Compilerを実行してcasを生成する
-		System.out.println(new Compiler().run("data/ts/normal15.ts", "tmp/out.cas"));
+		System.out.println(new Compiler().run("data/ts/normal01.ts", "tmp/out.cas"));
 
 		// 上記casを，CASLアセンブラ & COMETシミュレータで実行する
 		CaslSimulator.run("tmp/out.cas", "tmp/out.ans");
@@ -49,7 +49,7 @@ public class Compiler {
             AstParser parser = new AstParser(tokens);
             AstNode ast = parser.parse();
             var prog = IrConverter.convert(ast);
-            prog.getFunctions().forEach(System.out::println);
+            prog.getInstructions().forEach(System.out::println);
             // 構文解析が成功した場合
             return "OK";
         } catch (FileFormatException | IOException e) {
