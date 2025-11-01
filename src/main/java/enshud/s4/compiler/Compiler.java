@@ -4,6 +4,7 @@ import enshud.casl.CaslSimulator;
 import enshud.pascal.ast.AstParseException;
 import enshud.pascal.ast.AstParser;
 import enshud.pascal.ast.nodes.AstNode;
+import enshud.s4.compiler.generator.CaslGenerator;
 import enshud.s4.compiler.ir.IrConverter;
 import enshud.token.FileFormatException;
 import enshud.token.Token;
@@ -50,6 +51,9 @@ public class Compiler {
             AstNode ast = parser.parse();
             var prog = IrConverter.convert(ast);
             prog.getInstructions().forEach(System.out::println);
+			CaslGenerator generator = new CaslGenerator();
+			String caslCode = generator.generate(prog);
+			System.out.println(caslCode);
             // 構文解析が成功した場合
             return "OK";
         } catch (FileFormatException | IOException e) {

@@ -5,14 +5,14 @@ import enshud.s4.compiler.ir.operand.Temp;
 import java.util.Map;
 
 public class Allocation {
-    private Map<String, String> varMap;
+    private Map<String, Location> varMap;
     public Allocation(){
         varMap = new java.util.HashMap<>();
     }
-    public void put(String var, String loc){
+    public void put(String var, Location loc){
         varMap.put(var, loc);
     }
-    public String get(String var){
+    public Location get(String var){
         if(varMap.containsKey(var)){
             return varMap.get(var);
         }else{
@@ -20,7 +20,7 @@ public class Allocation {
         }
     }
 
-    public String get(Temp temp){
+    public Location get(Temp temp){
         return get(temp.toString());
     }
 }
