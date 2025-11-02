@@ -20,6 +20,11 @@ public class Call extends Ir {
     }
 
     @Override
+    public List<Temp> getUsedTemps() {
+        return args;
+    }
+
+    @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("Call: ").append(functionLabel);

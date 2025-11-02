@@ -1,6 +1,9 @@
 package enshud.s4.compiler.ir;
 
 import enshud.s4.compiler.ir.operand.Operand;
+import enshud.s4.compiler.ir.operand.Temp;
+
+import java.util.List;
 
 public class Jump extends Ir {
     public static final int TYPE_UNCONDITIONAL = 0;
@@ -24,6 +27,14 @@ public class Jump extends Ir {
     @Override
     public <T> T accept(IIrVisitor<T> visitor) {
         return visitor.visit(this);
+    }
+
+    @Override
+    public List<Temp> getUsedTemps() {
+        if (condition != null && condition instanceof Temp temp) {
+            return List.of(temp);
+        }
+        return List.of();
     }
 
     @Override

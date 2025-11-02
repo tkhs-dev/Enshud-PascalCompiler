@@ -3,6 +3,9 @@ package enshud.s4.compiler.ir;
 import enshud.s4.compiler.ir.operand.Operand;
 import enshud.s4.compiler.ir.operand.Temp;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class BinaryOp extends Ir {
     public enum OpType {
         ADD, SUB, MUL, DIV, MOD,
@@ -23,6 +26,16 @@ public class BinaryOp extends Ir {
     @Override
     public <T> T accept(IIrVisitor<T> visitor) {
         return visitor.visit(this);
+    }
+
+    @Override
+    public List<Temp> getUsedTemps() {
+        var temps =  new ArrayList<Temp>();
+        temps.add(left);
+        if (right instanceof Temp tempRight) {
+            temps.add(tempRight);
+        }
+        return temps;
     }
 
     @Override

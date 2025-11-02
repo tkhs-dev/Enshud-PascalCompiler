@@ -1,5 +1,9 @@
 package enshud.s4.compiler.ir;
 
+import enshud.s4.compiler.ir.operand.Temp;
+
+import java.util.List;
+
 public class DeclArray extends Ir {
     public final String varName;
     public final int upperBound;
@@ -14,6 +18,11 @@ public class DeclArray extends Ir {
     @Override
     public <T> T accept(IIrVisitor<T> visitor) {
         return visitor.visit(this);
+    }
+
+    @Override
+    public List<Temp> getUsedTemps() {
+        return List.of();
     }
 
     @Override
