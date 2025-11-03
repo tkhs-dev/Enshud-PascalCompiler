@@ -24,6 +24,27 @@ public class Allocation {
         return get(temp.toString());
     }
 
+    public static Allocation merge(Allocation a1, Allocation a2){
+        Allocation merged = new Allocation();
+        for(var entry : a1.varMap.entrySet()){
+            merged.put(entry.getKey(), entry.getValue());
+        }
+        for(var entry : a2.varMap.entrySet()){
+            merged.put(entry.getKey(), entry.getValue());
+        }
+        return merged;
+    }
+
+    public static Allocation merge(java.util.List<Allocation> allocations){
+        Allocation merged = new Allocation();
+        for(var alloc : allocations){
+            for(var entry : alloc.varMap.entrySet()){
+                merged.put(entry.getKey(), entry.getValue());
+            }
+        }
+        return merged;
+    }
+
     @Override
     public String toString(){
         StringBuilder sb = new StringBuilder();

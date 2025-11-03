@@ -11,6 +11,7 @@ import java.util.List;
 
 public class CaslGenerator extends GeneratorBase<String> {
     private static final String REGISTER_OFFSET = "GR7";
+    private static final String REGISTER_TEMP = "GR6";
 
     @Override
     protected void preprocess(IrProgram program) {
@@ -30,14 +31,14 @@ public class CaslGenerator extends GeneratorBase<String> {
         return new IIrVisitor<String>() {
             @Override
             public String visit(Call ir) {
-                List<String> ops = new ArrayList<>();
-                ops.add("RPUSH");
+                InstructionBuilder ib = new InstructionBuilder();
+                ib.add("RPUSH");
                 // 引数をスタックにプッシュ
                 for (Operand arg : ir.args) {
-                    ops.add(format("LPUSH", arg));
+                    ib.add(format("LPUSH", arg));
                 }
-                ops.add(format("CALL", ir.functionLabel));
-                return String.join("\n", ops);
+                ib.add(format("CALL", ir.functionLabel));
+                return ib.build();
             }
 
             @Override
@@ -86,7 +87,11 @@ public class CaslGenerator extends GeneratorBase<String> {
 
             @Override
             public String visit(Move ir) {
-                return format("LD", ir.dest, ir.src);
+                if (ir.src instanceof Const) {
+                    return format("LAD", ir.dest, ir.src);
+                } else {
+                    return format("LD", ir.dest, ir.src);
+                }
             }
 
             @Override
@@ -146,27 +151,43 @@ public class CaslGenerator extends GeneratorBase<String> {
             private String formatT(String instr, Temp temp1, Temp temp2) {
                 Location alloc1 = allocation.get(temp1);
                 Location alloc2 = allocation.get(temp2);
-                if (alloc1 instanceof MemoryLocation){
-                    throw new UnsupportedOperationException("Left operand cannot be in memory: " + temp1);
+                Location originalAlloc1 = alloc1;
+                InstructionBuilder ib = new InstructionBuilder();
+                if (alloc1 instanceof MemoryLocation memLoc1){
+                    if (memLoc1.offset.isEmpty()){
+                        ib.add(String.format("LD %s %s", REGISTER_TEMP, memLoc1.baseAddress));
+                    }else{
+                        ib.add(String.format("LAD %s %d", REGISTER_OFFSET, memLoc1.offset.get()));
+                        ib.add(String.format("LD %s %s %s", REGISTER_TEMP, memLoc1.baseAddress, REGISTER_OFFSET));
+                    }
+                    alloc1 = new RegisterLocation(REGISTER_TEMP);
                 }
                 if (alloc2 instanceof MemoryLocation memLoc2){
                     if (memLoc2.offset.isEmpty()){
-                        return String.format("%s %s %d", instr, ((RegisterLocation) alloc1).registerName, memLoc2.baseAddress);
+                        ib.add(String.format("%s %s %s", instr, ((RegisterLocation) alloc1).registerName, memLoc2.baseAddress));
+                    }else{
+                        ib.add(String.format("%s %s %s %d", instr, ((RegisterLocation) alloc1).registerName, memLoc2.baseAddress, memLoc2.offset.get()));
                     }
-                    return String.format("%s %s %d %s", instr, ((RegisterLocation) alloc1).registerName, memLoc2.baseAddress, memLoc2.offset);
                 }else if (alloc2 instanceof RegisterLocation regLoc2){
-                    return String.format("%s %s %s", instr, ((RegisterLocation) alloc1).registerName, regLoc2.registerName);
+                    ib.add(String.format("%s %s %s", instr, ((RegisterLocation) alloc1).registerName, regLoc2.registerName));
                 }
-                throw new UnsupportedOperationException("Unknown location type for temp: " + temp2);
+                if (originalAlloc1 instanceof MemoryLocation memLoc1){
+                    if (memLoc1.offset.isEmpty()){
+                        ib.add(String.format("ST %s %s", REGISTER_TEMP, memLoc1.baseAddress));
+                    }else{
+                        ib.add(String.format("ST %s %s %s", REGISTER_TEMP, memLoc1.baseAddress, REGISTER_OFFSET));
+                    }
+                }
+                return ib.build();
             }
 
             private String formatT(String instr, Temp temp) {
                 Location alloc = allocation.get(temp);
                 if (alloc instanceof MemoryLocation memLoc){
                     if (memLoc.offset.isEmpty()){
-                        return String.format("%s %d", instr, memLoc.baseAddress);
+                        return String.format("%s %s", instr, memLoc.baseAddress);
                     }
-                    return String.format("%s %d %s", instr, memLoc.baseAddress, memLoc.offset);
+                    return String.format("%s %s %d", instr, memLoc.baseAddress, memLoc.offset.get());
                 }else if (alloc instanceof RegisterLocation regLoc){
                     return String.format("%s %s", instr, regLoc.registerName);
                 }
@@ -177,9 +198,9 @@ public class CaslGenerator extends GeneratorBase<String> {
                 Location alloc = allocation.get(temp);
                 if (alloc instanceof MemoryLocation memLoc){
                     if (memLoc.offset.isEmpty()){
-                        return String.format("%s %d =%s", instr, memLoc.baseAddress, constant.value);
+                        return String.format("%s %s =%s", instr, memLoc.baseAddress, constant.value);
                     }
-                    return String.format("%s %d %s =%s", instr, memLoc.baseAddress, memLoc.offset, constant.value);
+                    return String.format("%s %s %d =%s", instr, memLoc.baseAddress, memLoc.offset.get(), constant.value);
                 }else if (alloc instanceof RegisterLocation regLoc){
                     return String.format("%s %s =%s", instr, regLoc.registerName, constant.value);
                 }
@@ -199,5 +220,21 @@ public class CaslGenerator extends GeneratorBase<String> {
     @Override
     protected String concat(List<String> assemblies) {
         return String.join("\n", assemblies);
+    }
+
+    static class InstructionBuilder {
+        private final List<String> instructions;
+
+        public InstructionBuilder() {
+            this.instructions = new ArrayList<>();
+        }
+
+        public void add(String instruction) {
+            instructions.add(instruction);
+        }
+
+        public String build() {
+            return String.join("\n", instructions);
+        }
     }
 }

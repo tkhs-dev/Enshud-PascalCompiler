@@ -13,26 +13,36 @@ public class LinearAllocator implements IAllocator {
         GR3,
         GR4,
         GR5,
-        GR6,
     }
 
     @Override
     public Allocation allocateVariables(IrProgram program) {
+        var mainAlloc = computeFunction(program.main);
+        var functionAllocs = program.functions.values().stream().map(this::computeFunction).toList();
+        var allAllocs = new ArrayList<Allocation>();
+        allAllocs.add(mainAlloc);
+        allAllocs.addAll(functionAllocs);
+        return Allocation.merge(allAllocs);
+    }
+
+    private Allocation computeFunction(IrFunction function) {
         Allocation allocation = new Allocation();
-        var instructions = program.getInstructions();
+        var instructions = function.getInstructions();
 
-        var in = computeFirstUse(instructions);
-        var out = computeFirstUse(instructions.reversed());
+        var in = getFirstUse(instructions);
+        var out = getFirstUse(instructions.reversed());
 
+        System.out.println("---- Liveness Analysis ----");
         System.out.println(in);
         System.out.println(out);
 
         var registerAllocations = new HashMap<Temp, Register>();
+        String memoryBase = "VAR_AREA_START";
         var memoryOffset = 0;
         for (Ir instruction : instructions) {
             for (Temp temp : in.getOrDefault(instruction, Collections.emptySet())) {
                 if (registerAllocations.size() == Register.values().length) {
-                    allocation.put(temp.name, new MemoryLocation(memoryOffset++));
+                    allocation.put(temp.name, new MemoryLocation(memoryBase, memoryOffset++));
                     continue;
                 }
                 var availableRegisters = new LinkedHashSet<>(Arrays.asList(Register.values()));
@@ -48,7 +58,7 @@ public class LinearAllocator implements IAllocator {
         return allocation;
     }
 
-    private Map<Ir, Set<Temp>> computeFirstUse(List<Ir> instructions) {
+    private Map<Ir, Set<Temp>> getFirstUse(List<Ir> instructions) {
         Map<Ir, Set<Temp>> in = new HashMap<>();
         var alreadyIn = new HashSet<Temp>();
         for (Ir instruction : instructions) {
