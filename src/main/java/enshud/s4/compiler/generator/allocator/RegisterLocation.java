@@ -6,4 +6,9 @@ public class RegisterLocation extends Location {
     public RegisterLocation(String registerName) {
         this.registerName = registerName;
     }
+
+    @Override
+    public String toString() {
+        return "Register(" + registerName + ")";
+    }
 }

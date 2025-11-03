@@ -15,4 +15,10 @@ public class MemoryLocation extends Location {
         this.baseAddress = address;
         this.offset = Optional.empty();
     }
+
+    @Override
+    public String toString() {
+        return offset.map(s -> String.format("[%d + %s]", baseAddress, s))
+                     .orElseGet(() -> String.format("[%d]", baseAddress));
+    }
 }

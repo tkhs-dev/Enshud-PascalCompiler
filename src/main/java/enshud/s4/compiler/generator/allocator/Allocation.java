@@ -23,4 +23,13 @@ public class Allocation {
     public Location get(Temp temp){
         return get(temp.toString());
     }
+
+    @Override
+    public String toString(){
+        StringBuilder sb = new StringBuilder();
+        for(var entry : varMap.entrySet()){
+            sb.append(entry.getKey()).append(" -> ").append(entry.getValue().toString()).append("\n");
+        }
+        return sb.toString();
+    }
 }
