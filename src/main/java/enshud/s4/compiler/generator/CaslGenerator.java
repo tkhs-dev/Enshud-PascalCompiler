@@ -20,11 +20,12 @@ public class CaslGenerator extends GeneratorBase<String> {
 
     @Override
     protected IAllocator getAllocator() {
-        return null;
+        return new LinearAllocator();
     }
 
     @Override
     protected IIrVisitor<String> getConverter(Allocation allocation) {
+        System.out.println(allocation);
         // 無名クラスで実装
         return new IIrVisitor<String>() {
             @Override
@@ -85,11 +86,7 @@ public class CaslGenerator extends GeneratorBase<String> {
 
             @Override
             public String visit(Move ir) {
-                if (ir.src instanceof Const) {
-                    return format("LD", ir.dest, ir.src);
-                } else {
-                    return format("LD", ir.src, ir.dest);
-                }
+                return format("LD", ir.dest, ir.src);
             }
 
             @Override
@@ -177,11 +174,20 @@ public class CaslGenerator extends GeneratorBase<String> {
             }
 
             private String formatC(String instr, Temp temp, Const constant){
-                return String.format("%s %s =%d", instr, temp.name, constant.value);
+                Location alloc = allocation.get(temp);
+                if (alloc instanceof MemoryLocation memLoc){
+                    if (memLoc.offset.isEmpty()){
+                        return String.format("%s %d =%s", instr, memLoc.baseAddress, constant.value);
+                    }
+                    return String.format("%s %d %s =%s", instr, memLoc.baseAddress, memLoc.offset, constant.value);
+                }else if (alloc instanceof RegisterLocation regLoc){
+                    return String.format("%s %s =%s", instr, regLoc.registerName, constant.value);
+                }
+                throw new UnsupportedOperationException("Unknown location type for temp: " + temp);
             }
 
             private String formatC(String instr, Const constant) {
-                return String.format("%s =%d", instr, constant.value);
+                return String.format("%s =%s", instr, constant.value);
             }
 
             private String format(String instr, String label) {
