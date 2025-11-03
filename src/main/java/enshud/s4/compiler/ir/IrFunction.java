@@ -19,7 +19,7 @@ public class IrFunction {
         this.functions.addAll(functions);
     }
 
-    public List<Ir> getFunctions() {
+    public List<Ir> getInstructions() {
         return functions;
     }
 
@@ -37,14 +37,14 @@ public class IrFunction {
     public static IrFunction merge(List<? extends IrFunction> programs) {
         IrFunction mergedProgram = new IrFunction();
         for (IrFunction program : programs) {
-            mergedProgram.addAll(program.getFunctions());
+            mergedProgram.addAll(program.getInstructions());
         }
         return mergedProgram;
     }
 
     public static IrFunction merge(Stream<? extends IrFunction> programs) {
         IrFunction mergedProgram = new IrFunction();
-        programs.forEach(program -> mergedProgram.addAll(program.getFunctions()));
+        programs.forEach(program -> mergedProgram.addAll(program.getInstructions()));
         return mergedProgram;
     }
 

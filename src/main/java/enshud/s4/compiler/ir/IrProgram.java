@@ -20,11 +20,11 @@ public class IrProgram {
 
     public List<Ir> getInstructions() {
         List<Ir> instructions = new ArrayList<>();
-        instructions.addAll(main.getFunctions());
+        instructions.addAll(main.getInstructions());
         for(IrFunction f : functions.values()) {
-            instructions.addAll(f.getFunctions());
+            instructions.addAll(f.getInstructions());
         }
-        instructions.addAll(data.getFunctions());
+        instructions.addAll(data.getInstructions());
         return instructions;
     }
 }
