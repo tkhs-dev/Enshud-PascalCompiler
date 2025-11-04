@@ -1,6 +1,7 @@
 package enshud.s4.compiler.generator;
 
 import enshud.s4.compiler.generator.allocator.*;
+import enshud.s4.compiler.generator.location.*;
 import enshud.s4.compiler.ir.*;
 import enshud.s4.compiler.ir.operand.Const;
 import enshud.s4.compiler.ir.operand.Operand;

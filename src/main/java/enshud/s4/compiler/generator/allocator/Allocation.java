@@ -1,5 +1,6 @@
 package enshud.s4.compiler.generator.allocator;
 
+import enshud.s4.compiler.generator.location.Location;
 import enshud.s4.compiler.ir.operand.Temp;
 
 import java.util.Map;

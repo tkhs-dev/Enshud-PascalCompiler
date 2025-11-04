@@ -1,5 +1,7 @@
 package enshud.s4.compiler.generator.allocator;
 
+import enshud.s4.compiler.generator.location.MemoryLocation;
+import enshud.s4.compiler.generator.location.RegisterLocation;
 import enshud.s4.compiler.ir.*;
 import enshud.s4.compiler.ir.operand.Temp;
 

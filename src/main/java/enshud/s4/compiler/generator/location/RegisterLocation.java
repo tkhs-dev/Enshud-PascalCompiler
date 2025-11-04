@@ -1,4 +1,4 @@
-package enshud.s4.compiler.generator.allocator;
+package enshud.s4.compiler.generator.location;
 
 public class RegisterLocation extends Location {
     public final String registerName;
