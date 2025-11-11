@@ -4,7 +4,7 @@ var v: array[1..100] of integer;
     uv: array[1..20] of integer;
     p: integer;
     pivlin: integer;
-    temp: integer;
+    symbol: integer;
     i: integer;
     j: integer;
     n: integer;
@@ -59,14 +59,14 @@ begin
                 end;
                 if i < j then
                 begin
-                    temp := v[i];
+                    symbol := v[i];
                     v[i] := v[j];
-                    v[j] := temp;
+                    v[j] := symbol;
                 end;
             end;
-            temp := v[i];
+            symbol := v[i];
             v[i] := v[uv[p]];
-            v[uv[p]] := temp;
+            v[uv[p]] := symbol;
             if i-lv[p] < uv[p] - i then
             begin
                 lv[p+1] := lv[p];

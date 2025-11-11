@@ -1,6 +1,6 @@
 package enshud.s4.compiler.ir;
 
-import enshud.s4.compiler.ir.operand.Temp;
+import enshud.s4.compiler.ir.operand.Symbol;
 
 import java.util.List;
 
@@ -19,7 +19,7 @@ public class Labeled extends Ir {
     }
 
     @Override
-    public List<Temp> getUsedTemps() {
+    public List<Symbol> getUsedTemps() {
         return ir.getUsedTemps();
     }
 

@@ -1,17 +1,17 @@
 package enshud.s4.compiler.ir;
 
 import enshud.s4.compiler.ir.operand.Operand;
-import enshud.s4.compiler.ir.operand.Temp;
+import enshud.s4.compiler.ir.operand.Symbol;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class LoadIndexed extends Ir {
-    public final Temp targetVar;
+    public final Symbol targetVar;
     public final String arrayVar;
     public final Operand indexVar;
 
-    public LoadIndexed(Temp targetVar, String arrayVar, Operand indexVar) {
+    public LoadIndexed(Symbol targetVar, String arrayVar, Operand indexVar) {
         this.targetVar = targetVar;
         this.arrayVar = arrayVar;
         this.indexVar = indexVar;
@@ -23,11 +23,11 @@ public class LoadIndexed extends Ir {
     }
 
     @Override
-    public List<Temp> getUsedTemps() {
-        var temps = new ArrayList<Temp>();
+    public List<Symbol> getUsedTemps() {
+        var temps = new ArrayList<Symbol>();
         temps.add(targetVar);
-        if (indexVar instanceof Temp temp) {
-            temps.add(temp);
+        if (indexVar instanceof Symbol symbol) {
+            temps.add(symbol);
         }
         return temps;
     }

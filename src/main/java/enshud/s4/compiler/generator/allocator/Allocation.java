@@ -1,7 +1,7 @@
 package enshud.s4.compiler.generator.allocator;
 
 import enshud.s4.compiler.generator.location.Location;
-import enshud.s4.compiler.ir.operand.Temp;
+import enshud.s4.compiler.ir.operand.Symbol;
 
 import java.util.Map;
 
@@ -21,8 +21,8 @@ public class Allocation {
         }
     }
 
-    public Location get(Temp temp){
-        return get(temp.toString());
+    public Location get(Symbol symbol){
+        return get(symbol.toString());
     }
 
     public static Allocation merge(Allocation a1, Allocation a2){

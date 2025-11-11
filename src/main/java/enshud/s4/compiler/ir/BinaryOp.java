@@ -1,7 +1,7 @@
 package enshud.s4.compiler.ir;
 
 import enshud.s4.compiler.ir.operand.Operand;
-import enshud.s4.compiler.ir.operand.Temp;
+import enshud.s4.compiler.ir.operand.Symbol;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,10 +14,10 @@ public class BinaryOp extends Ir {
     }
 
     public final OpType opType;
-    public final Temp left;
+    public final Symbol left;
     public final Operand right;
 
-    public BinaryOp(OpType opType, Temp left, Operand right) {
+    public BinaryOp(OpType opType, Symbol left, Operand right) {
         this.opType = opType;
         this.left = left;
         this.right = right;
@@ -29,11 +29,11 @@ public class BinaryOp extends Ir {
     }
 
     @Override
-    public List<Temp> getUsedTemps() {
-        var temps =  new ArrayList<Temp>();
+    public List<Symbol> getUsedTemps() {
+        var temps =  new ArrayList<Symbol>();
         temps.add(left);
-        if (right instanceof Temp tempRight) {
-            temps.add(tempRight);
+        if (right instanceof Symbol symbolRight) {
+            temps.add(symbolRight);
         }
         return temps;
     }

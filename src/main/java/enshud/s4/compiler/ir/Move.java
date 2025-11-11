@@ -1,16 +1,16 @@
 package enshud.s4.compiler.ir;
 
 import enshud.s4.compiler.ir.operand.Operand;
-import enshud.s4.compiler.ir.operand.Temp;
+import enshud.s4.compiler.ir.operand.Symbol;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class Move extends Ir {
-    public final Temp dest;
+    public final Symbol dest;
     public final Operand src;
 
-    public Move(Temp dest, Operand src) {
+    public Move(Symbol dest, Operand src) {
         this.dest = dest;
         this.src = src;
     }
@@ -21,11 +21,11 @@ public class Move extends Ir {
     }
 
     @Override
-    public List<Temp> getUsedTemps() {
-        var temps = new ArrayList<Temp>();
+    public List<Symbol> getUsedTemps() {
+        var temps = new ArrayList<Symbol>();
         temps.add(dest);
-        if (src instanceof Temp srcTemp) {
-            temps.add(srcTemp);
+        if (src instanceof Symbol srcSymbol) {
+            temps.add(srcSymbol);
         }
         return temps;
     }

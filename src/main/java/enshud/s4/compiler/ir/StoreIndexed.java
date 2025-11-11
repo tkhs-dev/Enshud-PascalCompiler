@@ -1,7 +1,7 @@
 package enshud.s4.compiler.ir;
 
 import enshud.s4.compiler.ir.operand.Operand;
-import enshud.s4.compiler.ir.operand.Temp;
+import enshud.s4.compiler.ir.operand.Symbol;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,15 +23,15 @@ public class StoreIndexed extends Ir {
     }
 
     @Override
-    public List<Temp> getUsedTemps() {
-        List<Temp> temps = new ArrayList<>();
-        if (index instanceof Temp idxTemp) {
-            temps.add(idxTemp);
+    public List<Symbol> getUsedTemps() {
+        List<Symbol> symbols = new ArrayList<>();
+        if (index instanceof Symbol idxSymbol) {
+            symbols.add(idxSymbol);
         }
-        if (value instanceof Temp valTemp) {
-            temps.add(valTemp);
+        if (value instanceof Symbol valSymbol) {
+            symbols.add(valSymbol);
         }
-        return temps;
+        return symbols;
     }
 
     @Override

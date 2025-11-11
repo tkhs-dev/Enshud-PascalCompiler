@@ -1,7 +1,7 @@
 package enshud.s4.compiler.ir;
 
 import enshud.s4.compiler.ir.operand.Operand;
-import enshud.s4.compiler.ir.operand.Temp;
+import enshud.s4.compiler.ir.operand.Symbol;
 
 import java.util.List;
 
@@ -17,8 +17,8 @@ public class Writeln extends Ir {
     }
 
     @Override
-    public List<Temp> getUsedTemps() {
-        return operands.stream().filter(x -> x instanceof Temp).map(x -> (Temp)x).toList();
+    public List<Symbol> getUsedTemps() {
+        return operands.stream().filter(x -> x instanceof Symbol).map(x -> (Symbol)x).toList();
     }
 
     @Override

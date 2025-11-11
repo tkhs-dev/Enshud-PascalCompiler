@@ -1,11 +1,15 @@
 package enshud.s4.compiler.generator;
 
-import enshud.s4.compiler.generator.allocator.*;
-import enshud.s4.compiler.generator.location.*;
+import enshud.s4.compiler.generator.allocator.Allocation;
+import enshud.s4.compiler.generator.allocator.IAllocator;
+import enshud.s4.compiler.generator.allocator.LinearAllocator;
+import enshud.s4.compiler.generator.location.Location;
+import enshud.s4.compiler.generator.location.MemoryLocation;
+import enshud.s4.compiler.generator.location.RegisterLocation;
 import enshud.s4.compiler.ir.*;
 import enshud.s4.compiler.ir.operand.Const;
 import enshud.s4.compiler.ir.operand.Operand;
-import enshud.s4.compiler.ir.operand.Temp;
+import enshud.s4.compiler.ir.operand.Symbol;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -135,9 +139,9 @@ public class CaslGenerator extends GeneratorBase<String> {
                     throw new UnsupportedOperationException("Left operand cannot be a constant: " + op1);
                 }
                 if (op2 instanceof Const) {
-                    return formatC(instr, (Temp) op1, (Const) op2);
+                    return formatC(instr, (Symbol) op1, (Const) op2);
                 } else {
-                    return formatT(instr, (Temp) op1, (Temp) op2);
+                    return formatT(instr, (Symbol) op1, (Symbol) op2);
                 }
             }
 
@@ -145,13 +149,13 @@ public class CaslGenerator extends GeneratorBase<String> {
                 if (op instanceof Const) {
                     return formatC(instr, (Const) op);
                 } else {
-                    return formatT(instr, (Temp) op);
+                    return formatT(instr, (Symbol) op);
                 }
             }
 
-            private String formatT(String instr, Temp temp1, Temp temp2) {
-                Location alloc1 = allocation.get(temp1);
-                Location alloc2 = allocation.get(temp2);
+            private String formatT(String instr, Symbol symbol1, Symbol symbol2) {
+                Location alloc1 = allocation.get(symbol1);
+                Location alloc2 = allocation.get(symbol2);
                 Location originalAlloc1 = alloc1;
                 InstructionBuilder ib = new InstructionBuilder();
                 if (alloc1 instanceof MemoryLocation memLoc1){
@@ -182,8 +186,8 @@ public class CaslGenerator extends GeneratorBase<String> {
                 return ib.build();
             }
 
-            private String formatT(String instr, Temp temp) {
-                Location alloc = allocation.get(temp);
+            private String formatT(String instr, Symbol symbol) {
+                Location alloc = allocation.get(symbol);
                 if (alloc instanceof MemoryLocation memLoc){
                     if (memLoc.offset.isEmpty()){
                         return String.format("%s %s", instr, memLoc.baseAddress);
@@ -192,11 +196,11 @@ public class CaslGenerator extends GeneratorBase<String> {
                 }else if (alloc instanceof RegisterLocation regLoc){
                     return String.format("%s %s", instr, regLoc.registerName);
                 }
-                throw new UnsupportedOperationException("Unknown location type for temp: " + temp);
+                throw new UnsupportedOperationException("Unknown location type for temp: " + symbol);
             }
 
-            private String formatC(String instr, Temp temp, Const constant){
-                Location alloc = allocation.get(temp);
+            private String formatC(String instr, Symbol symbol, Const constant){
+                Location alloc = allocation.get(symbol);
                 if (alloc instanceof MemoryLocation memLoc){
                     if (memLoc.offset.isEmpty()){
                         return String.format("%s %s =%s", instr, memLoc.baseAddress, constant.value);
@@ -205,7 +209,7 @@ public class CaslGenerator extends GeneratorBase<String> {
                 }else if (alloc instanceof RegisterLocation regLoc){
                     return String.format("%s %s =%s", instr, regLoc.registerName, constant.value);
                 }
-                throw new UnsupportedOperationException("Unknown location type for temp: " + temp);
+                throw new UnsupportedOperationException("Unknown location type for temp: " + symbol);
             }
 
             private String formatC(String instr, Const constant) {

@@ -1,13 +1,13 @@
 package enshud.s4.compiler.ir;
 
-import enshud.s4.compiler.ir.operand.Temp;
+import enshud.s4.compiler.ir.operand.Symbol;
 
 import java.util.List;
 
 public class GetArgument extends Ir {
-    public final Temp arg;
+    public final Symbol arg;
 
-    public GetArgument(Temp arg) {
+    public GetArgument(Symbol arg) {
         this.arg = arg;
     }
 
@@ -17,7 +17,7 @@ public class GetArgument extends Ir {
     }
 
     @Override
-    public List<Temp> getUsedTemps() {
+    public List<Symbol> getUsedTemps() {
         return List.of(arg);
     }
 
