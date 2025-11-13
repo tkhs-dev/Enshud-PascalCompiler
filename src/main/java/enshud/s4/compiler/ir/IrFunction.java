@@ -51,5 +51,4 @@ public class IrFunction {
     public static IrFunction empty() {
         return new IrFunction();
     }
-
 }

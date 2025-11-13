@@ -20,7 +20,7 @@ public class Call extends Ir {
     }
 
     @Override
-    public List<Symbol> getUsedTemps() {
+    public List<? extends Symbol> getUsedSymbols() {
         return args;
     }
 

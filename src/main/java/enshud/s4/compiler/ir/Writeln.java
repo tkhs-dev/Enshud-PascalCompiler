@@ -17,7 +17,7 @@ public class Writeln extends Ir {
     }
 
     @Override
-    public List<Symbol> getUsedTemps() {
+    public List<? extends Symbol> getUsedSymbols() {
         return operands.stream().filter(x -> x instanceof Symbol).map(x -> (Symbol)x).toList();
     }
 

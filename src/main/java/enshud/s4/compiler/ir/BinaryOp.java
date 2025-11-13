@@ -29,7 +29,7 @@ public class BinaryOp extends Ir {
     }
 
     @Override
-    public List<Symbol> getUsedTemps() {
+    public List<? extends Symbol> getUsedSymbols() {
         var temps =  new ArrayList<Symbol>();
         temps.add(left);
         if (right instanceof Symbol symbolRight) {

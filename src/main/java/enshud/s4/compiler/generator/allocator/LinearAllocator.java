@@ -2,10 +2,12 @@ package enshud.s4.compiler.generator.allocator;
 
 import enshud.s4.compiler.generator.location.MemoryLocation;
 import enshud.s4.compiler.generator.location.RegisterLocation;
+import enshud.s4.compiler.generator.location.StackLocation;
 import enshud.s4.compiler.ir.Ir;
 import enshud.s4.compiler.ir.IrFunction;
 import enshud.s4.compiler.ir.IrProgram;
 import enshud.s4.compiler.ir.operand.Symbol;
+import enshud.s4.compiler.ir.operand.Temp;
 
 import java.util.*;
 
@@ -45,15 +47,20 @@ public class LinearAllocator implements IAllocator {
         var memoryOffset = 0;
         for (Ir instruction : instructions) {
             for (Symbol symbol : in.getOrDefault(instruction, Collections.emptySet())) {
-                if (registerAllocations.size() == Register.values().length) {
-                    allocation.put(symbol.name, new MemoryLocation(memoryBase, memoryOffset++));
-                    continue;
+                if(symbol instanceof Temp){
+                    if (registerAllocations.size() == Register.values().length) {
+                        allocation.put(symbol.name, new MemoryLocation(memoryBase, memoryOffset++));
+                        continue;
+                    }
+                    var availableRegisters = new LinkedHashSet<>(Arrays.asList(Register.values()));
+                    availableRegisters.removeAll(registerAllocations.values());
+                    var assignedRegister = availableRegisters.getFirst();
+                    registerAllocations.put(symbol, assignedRegister);
+                    allocation.put(symbol.name, new RegisterLocation(assignedRegister.name()));
+                }else{
+                    allocation.put(symbol.name, new StackLocation(0, 0));
                 }
-                var availableRegisters = new LinkedHashSet<>(Arrays.asList(Register.values()));
-                availableRegisters.removeAll(registerAllocations.values());
-                var assignedRegister = availableRegisters.getFirst();
-                registerAllocations.put(symbol, assignedRegister);
-                allocation.put(symbol.name, new RegisterLocation(assignedRegister.name()));
+
             }
             for (Symbol symbol : out.getOrDefault(instruction, Collections.emptySet())) {
                 registerAllocations.remove(symbol);
@@ -66,7 +73,7 @@ public class LinearAllocator implements IAllocator {
         Map<Ir, Set<Symbol>> in = new HashMap<>();
         var alreadyIn = new HashSet<Symbol>();
         for (Ir instruction : instructions) {
-            var usedTemps = instruction.getUsedTemps();
+            var usedTemps = instruction.getUsedSymbols();
             for (Symbol symbol : usedTemps) {
                 if (!alreadyIn.contains(symbol)) {
                     if (!in.containsKey(instruction)) {

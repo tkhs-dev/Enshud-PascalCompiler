@@ -21,7 +21,7 @@ public class DeclArray extends Ir {
     }
 
     @Override
-    public List<Symbol> getUsedTemps() {
+    public List<? extends Symbol> getUsedSymbols() {
         return List.of();
     }
 

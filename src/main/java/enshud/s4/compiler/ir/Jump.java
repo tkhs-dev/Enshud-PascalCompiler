@@ -30,7 +30,7 @@ public class Jump extends Ir {
     }
 
     @Override
-    public List<Symbol> getUsedTemps() {
+    public List<? extends Symbol> getUsedSymbols() {
         if (condition != null && condition instanceof Symbol symbol) {
             return List.of(symbol);
         }

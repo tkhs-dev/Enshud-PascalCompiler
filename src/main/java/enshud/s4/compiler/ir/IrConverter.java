@@ -121,11 +121,11 @@ class IrConverterVisitor implements IAstVisitor<Optional<Symbol>> {
         var exprTemp = node.expr.accept(this).get();
         switch (node.var) {
             case StandardVarNode v -> {
-                currentScope.add(new Move(Variable.of(v.name), exprTemp));
+                currentScope.add(new Store(Variable.of(v.name), exprTemp));
             }
             case IndexedVarNode v -> {
                 var indexTemp = v.index.accept(this).get();
-                currentScope.add(new StoreIndexed(v.name, indexTemp, exprTemp));
+                currentScope.add(new StoreIndexed(Variable.of(v.name), indexTemp, exprTemp));
             }
             default -> throw new IllegalStateException("Unexpected value: " + node.var);
         }
@@ -249,7 +249,7 @@ class IrConverterVisitor implements IAstVisitor<Optional<Symbol>> {
     public Optional<Symbol> visit(StandardVarNode node) {
         visitAll(node);
         Temp temp = Temp.of(tempManager.New());
-        currentScope.add(new Move(temp, Variable.of(node.name)));
+        currentScope.add(new Load(temp, Variable.of(node.name)));
         return Optional.of(temp);
     }
 
@@ -257,7 +257,7 @@ class IrConverterVisitor implements IAstVisitor<Optional<Symbol>> {
     public Optional<Symbol> visit(IndexedVarNode node) {
         var index = node.index.accept(this).get();
         Temp temp = Temp.of(tempManager.New());
-        currentScope.add(new LoadIndexed(temp, node.name, index));
+        currentScope.add(new LoadIndexed(temp, Variable.of(node.name), index));
         return Optional.of(temp);
     }
 }

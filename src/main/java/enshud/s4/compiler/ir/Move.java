@@ -21,7 +21,7 @@ public class Move extends Ir {
     }
 
     @Override
-    public List<Symbol> getUsedTemps() {
+    public List<? extends Symbol> getUsedSymbols() {
         var temps = new ArrayList<Symbol>();
         temps.add(dest);
         if (src instanceof Symbol srcSymbol) {

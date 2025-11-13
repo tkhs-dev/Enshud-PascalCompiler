@@ -21,7 +21,7 @@ public class Compiler {
 	 */
 	public static void main(final String[] args) {
 		// Compilerを実行してcasを生成する
-		System.out.println(new Compiler().run("data/ts/normal01.ts", "tmp/out.cas"));
+		System.out.println(new Compiler().run("data/ts/normal12.ts", "tmp/out.cas"));
 
 		// 上記casを，CASLアセンブラ & COMETシミュレータで実行する
 		CaslSimulator.run("tmp/out.cas", "tmp/out.ans");
@@ -50,7 +50,9 @@ public class Compiler {
             AstParser parser = new AstParser(tokens);
             AstNode ast = parser.parse();
             var prog = IrConverter.convert(ast);
+            System.out.println("---- IR Code ----");
             prog.getInstructions().forEach(System.out::println);
+            System.out.println("---- CASL II Code ----");
 			CaslGenerator generator = new CaslGenerator();
 			String caslCode = generator.generate(prog);
 			System.out.println(caslCode);

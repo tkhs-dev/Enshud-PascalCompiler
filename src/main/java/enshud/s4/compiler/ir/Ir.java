@@ -6,5 +6,5 @@ import java.util.List;
 
 public abstract class Ir {
     public abstract <T> T accept(IIrVisitor<T> visitor);
-    public abstract List<Symbol> getUsedTemps();
+    public abstract List<? extends Symbol> getUsedSymbols();
 }

@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class CaslGenerator extends GeneratorBase<String> {
+    private static final String SP = "GR8";
     private static final String REGISTER_OFFSET = "GR7";
     private static final String REGISTER_TEMP = "GR6";
 
@@ -72,7 +73,7 @@ public class CaslGenerator extends GeneratorBase<String> {
 
             @Override
             public String visit(Label ir) {
-                return "%s\tNOP";
+                return String.format("%s\tNOP", ir.name);
             }
 
             @Override
@@ -82,6 +83,20 @@ public class CaslGenerator extends GeneratorBase<String> {
 
             @Override
             public String visit(GetArgument getArgument) {
+                return "";
+            }
+
+            @Override
+            public String visit(Load load) {
+                Location destAlloc = allocation.get(load.targetVar);
+                Location varAlloc = allocation.get(load.var);
+                InstructionBuilder ib = new InstructionBuilder();
+                ib.add(String.format("LAD %s %s", REGISTER_OFFSET, load.var));
+                return ib.build();
+            }
+
+            @Override
+            public String visit(Store store) {
                 return "";
             }
 
@@ -159,25 +174,25 @@ public class CaslGenerator extends GeneratorBase<String> {
                 Location originalAlloc1 = alloc1;
                 InstructionBuilder ib = new InstructionBuilder();
                 if (alloc1 instanceof MemoryLocation memLoc1){
-                    if (memLoc1.offset.isEmpty()){
+                    if (memLoc1.offset == 0){
                         ib.add(String.format("LD %s %s", REGISTER_TEMP, memLoc1.baseAddress));
                     }else{
-                        ib.add(String.format("LAD %s %d", REGISTER_OFFSET, memLoc1.offset.get()));
+                        ib.add(String.format("LAD %s =%d", REGISTER_OFFSET, memLoc1.offset));
                         ib.add(String.format("LD %s %s %s", REGISTER_TEMP, memLoc1.baseAddress, REGISTER_OFFSET));
                     }
                     alloc1 = new RegisterLocation(REGISTER_TEMP);
                 }
                 if (alloc2 instanceof MemoryLocation memLoc2){
-                    if (memLoc2.offset.isEmpty()){
+                    if (memLoc2.offset == 0){
                         ib.add(String.format("%s %s %s", instr, ((RegisterLocation) alloc1).registerName, memLoc2.baseAddress));
                     }else{
-                        ib.add(String.format("%s %s %s %d", instr, ((RegisterLocation) alloc1).registerName, memLoc2.baseAddress, memLoc2.offset.get()));
+                        ib.add(String.format("%s %s %s %d", instr, ((RegisterLocation) alloc1).registerName, memLoc2.baseAddress, memLoc2.offset));
                     }
                 }else if (alloc2 instanceof RegisterLocation regLoc2){
                     ib.add(String.format("%s %s %s", instr, ((RegisterLocation) alloc1).registerName, regLoc2.registerName));
                 }
                 if (originalAlloc1 instanceof MemoryLocation memLoc1){
-                    if (memLoc1.offset.isEmpty()){
+                    if (memLoc1.offset == 0){
                         ib.add(String.format("ST %s %s", REGISTER_TEMP, memLoc1.baseAddress));
                     }else{
                         ib.add(String.format("ST %s %s %s", REGISTER_TEMP, memLoc1.baseAddress, REGISTER_OFFSET));
@@ -189,10 +204,10 @@ public class CaslGenerator extends GeneratorBase<String> {
             private String formatT(String instr, Symbol symbol) {
                 Location alloc = allocation.get(symbol);
                 if (alloc instanceof MemoryLocation memLoc){
-                    if (memLoc.offset.isEmpty()){
+                    if (memLoc.offset == 0){
                         return String.format("%s %s", instr, memLoc.baseAddress);
                     }
-                    return String.format("%s %s %d", instr, memLoc.baseAddress, memLoc.offset.get());
+                    return String.format("%s %s %d", instr, memLoc.baseAddress, memLoc.offset);
                 }else if (alloc instanceof RegisterLocation regLoc){
                     return String.format("%s %s", instr, regLoc.registerName);
                 }
@@ -202,10 +217,10 @@ public class CaslGenerator extends GeneratorBase<String> {
             private String formatC(String instr, Symbol symbol, Const constant){
                 Location alloc = allocation.get(symbol);
                 if (alloc instanceof MemoryLocation memLoc){
-                    if (memLoc.offset.isEmpty()){
+                    if (memLoc.offset == 0){
                         return String.format("%s %s =%s", instr, memLoc.baseAddress, constant.value);
                     }
-                    return String.format("%s %s %d =%s", instr, memLoc.baseAddress, memLoc.offset.get(), constant.value);
+                    return String.format("%s %s %d =%s", instr, memLoc.baseAddress, memLoc.offset, constant.value);
                 }else if (alloc instanceof RegisterLocation regLoc){
                     return String.format("%s %s =%s", instr, regLoc.registerName, constant.value);
                 }

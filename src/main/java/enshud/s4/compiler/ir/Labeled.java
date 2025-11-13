@@ -19,8 +19,8 @@ public class Labeled extends Ir {
     }
 
     @Override
-    public List<Symbol> getUsedTemps() {
-        return ir.getUsedTemps();
+    public List<? extends Symbol> getUsedSymbols() {
+        return ir.getUsedSymbols();
     }
 
     @Override
