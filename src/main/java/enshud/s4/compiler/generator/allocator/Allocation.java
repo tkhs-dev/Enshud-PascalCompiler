@@ -7,8 +7,11 @@ import java.util.Map;
 
 public class Allocation {
     private Map<String, Location> varMap;
+    private Map<String, Integer> frameMap;
+
     public Allocation(){
         varMap = new java.util.HashMap<>();
+        frameMap = new java.util.HashMap<>();
     }
     public void put(String var, Location loc){
         varMap.put(var, loc);
@@ -25,13 +28,42 @@ public class Allocation {
         return get(symbol.toString());
     }
 
+    public void setFrameSize(String funcName, int size){
+        frameMap.put(funcName, size);
+    }
+
+    public int increaseFrameSize(String funcName, int inc){
+        if(frameMap.containsKey(funcName)){
+            int newSize = frameMap.get(funcName) + inc;
+            frameMap.put(funcName, newSize);
+            return newSize;
+        }else{
+            frameMap.put(funcName, inc);
+            return inc;
+        }
+    }
+
+    public int getFrameSize(String funcName){
+        if(frameMap.containsKey(funcName)){
+            return frameMap.get(funcName);
+        }else{
+            throw new RuntimeException("Function frame size not set: " + funcName);
+        }
+    }
+
     public static Allocation merge(Allocation a1, Allocation a2){
         Allocation merged = new Allocation();
         for(var entry : a1.varMap.entrySet()){
             merged.put(entry.getKey(), entry.getValue());
         }
+        for(var entry : a1.frameMap.entrySet()){
+            merged.setFrameSize(entry.getKey(), entry.getValue());
+        }
         for(var entry : a2.varMap.entrySet()){
             merged.put(entry.getKey(), entry.getValue());
+        }
+        for(var entry : a2.frameMap.entrySet()){
+            merged.setFrameSize(entry.getKey(), entry.getValue());
         }
         return merged;
     }
@@ -41,6 +73,11 @@ public class Allocation {
         for(var alloc : allocations){
             for(var entry : alloc.varMap.entrySet()){
                 merged.put(entry.getKey(), entry.getValue());
+            }
+        }
+        for(var alloc : allocations){
+            for(var entry : alloc.frameMap.entrySet()){
+                merged.setFrameSize(entry.getKey(), entry.getValue());
             }
         }
         return merged;

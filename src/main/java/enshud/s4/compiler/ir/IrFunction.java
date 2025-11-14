@@ -1,14 +1,14 @@
 package enshud.s4.compiler.ir;
 
-import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Stream;
 
 public class IrFunction {
     private List<Ir> functions;
+    public final String name;
 
-    public IrFunction() {
+    public IrFunction(String name) {
         this.functions = new java.util.ArrayList<>();
+        this.name = name;
     }
 
     public void add(Ir function) {
@@ -29,26 +29,7 @@ public class IrFunction {
         }
     }
 
-    // 与えられた順番にマージする
-    public static IrFunction merge(IrFunction... programs) {
-        return IrFunction.merge(Arrays.stream(programs));
-    }
-
-    public static IrFunction merge(List<? extends IrFunction> programs) {
-        IrFunction mergedProgram = new IrFunction();
-        for (IrFunction program : programs) {
-            mergedProgram.addAll(program.getInstructions());
-        }
-        return mergedProgram;
-    }
-
-    public static IrFunction merge(Stream<? extends IrFunction> programs) {
-        IrFunction mergedProgram = new IrFunction();
-        programs.forEach(program -> mergedProgram.addAll(program.getInstructions()));
-        return mergedProgram;
-    }
-
-    public static IrFunction empty() {
-        return new IrFunction();
+    public static IrFunction empty(String name) {
+        return new IrFunction(name);
     }
 }

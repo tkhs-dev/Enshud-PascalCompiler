@@ -69,7 +69,7 @@ class IrConverterVisitor implements IAstVisitor<Optional<Symbol>> {
 
     @Override
     public Optional<Symbol> visit(SubProgDeclNode node) {
-        IrFunction func = IrFunction.empty();
+        IrFunction func = IrFunction.empty("FUNC-" + node.header.name);
         program.functions.put(node.header.name, func);
         currentScope = func;
         visitAll(node);

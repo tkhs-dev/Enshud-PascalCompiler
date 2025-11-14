@@ -3,9 +3,7 @@ package enshud.s4.compiler.generator.allocator;
 import enshud.s4.compiler.generator.location.MemoryLocation;
 import enshud.s4.compiler.generator.location.RegisterLocation;
 import enshud.s4.compiler.generator.location.StackLocation;
-import enshud.s4.compiler.ir.Ir;
-import enshud.s4.compiler.ir.IrFunction;
-import enshud.s4.compiler.ir.IrProgram;
+import enshud.s4.compiler.ir.*;
 import enshud.s4.compiler.ir.operand.Symbol;
 import enshud.s4.compiler.ir.operand.Temp;
 
@@ -38,13 +36,17 @@ public class LinearAllocator implements IAllocator {
         var in = getFirstUse(instructions);
         var out = getFirstUse(instructions.reversed());
 
+        String memoryBase = "VAR_AREA_START";
+        var memoryOffset = 0;
+        var frameOffset = 0;
+
+        var offsetMap = new HashMap<String, Integer>();
+
         System.out.println("---- Liveness Analysis ----");
         System.out.println(in);
         System.out.println(out);
 
         var registerAllocations = new HashMap<Symbol, Register>();
-        String memoryBase = "VAR_AREA_START";
-        var memoryOffset = 0;
         for (Ir instruction : instructions) {
             for (Symbol symbol : in.getOrDefault(instruction, Collections.emptySet())) {
                 if(symbol instanceof Temp){
@@ -58,12 +60,22 @@ public class LinearAllocator implements IAllocator {
                     registerAllocations.put(symbol, assignedRegister);
                     allocation.put(symbol.name, new RegisterLocation(assignedRegister.name()));
                 }else{
-                    allocation.put(symbol.name, new StackLocation(0, 0));
+                    allocation.put(symbol.name, new StackLocation(offsetMap.get(symbol.name), 0));
                 }
 
             }
             for (Symbol symbol : out.getOrDefault(instruction, Collections.emptySet())) {
                 registerAllocations.remove(symbol);
+            }
+            if(instruction instanceof Decl decl){
+                allocation.setFrameSize(function.name, frameOffset);
+                offsetMap.put(decl.varName, frameOffset);
+                frameOffset += 1;
+            }
+            if(instruction instanceof DeclArray declArray){
+                allocation.setFrameSize(function.name, frameOffset);
+                offsetMap.put(declArray.varName, frameOffset);
+                frameOffset += declArray.upperBound - declArray.lowerBound + 1;
             }
         }
         return allocation;
