@@ -4,6 +4,7 @@ import enshud.casl.CaslSimulator;
 import enshud.pascal.ast.AstParseException;
 import enshud.pascal.ast.AstParser;
 import enshud.pascal.ast.nodes.AstNode;
+import enshud.s3.checker.SemanticCheckVisitor;
 import enshud.s4.compiler.generator.CaslGenerator;
 import enshud.s4.compiler.ir.IrConverter;
 import enshud.token.FileFormatException;
@@ -49,6 +50,8 @@ public class Compiler {
             List<Token> tokens = tf.getTokens();
             AstParser parser = new AstParser(tokens);
             AstNode ast = parser.parse();
+            SemanticCheckVisitor visitor = new SemanticCheckVisitor();
+            ast.accept(visitor);
             var prog = IrConverter.convert(ast);
             System.out.println("---- IR Code ----");
             prog.getInstructions().forEach(System.out::println);

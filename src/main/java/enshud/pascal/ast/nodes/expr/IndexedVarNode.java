@@ -6,7 +6,7 @@ import enshud.pascal.ast.nodes.AstNode;
 import java.util.List;
 
 public class IndexedVarNode extends VarNode {
-    public final String name;
+    public String name;
     public final Expr index;
 
     public IndexedVarNode(Position position, String name, Expr index) {

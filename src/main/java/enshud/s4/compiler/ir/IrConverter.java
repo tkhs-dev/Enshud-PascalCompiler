@@ -8,6 +8,7 @@ import enshud.s4.compiler.ir.operand.Const;
 import enshud.s4.compiler.ir.operand.Symbol;
 import enshud.s4.compiler.ir.operand.Temp;
 import enshud.s4.compiler.ir.operand.Variable;
+import enshud.util.SerialManager;
 
 import java.util.Optional;
 
@@ -262,17 +263,3 @@ class IrConverterVisitor implements IAstVisitor<Optional<Symbol>> {
     }
 }
 
-class SerialManager {
-    private int counter;
-    private final String prefix;
-
-    public SerialManager(String prefix) {
-        this.counter = 0;
-        this.prefix = prefix;
-    }
-
-    public String New(){
-        counter++;
-        return prefix + counter;
-    }
-}

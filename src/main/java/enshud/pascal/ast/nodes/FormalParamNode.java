@@ -5,7 +5,7 @@ import enshud.pascal.ast.IAstVisitor;
 import java.util.List;
 
 public class FormalParamNode extends AstNode {
-    public final List<String> params;
+    public List<String> params;
     public final TypeNode type; // 型
 
     public FormalParamNode(Position position, List<String> params, TypeNode type) {
