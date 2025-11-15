@@ -20,17 +20,19 @@ public class LinearAllocator implements IAllocator {
     }
 
     @Override
-    public Allocation allocateVariables(IrProgram program) {
-        var mainAlloc = computeFunction(program.main);
-        var functionAllocs = program.functions.values().stream().map(this::computeFunction).toList();
-        var allAllocs = new ArrayList<Allocation>();
-        allAllocs.add(mainAlloc);
-        allAllocs.addAll(functionAllocs);
-        return Allocation.merge(allAllocs);
+    public Allocation allocate(IrProgram program) {
+        var allocation = new Allocation();
+        var variables = new HashMap<String, VariableInfo>();
+        constructFrame(variables, allocation, program.main);
+        program.functions.values()
+                .forEach(f -> constructFrame(variables, allocation, f));
+        computeFunction(allocation, variables, program.main);
+        program.functions.values()
+                .forEach(func -> computeFunction(allocation, variables, func));
+        return allocation;
     }
 
-    private Allocation computeFunction(IrFunction function) {
-        Allocation allocation = new Allocation();
+    private void computeFunction(Allocation allocation, Map<String, VariableInfo> variables, IrFunction function) {
         var instructions = function.getInstructions();
 
         var in = getFirstUse(instructions);
@@ -38,9 +40,6 @@ public class LinearAllocator implements IAllocator {
 
         String memoryBase = "VAR_AREA_START";
         var memoryOffset = 0;
-        var frameOffset = 0;
-
-        var offsetMap = new HashMap<String, Integer>();
 
         System.out.println("---- Liveness Analysis ----");
         System.out.println(in);
@@ -60,25 +59,19 @@ public class LinearAllocator implements IAllocator {
                     registerAllocations.put(symbol, assignedRegister);
                     allocation.put(symbol.name, new RegisterLocation(assignedRegister.name()));
                 }else{
-                    allocation.put(symbol.name, new StackLocation(offsetMap.get(symbol.name), 0));
+                    if (!variables.containsKey(symbol.name)) {
+                        System.out.println(instruction);
+                        throw new RuntimeException("Variable used before declaration: " + symbol.name);
+                    }
+                    var varInfo = variables.get(symbol.name);
+                    allocation.put(symbol.name, new StackLocation(varInfo.offset, function.level - varInfo.offset));
                 }
 
             }
             for (Symbol symbol : out.getOrDefault(instruction, Collections.emptySet())) {
                 registerAllocations.remove(symbol);
             }
-            if(instruction instanceof Decl decl){
-                allocation.setFrameSize(function.name, frameOffset);
-                offsetMap.put(decl.varName, frameOffset);
-                frameOffset += 1;
-            }
-            if(instruction instanceof DeclArray declArray){
-                allocation.setFrameSize(function.name, frameOffset);
-                offsetMap.put(declArray.varName, frameOffset);
-                frameOffset += declArray.upperBound - declArray.lowerBound + 1;
-            }
         }
-        return allocation;
     }
 
     private Map<Ir, Set<Symbol>> getFirstUse(List<Ir> instructions) {
@@ -97,5 +90,32 @@ public class LinearAllocator implements IAllocator {
             }
         }
         return in;
+    }
+
+    private void constructFrame(Map<String, VariableInfo> variables, Allocation allocation, IrFunction function) {
+        int frameOffset = 0;
+
+        for (Ir instruction : function.getInstructions()) {
+            if(instruction instanceof Decl decl){
+                allocation.setFrameSize(function.name, frameOffset);
+                variables.put(decl.varName, new VariableInfo(frameOffset, function.level));
+                frameOffset += 1;
+            }
+            if(instruction instanceof DeclArray declArray){
+                allocation.setFrameSize(function.name, frameOffset);
+                variables.put(declArray.varName, new VariableInfo(frameOffset, function.level));
+                frameOffset += declArray.upperBound - declArray.lowerBound + 1;
+            }
+        }
+    }
+}
+
+class VariableInfo {
+    public final int offset;
+    public final int level;
+
+    public VariableInfo(int offset, int level) {
+        this.offset = offset;
+        this.level = level;
     }
 }

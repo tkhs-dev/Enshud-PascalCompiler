@@ -13,9 +13,9 @@ public class IrProgram {
     public final IrFunction data;
 
     public IrProgram() {
-        this.main = IrFunction.empty("MAIN");
+        this.main = IrFunction.empty("MAIN", 0);
         this.functions = new HashMap<>();
-        this.data = IrFunction.empty("DATA");
+        this.data = IrFunction.empty("DATA", 0);
     }
 
     public List<Ir> getInstructions() {

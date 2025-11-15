@@ -3,11 +3,8 @@ package enshud.s4.compiler.generator;
 import enshud.s4.compiler.generator.allocator.Allocation;
 import enshud.s4.compiler.generator.allocator.IAllocator;
 import enshud.s4.compiler.ir.IIrVisitor;
-import enshud.s4.compiler.ir.Ir;
-import enshud.s4.compiler.ir.IrFunction;
 import enshud.s4.compiler.ir.IrProgram;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public abstract class GeneratorBase<T> {
@@ -21,7 +18,7 @@ public abstract class GeneratorBase<T> {
 
     private Allocation allocate(IrProgram program) {
         IAllocator allocator = getAllocator();
-        return allocator.allocateVariables(program);
+        return allocator.allocate(program);
     }
 
     // IRに対する前処理

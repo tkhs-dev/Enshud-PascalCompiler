@@ -5,10 +5,12 @@ import java.util.List;
 public class IrFunction {
     private List<Ir> functions;
     public final String name;
+    public final int level;
 
-    public IrFunction(String name) {
+    public IrFunction(String name, int level) {
         this.functions = new java.util.ArrayList<>();
         this.name = name;
+        this.level = level;
     }
 
     public void add(Ir function) {
@@ -29,7 +31,7 @@ public class IrFunction {
         }
     }
 
-    public static IrFunction empty(String name) {
-        return new IrFunction(name);
+    public static IrFunction empty(String name, int level) {
+        return new IrFunction(name, level);
     }
 }

@@ -2,11 +2,11 @@ package enshud.s4.compiler.generator.location;
 
 public class StackLocation extends Location {
     public final int offset;
-    public final int inFrameOffset;
+    public final int levelDelta;
 
-    public StackLocation(int offset, int inFrameOffset) {
+    public StackLocation(int offset, int levelDelta) {
         this.offset = offset;
-        this.inFrameOffset = inFrameOffset;
+        this.levelDelta = levelDelta;
     }
 
     public StackLocation(int offset) {
