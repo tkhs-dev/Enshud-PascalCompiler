@@ -1,6 +1,6 @@
 package enshud.s4.compiler.optimizer;
 
-import enshud.s4.compiler.ir.IrFunction;
+import enshud.s4.compiler.ir.program.IrFunction;
 import enshud.s4.compiler.optimizer.pass.IrPass;
 
 import java.util.List;

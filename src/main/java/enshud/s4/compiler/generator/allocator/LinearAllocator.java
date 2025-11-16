@@ -6,6 +6,8 @@ import enshud.s4.compiler.generator.location.StackLocation;
 import enshud.s4.compiler.ir.*;
 import enshud.s4.compiler.ir.operand.Symbol;
 import enshud.s4.compiler.ir.operand.Temp;
+import enshud.s4.compiler.ir.program.IrFunction;
+import enshud.s4.compiler.ir.program.IrProgram;
 
 import java.util.*;
 
@@ -16,7 +18,6 @@ public class LinearAllocator implements IAllocator {
         GR2,
         GR3,
         GR4,
-        GR5,
     }
 
     @Override
@@ -96,7 +97,7 @@ public class LinearAllocator implements IAllocator {
         int frameOffset = 0;
 
         for (Ir instruction : function.getInstructions()) {
-            if(instruction instanceof Decl decl){
+            if(instruction instanceof Decl decl) {
                 allocation.setFrameSize(function.name, frameOffset);
                 variables.put(decl.varName, new VariableInfo(frameOffset, function.level));
                 frameOffset += 1;

@@ -4,6 +4,7 @@ import enshud.casl.CaslSimulator;
 import enshud.pascal.ast.AstParseException;
 import enshud.pascal.ast.AstParser;
 import enshud.pascal.ast.nodes.AstNode;
+import enshud.s1.lexer.Lexer;
 import enshud.s3.checker.SemanticCheckVisitor;
 import enshud.s4.compiler.generator.CaslGenerator;
 import enshud.s4.compiler.ir.IrConverter;
@@ -21,8 +22,10 @@ public class Compiler {
 	 * 単体テストの対象ではないので自由に改変しても良い．
 	 */
 	public static void main(final String[] args) {
+        // tsを生成
+        new Lexer().run("data-ex/pas/test.pas", "tmp/out.ts");
 		// Compilerを実行してcasを生成する
-		System.out.println(new Compiler().run("data/ts/normal12.ts", "tmp/out.cas"));
+		System.out.println(new Compiler().run("tmp/out.ts", "tmp/out.cas"));
 
 		// 上記casを，CASLアセンブラ & COMETシミュレータで実行する
 		CaslSimulator.run("tmp/out.cas", "tmp/out.ans");
@@ -59,6 +62,8 @@ public class Compiler {
 			CaslGenerator generator = new CaslGenerator();
 			String caslCode = generator.generate(prog);
 			System.out.println(caslCode);
+            // ファイルに書き出し
+            java.nio.file.Files.writeString(java.nio.file.Path.of(outputFileName), caslCode);
             // 構文解析が成功した場合
             return "OK";
         } catch (FileFormatException | IOException e) {

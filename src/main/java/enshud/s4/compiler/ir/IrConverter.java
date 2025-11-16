@@ -8,6 +8,8 @@ import enshud.s4.compiler.ir.operand.Const;
 import enshud.s4.compiler.ir.operand.Symbol;
 import enshud.s4.compiler.ir.operand.Temp;
 import enshud.s4.compiler.ir.operand.Variable;
+import enshud.s4.compiler.ir.program.IrFunction;
+import enshud.s4.compiler.ir.program.IrProgram;
 import enshud.util.SerialManager;
 
 import java.util.Optional;
@@ -70,7 +72,7 @@ class IrConverterVisitor implements IAstVisitor<Optional<Symbol>> {
 
     @Override
     public Optional<Symbol> visit(SubProgDeclNode node) {
-        IrFunction func = IrFunction.empty("FUNC-" + node.header.name);
+        IrFunction func = IrFunction.empty(node.header.name, 1);
         program.functions.put(node.header.name, func);
         currentScope = func;
         visitAll(node);

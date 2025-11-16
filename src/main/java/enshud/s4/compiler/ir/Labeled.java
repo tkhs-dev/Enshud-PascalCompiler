@@ -25,6 +25,6 @@ public class Labeled extends Ir {
 
     @Override
     public String toString() {
-        return String.format("%s  ", label);
+        return String.format("%s: %s", label, ir.toString());
     }
 }
