@@ -14,8 +14,6 @@ public interface IIrVisitor<T> {
     T visit(Return aReturn);
     T visit(Writeln writeln);
     T visit(BinaryOp binaryOp);
-    T visit(Labeled labeled);
-    T visit(GetArgument getArgument);
     T visit(Load load);
     T visit(Store store);
 }

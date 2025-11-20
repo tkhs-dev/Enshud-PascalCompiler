@@ -22,7 +22,7 @@ public class Load extends Ir {
 
     @Override
     public List<Temp> getUsedTemps() {
-        return List.of(var, targetVar);
+        return List.of(targetVar);
     }
 
     @Override
