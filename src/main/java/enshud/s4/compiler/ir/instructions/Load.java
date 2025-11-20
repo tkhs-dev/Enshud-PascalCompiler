@@ -27,6 +27,6 @@ public class Load extends Ir {
 
     @Override
     public String toString() {
-        return String.format("Load: %s <- %s", targetVar.name, var.name);
+        return String.format("Load: %s <- %s", targetVar.id, var.name);
     }
 }
