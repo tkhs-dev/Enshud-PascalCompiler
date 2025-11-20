@@ -1,5 +1,7 @@
-package enshud.s4.compiler.generator.allocator;
+package enshud.s4.compiler.generator.impls.casl;
 
+import enshud.s4.compiler.generator.allocator.Allocation;
+import enshud.s4.compiler.generator.allocator.IAllocator;
 import enshud.s4.compiler.generator.location.MemoryLocation;
 import enshud.s4.compiler.generator.location.RegisterLocation;
 import enshud.s4.compiler.generator.location.StackLocation;
@@ -12,14 +14,6 @@ import enshud.s4.compiler.ir.program.IrProgram;
 import java.util.*;
 
 public class LinearAllocator implements IAllocator {
-    enum Register {
-        GR0,
-        GR1,
-        GR2,
-        GR3,
-        GR4,
-    }
-
     @Override
     public Allocation allocate(IrProgram program) {
         var allocation = new Allocation();
@@ -46,15 +40,15 @@ public class LinearAllocator implements IAllocator {
         System.out.println(in);
         System.out.println(out);
 
-        var registerAllocations = new HashMap<Symbol, Register>();
+        var registerAllocations = new HashMap<Symbol, Registers>();
         for (Ir instruction : instructions) {
             for (Symbol symbol : in.getOrDefault(instruction, Collections.emptySet())) {
                 if(symbol instanceof Temp){
-                    if (registerAllocations.size() == Register.values().length) {
+                    if (registerAllocations.size() == Registers.GENERAL_PURPOSE_REGISTERS.length) {
                         allocation.put(symbol.name, new MemoryLocation(memoryBase, memoryOffset++));
                         continue;
                     }
-                    var availableRegisters = new LinkedHashSet<>(Arrays.asList(Register.values()));
+                    var availableRegisters = new LinkedHashSet<>(Arrays.asList(Registers.GENERAL_PURPOSE_REGISTERS));
                     availableRegisters.removeAll(registerAllocations.values());
                     var assignedRegister = availableRegisters.getFirst();
                     registerAllocations.put(symbol, assignedRegister);

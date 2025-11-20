@@ -1,8 +1,8 @@
-package enshud.s4.compiler.generator;
+package enshud.s4.compiler.generator.impls.casl;
 
+import enshud.s4.compiler.generator.GeneratorBase;
 import enshud.s4.compiler.generator.allocator.Allocation;
 import enshud.s4.compiler.generator.allocator.IAllocator;
-import enshud.s4.compiler.generator.allocator.LinearAllocator;
 import enshud.s4.compiler.generator.location.Location;
 import enshud.s4.compiler.generator.location.MemoryLocation;
 import enshud.s4.compiler.generator.location.RegisterLocation;
@@ -11,17 +11,12 @@ import enshud.s4.compiler.ir.*;
 import enshud.s4.compiler.ir.operand.Const;
 import enshud.s4.compiler.ir.operand.Operand;
 import enshud.s4.compiler.ir.operand.Symbol;
-import enshud.s4.compiler.ir.operand.Temp;
 import enshud.s4.compiler.ir.program.IrProgram;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ArrayBlockingQueue;
 
 public class CaslGenerator extends GeneratorBase<String> {
-    private static final String SP = "GR8";
-    private static final String FP = "GR7";
-    private static final String REGISTER_OFFSET = "GR6";
-    private static final String REGISTER_TEMP = "GR5";
 
     @Override
     protected void preprocess(IrProgram program) {
@@ -37,7 +32,7 @@ public class CaslGenerator extends GeneratorBase<String> {
     protected String postprocessOutput(String output) {
         return "CASL\tSTART BEGIN\n" +
                 output +
-                "END";
+                "\n\tEND";
     }
 
     @Override
@@ -48,16 +43,20 @@ public class CaslGenerator extends GeneratorBase<String> {
     @Override
     protected IIrVisitor<String> getConverter(Allocation allocation) {
         System.out.println(allocation);
+        var nextLabel = new ArrayBlockingQueue<String>(1);
         // 無名クラスで実装
         return new IIrVisitor<String>() {
+
             @Override
             public String visit(Call ir) {
-                InstructionBuilder ib = new InstructionBuilder();
+                InstructionBuilder ib = new InstructionBuilder(allocation);
                 // 引数をスタックにプッシュ
                 for (var arg : ir.args) {
-                    ib.add(format("PUSH 0", arg));
+                    ib.add(new PUSH(Const.ZERO));
                 }
-                ib.add(format("CALL", ir.functionLabel));
+                ib.add(new CALL(ir.functionLabel));
+
+                applyLabel(ib);
                 return ib.build();
             }
 
@@ -73,21 +72,27 @@ public class CaslGenerator extends GeneratorBase<String> {
 
             @Override
             public String visit(Jump ir) {
+                var ib = new InstructionBuilder(allocation);
                 switch (ir.type) {
-                    case Jump.TYPE_UNCONDITIONAL:
-                        return format("JUMP", ir.target);
-                    case Jump.TYPE_TRUE:
-                        return format("JNZ", ir.target);
-                    case Jump.TYPE_FALSE:
-                        return format("JZE", ir.target);
-                    default:
+                    case Jump.TYPE_UNCONDITIONAL ->
+                        ib.add(new JUMP(ir.target));
+                    case Jump.TYPE_TRUE ->
+                        ib.add(new JNZ(ir.target));
+                    case Jump.TYPE_FALSE ->
+                        ib.add(new JZE(ir.target));
+                    default ->
                         throw new UnsupportedOperationException("Unknown jump type: " + ir.type);
                 }
+                applyLabel(ib);
+                return ib.build();
             }
 
             @Override
             public String visit(Label ir) {
-                return String.format("%s\tNOP", ir.name);
+                if (!nextLabel.offer(ir.name)) {
+                    throw new IllegalStateException("Multiple labels in a row: " + ir.name);
+                }
+                return "";
             }
 
             @Override
@@ -102,26 +107,26 @@ public class CaslGenerator extends GeneratorBase<String> {
 
             @Override
             public String visit(Load load) {
-                RegisterLocation destAlloc = (RegisterLocation) allocation.get(load.targetVar);
-                StackLocation varAlloc = (StackLocation) allocation.get(load.var);
-                InstructionBuilder ib = new InstructionBuilder();
-                ib.add(String.format("LD %s, %s, %s", destAlloc.registerName, varAlloc.offset, FP));
+                InstructionBuilder ib = new InstructionBuilder(allocation);
+                ib.add(new LD(load.targetVar, load.var));
+                applyLabel(ib);
                 return ib.build();
             }
 
             @Override
             public String visit(Store store) {
-                InstructionBuilder ib = new InstructionBuilder();
+                InstructionBuilder ib = new InstructionBuilder(allocation);
                 StackLocation varAlloc = (StackLocation) allocation.get(store.target);
                 Location srcAlloc;
                 if (store.value instanceof Const cnst){
-                    ib.add(String.format("LAD %s, =%s", REGISTER_TEMP, cnst.value));
-                    srcAlloc = new RegisterLocation(REGISTER_TEMP);
+                    ib.add(new LAD(Registers.TEMP))
+//                    ib.add(String.format("LAD %s, =%s", Registers.TEMP, cnst.value));
+                    srcAlloc = Registers.TEMP.asLocation();
                 } else {
                     srcAlloc = allocation.get((Symbol) store.value);
                 }
                 if (srcAlloc instanceof RegisterLocation regAlloc) {
-                    ib.add(String.format("ST %s, %s, %s", regAlloc.registerName, varAlloc.offset, FP));
+//                    ib.add(String.format("ST %s, %s, %s", regAlloc.registerName, varAlloc.offset, Registers.FP));
                 } else {
                     // TODO: スピルしている場合
                     throw new UnsupportedOperationException("Source of Store must be in register: " + srcAlloc);
@@ -202,30 +207,30 @@ public class CaslGenerator extends GeneratorBase<String> {
                 Location alloc1 = allocation.get(symbol1);
                 Location alloc2 = allocation.get(symbol2);
                 Location originalAlloc1 = alloc1;
-                InstructionBuilder ib = new InstructionBuilder();
+                InstructionBuilder ib = new InstructionBuilder(allocation);
                 if (alloc1 instanceof MemoryLocation memLoc1){
                     if (memLoc1.offset == 0){
-                        ib.add(String.format("LD %s, %s", REGISTER_TEMP, memLoc1.baseAddress));
+//                        ib.add(String.format("LD %s, %s", Registers.TEMP, memLoc1.baseAddress));
                     }else{
-                        ib.add(String.format("LAD %s, =%d", REGISTER_OFFSET, memLoc1.offset));
-                        ib.add(String.format("LD %s, %s, %s", REGISTER_TEMP, memLoc1.baseAddress, REGISTER_OFFSET));
+//                        ib.add(String.format("LAD %s, =%d", Registers.OFFSET, memLoc1.offset));
+//                        ib.add(String.format("LD %s, %s, %s", Registers.TEMP, memLoc1.baseAddress, Registers.OFFSET));
                     }
-                    alloc1 = new RegisterLocation(REGISTER_TEMP);
+                    alloc1 = Registers.TEMP.asLocation();
                 }
                 if (alloc2 instanceof MemoryLocation memLoc2){
                     if (memLoc2.offset == 0){
-                        ib.add(String.format("%s %s, %s", instr, ((RegisterLocation) alloc1).registerName, memLoc2.baseAddress));
+//                        ib.add(String.format("%s %s, %s", instr, ((RegisterLocation) alloc1).registerName, memLoc2.baseAddress));
                     }else{
-                        ib.add(String.format("%s %s, %s, %d", instr, ((RegisterLocation) alloc1).registerName, memLoc2.baseAddress, memLoc2.offset));
+//                        ib.add(String.format("%s %s, %s, %d", instr, ((RegisterLocation) alloc1).registerName, memLoc2.baseAddress, memLoc2.offset));
                     }
                 }else if (alloc2 instanceof RegisterLocation regLoc2){
-                    ib.add(String.format("%s %s, %s", instr, ((RegisterLocation) alloc1).registerName, regLoc2.registerName));
+//                    ib.add(String.format("%s %s, %s", instr, ((RegisterLocation) alloc1).registerName, regLoc2.registerName));
                 }
                 if (originalAlloc1 instanceof MemoryLocation memLoc1){
                     if (memLoc1.offset == 0){
-                        ib.add(String.format("ST %s, %s", REGISTER_TEMP, memLoc1.baseAddress));
+//                        ib.add(String.format("ST %s, %s", Registers.TEMP, memLoc1.baseAddress));
                     }else{
-                        ib.add(String.format("ST %s, %s, %s", REGISTER_TEMP, memLoc1.baseAddress, REGISTER_OFFSET));
+//                        ib.add(String.format("ST %s, %s, %s", Registers.TEMP, memLoc1.baseAddress, Registers.OFFSET));
                     }
                 }
                 return ib.build();
@@ -264,27 +269,19 @@ public class CaslGenerator extends GeneratorBase<String> {
             private String format(String instr, String label) {
                 return String.format("%s %s", instr, label);
             }
+
+            void applyLabel(InstructionBuilder ib) {
+                // ラベルがあれば先頭に追加
+                if(!nextLabel.isEmpty() && !ib.getInstructions().isEmpty()){
+                    String label = nextLabel.poll();
+                    ib.getInstructions().getFirst().setLabel(label);
+                }
+            }
         };
     }
 
     @Override
     protected String concat(List<String> assemblies) {
         return String.join("\n", assemblies);
-    }
-
-    static class InstructionBuilder {
-        private final List<String> instructions;
-
-        public InstructionBuilder() {
-            this.instructions = new ArrayList<>();
-        }
-
-        public void add(String instruction) {
-            instructions.add(instruction);
-        }
-
-        public String build() {
-            return String.join("\n", instructions);
-        }
     }
 }

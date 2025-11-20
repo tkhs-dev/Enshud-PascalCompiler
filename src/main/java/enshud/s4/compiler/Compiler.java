@@ -6,7 +6,7 @@ import enshud.pascal.ast.AstParser;
 import enshud.pascal.ast.nodes.AstNode;
 import enshud.s1.lexer.Lexer;
 import enshud.s3.checker.SemanticCheckVisitor;
-import enshud.s4.compiler.generator.CaslGenerator;
+import enshud.s4.compiler.generator.impls.casl.CaslGenerator;
 import enshud.s4.compiler.ir.IrConverter;
 import enshud.token.FileFormatException;
 import enshud.token.Token;
@@ -63,7 +63,7 @@ public class Compiler {
 			String caslCode = generator.generate(prog);
 			System.out.println(caslCode);
             // ファイルに書き出し
-            java.nio.file.Files.writeString(java.nio.file.Path.of(outputFileName), caslCode);
+//            java.nio.file.Files.writeString(java.nio.file.Path.of(outputFileName), caslCode);
             // 構文解析が成功した場合
             return "OK";
         } catch (FileFormatException | IOException e) {
