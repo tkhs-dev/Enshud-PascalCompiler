@@ -4,8 +4,8 @@ import enshud.pascal.ast.IAstVisitor;
 import enshud.pascal.ast.nodes.*;
 import enshud.pascal.ast.nodes.expr.*;
 import enshud.pascal.ast.nodes.stmt.*;
+import enshud.s4.compiler.ir.instructions.*;
 import enshud.s4.compiler.ir.operand.Const;
-import enshud.s4.compiler.ir.operand.Symbol;
 import enshud.s4.compiler.ir.operand.Temp;
 import enshud.s4.compiler.ir.operand.Variable;
 import enshud.s4.compiler.ir.program.IrFunction;
@@ -22,7 +22,7 @@ public class IrConverter {
     }
 }
 
-class IrConverterVisitor implements IAstVisitor<Optional<Symbol>> {
+class IrConverterVisitor implements IAstVisitor<Optional<Temp>> {
     private final SerialManager tempManager;
     private final SerialManager labelManager;
     private IrFunction currentScope;
@@ -43,20 +43,20 @@ class IrConverterVisitor implements IAstVisitor<Optional<Symbol>> {
     }
 
     @Override
-    public Optional<Symbol> visit(ProgramNode node) {
+    public Optional<Temp> visit(ProgramNode node) {
         currentScope = program.main;
         visitAll(node);
         return Optional.empty();
     }
 
     @Override
-    public Optional<Symbol> visit(BlockNode node) {
+    public Optional<Temp> visit(BlockNode node) {
         visitAll(node);
         return Optional.empty();
     }
 
     @Override
-    public Optional<Symbol> visit(VarDeclNode node) {
+    public Optional<Temp> visit(VarDeclNode node) {
         var p = switch (node.varType) {
             case StandardTypeNode t ->
                 // 標準型変数宣言
@@ -71,7 +71,7 @@ class IrConverterVisitor implements IAstVisitor<Optional<Symbol>> {
     }
 
     @Override
-    public Optional<Symbol> visit(SubProgDeclNode node) {
+    public Optional<Temp> visit(SubProgDeclNode node) {
         IrFunction func = IrFunction.empty(node.header.name, 1);
         program.functions.put(node.header.name, func);
         currentScope = func;
@@ -81,14 +81,14 @@ class IrConverterVisitor implements IAstVisitor<Optional<Symbol>> {
     }
 
     @Override
-    public Optional<Symbol> visit(SubProgHeaderNode node) {
+    public Optional<Temp> visit(SubProgHeaderNode node) {
         currentScope.add(new Label("FUNC:"+node.name));
         visitAll(node);
         return Optional.empty();
     }
 
     @Override
-    public Optional<Symbol> visit(FormalParamNode node) {
+    public Optional<Temp> visit(FormalParamNode node) {
         var p = switch (node.type) {
             case StandardTypeNode t ->
                 // 標準型変数宣言
@@ -103,23 +103,23 @@ class IrConverterVisitor implements IAstVisitor<Optional<Symbol>> {
     }
 
     @Override
-    public Optional<Symbol> visit(ArrayTypeNode node) {
+    public Optional<Temp> visit(ArrayTypeNode node) {
         return Optional.empty();
     }
 
     @Override
-    public Optional<Symbol> visit(StandardTypeNode node) {
+    public Optional<Temp> visit(StandardTypeNode node) {
         return Optional.empty();
     }
 
     @Override
-    public Optional<Symbol> visit(CompoundStmtNode node) {
+    public Optional<Temp> visit(CompoundStmtNode node) {
         visitAll(node);
         return Optional.empty();
     }
 
     @Override
-    public Optional<Symbol> visit(AssignmentNode node) {
+    public Optional<Temp> visit(AssignmentNode node) {
         node.var.accept(this);
         var exprTemp = node.expr.accept(this).get();
         switch (node.var) {
@@ -136,27 +136,27 @@ class IrConverterVisitor implements IAstVisitor<Optional<Symbol>> {
     }
 
     @Override
-    public Optional<Symbol> visit(CallNode node) {
+    public Optional<Temp> visit(CallNode node) {
         var args = node.args.stream().map(arg -> arg.accept(this).get()).toList();
         currentScope.add(new Call("FUNC:"+node.name, args));
         return Optional.empty();
     }
 
     @Override
-    public Optional<Symbol> visit(WriteNode node) {
+    public Optional<Temp> visit(WriteNode node) {
         var exprTemp = node.exprs.stream().map(expr -> expr.accept(this).get()).toList();
         currentScope.add(new Writeln(exprTemp));
         return Optional.empty();
     }
 
     @Override
-    public Optional<Symbol> visit(ReadNode node) {
+    public Optional<Temp> visit(ReadNode node) {
         visitAll(node);
         return Optional.empty();
     }
 
     @Override
-    public Optional<Symbol> visit(IfNode node) {
+    public Optional<Temp> visit(IfNode node) {
         var elseLabel = node.elseBranch != null ? labelManager.New() : null;
         var thenLabel = labelManager.New();
         var endLabel = labelManager.New();
@@ -179,7 +179,7 @@ class IrConverterVisitor implements IAstVisitor<Optional<Symbol>> {
     }
 
     @Override
-    public Optional<Symbol> visit(WhileNode node) {
+    public Optional<Temp> visit(WhileNode node) {
         var startLabel = labelManager.New();
         var endLabel = labelManager.New();
 
@@ -192,7 +192,7 @@ class IrConverterVisitor implements IAstVisitor<Optional<Symbol>> {
     }
 
     @Override
-    public Optional<Symbol> visit(BinaryOpNode node) {
+    public Optional<Temp> visit(BinaryOpNode node) {
         visitAll(node);
         var leftTemp = node.left.accept(this).get();
         var rightTemp = node.right.accept(this).get();
@@ -216,7 +216,7 @@ class IrConverterVisitor implements IAstVisitor<Optional<Symbol>> {
     }
 
     @Override
-    public Optional<Symbol> visit(ConstNode node) {
+    public Optional<Temp> visit(ConstNode node) {
         visitAll(node);
         Temp temp = Temp.of(tempManager.New());
         currentScope.add(new Move(temp, new Const(node.value)));
@@ -224,7 +224,7 @@ class IrConverterVisitor implements IAstVisitor<Optional<Symbol>> {
     }
 
     @Override
-    public Optional<Symbol> visit(UnaryOpNode node) {
+    public Optional<Temp> visit(UnaryOpNode node) {
         var operandTemp = node.operand.accept(this).get();
         switch(node.op) {
             case PLUS -> {
@@ -249,7 +249,7 @@ class IrConverterVisitor implements IAstVisitor<Optional<Symbol>> {
     }
 
     @Override
-    public Optional<Symbol> visit(StandardVarNode node) {
+    public Optional<Temp> visit(StandardVarNode node) {
         visitAll(node);
         Temp temp = Temp.of(tempManager.New());
         currentScope.add(new Load(temp, Variable.of(node.name)));
@@ -257,7 +257,7 @@ class IrConverterVisitor implements IAstVisitor<Optional<Symbol>> {
     }
 
     @Override
-    public Optional<Symbol> visit(IndexedVarNode node) {
+    public Optional<Temp> visit(IndexedVarNode node) {
         var index = node.index.accept(this).get();
         Temp temp = Temp.of(tempManager.New());
         currentScope.add(new LoadIndexed(temp, Variable.of(node.name), index));

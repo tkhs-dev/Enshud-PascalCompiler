@@ -8,9 +8,9 @@ import enshud.s4.compiler.generator.location.MemoryLocation;
 import enshud.s4.compiler.generator.location.RegisterLocation;
 import enshud.s4.compiler.generator.location.StackLocation;
 import enshud.s4.compiler.ir.*;
+import enshud.s4.compiler.ir.instructions.*;
 import enshud.s4.compiler.ir.operand.Const;
 import enshud.s4.compiler.ir.operand.Operand;
-import enshud.s4.compiler.ir.operand.Symbol;
 import enshud.s4.compiler.ir.program.IrProgram;
 
 import java.util.List;

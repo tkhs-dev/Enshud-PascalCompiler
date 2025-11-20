@@ -1,16 +1,17 @@
-package enshud.s4.compiler.ir;
+package enshud.s4.compiler.ir.instructions;
 
+import enshud.s4.compiler.ir.IIrVisitor;
 import enshud.s4.compiler.ir.operand.Operand;
-import enshud.s4.compiler.ir.operand.Symbol;
+import enshud.s4.compiler.ir.operand.Temp;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class Move extends Ir {
-    public final Symbol dest;
+    public final Temp dest;
     public final Operand src;
 
-    public Move(Symbol dest, Operand src) {
+    public Move(Temp dest, Operand src) {
         this.dest = dest;
         this.src = src;
     }
@@ -21,11 +22,11 @@ public class Move extends Ir {
     }
 
     @Override
-    public List<? extends Symbol> getUsedSymbols() {
-        var temps = new ArrayList<Symbol>();
+    public List<Temp> getUsedTemps() {
+        var temps = new ArrayList<Temp>();
         temps.add(dest);
-        if (src instanceof Symbol srcSymbol) {
-            temps.add(srcSymbol);
+        if (src instanceof Temp srcTemp) {
+            temps.add(srcTemp);
         }
         return temps;
     }

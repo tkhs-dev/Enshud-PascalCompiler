@@ -1,18 +1,19 @@
-package enshud.s4.compiler.ir;
+package enshud.s4.compiler.ir.instructions;
 
+import enshud.s4.compiler.ir.IIrVisitor;
 import enshud.s4.compiler.ir.operand.Operand;
-import enshud.s4.compiler.ir.operand.Symbol;
+import enshud.s4.compiler.ir.operand.Temp;
 import enshud.s4.compiler.ir.operand.Variable;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class LoadIndexed extends Ir {
-    public final Symbol targetVar;
+    public final Temp targetVar;
     public final Variable arrayVar;
     public final Operand indexVar;
 
-    public LoadIndexed(Symbol targetVar, Variable arrayVar, Operand indexVar) {
+    public LoadIndexed(Temp targetVar, Variable arrayVar, Operand indexVar) {
         this.targetVar = targetVar;
         this.arrayVar = arrayVar;
         this.indexVar = indexVar;
@@ -24,12 +25,11 @@ public class LoadIndexed extends Ir {
     }
 
     @Override
-    public List<? extends Symbol> getUsedSymbols() {
-        var symbols = new ArrayList<Symbol>();
+    public List<Temp> getUsedTemps() {
+        var symbols = new ArrayList<Temp>();
         symbols.add(targetVar);
-        symbols.add(arrayVar);
-        if (indexVar instanceof Symbol symbol) {
-            symbols.add(symbol);
+        if (indexVar instanceof Temp temp) {
+            symbols.add(temp);
         }
         return symbols;
     }

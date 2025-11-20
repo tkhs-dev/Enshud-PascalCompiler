@@ -1,9 +1,8 @@
 package enshud.s4.compiler.ir.program;
 
-import enshud.s4.compiler.ir.Ir;
+import enshud.s4.compiler.ir.instructions.Ir;
 
 import java.util.List;
-import java.util.function.Function;
 
 public class IrFunction {
     private final List<IrSlot> functions;

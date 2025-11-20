@@ -1,7 +1,8 @@
-package enshud.s4.compiler.ir;
+package enshud.s4.compiler.ir.instructions;
 
+import enshud.s4.compiler.ir.IIrVisitor;
 import enshud.s4.compiler.ir.operand.Operand;
-import enshud.s4.compiler.ir.operand.Symbol;
+import enshud.s4.compiler.ir.operand.Temp;
 
 import java.util.List;
 
@@ -30,9 +31,9 @@ public class Jump extends Ir {
     }
 
     @Override
-    public List<? extends Symbol> getUsedSymbols() {
-        if (condition != null && condition instanceof Symbol symbol) {
-            return List.of(symbol);
+    public List<Temp> getUsedTemps() {
+        if (condition != null && condition instanceof Temp temp) {
+            return List.of(temp);
         }
         return List.of();
     }

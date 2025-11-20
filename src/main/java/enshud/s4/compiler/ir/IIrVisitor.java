@@ -1,5 +1,7 @@
 package enshud.s4.compiler.ir;
 
+import enshud.s4.compiler.ir.instructions.*;
+
 public interface IIrVisitor<T> {
     T visit(Call ir);
     T visit(Decl ir);

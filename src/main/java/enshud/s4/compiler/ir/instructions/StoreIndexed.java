@@ -1,7 +1,8 @@
-package enshud.s4.compiler.ir;
+package enshud.s4.compiler.ir.instructions;
 
+import enshud.s4.compiler.ir.IIrVisitor;
 import enshud.s4.compiler.ir.operand.Operand;
-import enshud.s4.compiler.ir.operand.Symbol;
+import enshud.s4.compiler.ir.operand.Temp;
 import enshud.s4.compiler.ir.operand.Variable;
 
 import java.util.ArrayList;
@@ -24,14 +25,13 @@ public class StoreIndexed extends Ir {
     }
 
     @Override
-    public List<? extends Symbol> getUsedSymbols() {
-        List<Symbol> symbols = new ArrayList<>();
-        symbols.add(target);
-        if (index instanceof Symbol idxSymbol) {
-            symbols.add(idxSymbol);
+    public List<Temp> getUsedTemps() {
+        List<Temp> symbols = new ArrayList<>();
+        if (index instanceof Temp idxTemp) {
+            symbols.add(idxTemp);
         }
-        if (value instanceof Symbol valSymbol) {
-            symbols.add(valSymbol);
+        if (value instanceof Temp valTemp) {
+            symbols.add(valTemp);
         }
         return symbols;
     }

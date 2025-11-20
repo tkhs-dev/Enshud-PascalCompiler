@@ -1,15 +1,16 @@
-package enshud.s4.compiler.ir;
+package enshud.s4.compiler.ir.instructions;
 
-import enshud.s4.compiler.ir.operand.Symbol;
+import enshud.s4.compiler.ir.IIrVisitor;
+import enshud.s4.compiler.ir.operand.Temp;
 
 import java.util.List;
 
 public class Call extends Ir {
 
     public final String functionLabel;
-    public final List<Symbol> args;
+    public final List<Temp> args;
 
-    public Call(String functionLabel, List<Symbol> args) {
+    public Call(String functionLabel, List<Temp> args) {
         this.functionLabel = functionLabel;
         this.args = args;
     }
@@ -20,7 +21,7 @@ public class Call extends Ir {
     }
 
     @Override
-    public List<? extends Symbol> getUsedSymbols() {
+    public List<Temp> getUsedTemps() {
         return args;
     }
 

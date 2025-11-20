@@ -1,6 +1,7 @@
-package enshud.s4.compiler.ir;
+package enshud.s4.compiler.ir.instructions;
 
-import enshud.s4.compiler.ir.operand.Symbol;
+import enshud.s4.compiler.ir.IIrVisitor;
+import enshud.s4.compiler.ir.operand.Temp;
 
 import java.util.List;
 
@@ -17,7 +18,7 @@ public class Decl extends Ir {
     }
 
     @Override
-    public List<? extends Symbol> getUsedSymbols() {
+    public List<Temp> getUsedTemps() {
         return List.of();
     }
 

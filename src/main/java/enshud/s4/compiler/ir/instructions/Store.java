@@ -1,7 +1,7 @@
-package enshud.s4.compiler.ir;
+package enshud.s4.compiler.ir.instructions;
 
+import enshud.s4.compiler.ir.IIrVisitor;
 import enshud.s4.compiler.ir.operand.Operand;
-import enshud.s4.compiler.ir.operand.Symbol;
 import enshud.s4.compiler.ir.operand.Temp;
 import enshud.s4.compiler.ir.operand.Variable;
 
@@ -22,9 +22,8 @@ public class Store extends Ir{
     }
 
     @Override
-    public List<? extends Symbol> getUsedSymbols() {
-        var temps = new java.util.ArrayList<Symbol>();
-        temps.add(target);
+    public List<Temp> getUsedTemps() {
+        var temps = new java.util.ArrayList<Temp>();
         if (value instanceof Temp temp) {
             temps.add(temp);
         }

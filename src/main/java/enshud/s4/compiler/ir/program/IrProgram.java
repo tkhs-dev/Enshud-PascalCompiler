@@ -1,6 +1,6 @@
 package enshud.s4.compiler.ir.program;
 
-import enshud.s4.compiler.ir.Ir;
+import enshud.s4.compiler.ir.instructions.Ir;
 
 import java.util.ArrayList;
 import java.util.HashMap;

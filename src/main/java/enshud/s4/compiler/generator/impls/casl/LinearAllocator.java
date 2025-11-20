@@ -5,8 +5,9 @@ import enshud.s4.compiler.generator.allocator.IAllocator;
 import enshud.s4.compiler.generator.location.MemoryLocation;
 import enshud.s4.compiler.generator.location.RegisterLocation;
 import enshud.s4.compiler.generator.location.StackLocation;
-import enshud.s4.compiler.ir.*;
-import enshud.s4.compiler.ir.operand.Symbol;
+import enshud.s4.compiler.ir.instructions.Decl;
+import enshud.s4.compiler.ir.instructions.DeclArray;
+import enshud.s4.compiler.ir.instructions.Ir;
 import enshud.s4.compiler.ir.operand.Temp;
 import enshud.s4.compiler.ir.program.IrFunction;
 import enshud.s4.compiler.ir.program.IrProgram;
@@ -69,11 +70,11 @@ public class LinearAllocator implements IAllocator {
         }
     }
 
-    private Map<Ir, Set<Symbol>> getFirstUse(List<Ir> instructions) {
-        Map<Ir, Set<Symbol>> in = new HashMap<>();
-        var alreadyIn = new HashSet<Symbol>();
+    private Map<Ir, Set<Temp>> getFirstUse(List<Ir> instructions) {
+        Map<Ir, Set<Temp>> in = new HashMap<>();
+        var alreadyIn = new HashSet<Temp>();
         for (Ir instruction : instructions) {
-            var usedTemps = instruction.getUsedSymbols();
+            var usedTemps = instruction.getUsedTemps();
             for (Symbol symbol : usedTemps) {
                 if (!alreadyIn.contains(symbol)) {
                     if (!in.containsKey(instruction)) {
