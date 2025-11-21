@@ -6,7 +6,7 @@ import enshud.s4.compiler.ir.operand.Variable;
 
 import java.util.List;
 
-public class Load extends Ir {
+public class Load extends ITInstruction {
     public final Temp targetVar;
     public final Variable var;
 

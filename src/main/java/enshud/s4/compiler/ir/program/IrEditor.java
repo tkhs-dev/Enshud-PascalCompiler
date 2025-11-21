@@ -1,6 +1,6 @@
 package enshud.s4.compiler.ir.program;
 
-import enshud.s4.compiler.ir.instructions.Ir;
+import enshud.s4.compiler.ir.instructions.ITInstruction;
 
 import java.util.List;
 import java.util.function.Function;
@@ -11,7 +11,7 @@ public class IrEditor {
         this.functions = functions;
     }
 
-    public void apply(int index, Function<Ir, Ir> func) {
+    public void apply(int index, Function<ITInstruction, ITInstruction> func) {
         IrFunction.IrSlot slot = functions.get(index);
         slot.instruction = func.apply(slot.instruction);
     }

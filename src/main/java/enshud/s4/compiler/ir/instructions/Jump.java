@@ -6,7 +6,7 @@ import enshud.s4.compiler.ir.operand.Temp;
 
 import java.util.List;
 
-public class Jump extends Ir {
+public class Jump extends ITInstruction {
     public static final int TYPE_UNCONDITIONAL = 0;
     public static final int TYPE_TRUE = 1;
     public static final int TYPE_FALSE = 2;

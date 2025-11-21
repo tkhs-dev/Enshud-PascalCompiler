@@ -1,6 +1,6 @@
 package enshud.s4.compiler.ir.program;
 
-import enshud.s4.compiler.ir.instructions.Ir;
+import enshud.s4.compiler.ir.instructions.ITInstruction;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -20,8 +20,8 @@ public class IrProgram {
         this.data = IrFunction.empty("DATA", 0);
     }
 
-    public List<Ir> getInstructions() {
-        List<Ir> instructions = new ArrayList<>();
+    public List<ITInstruction> getInstructions() {
+        List<ITInstruction> instructions = new ArrayList<>();
         instructions.addAll(main.getInstructions());
         for(IrFunction f : functions.values()) {
             instructions.addAll(f.getInstructions());

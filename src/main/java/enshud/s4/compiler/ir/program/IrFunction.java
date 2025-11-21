@@ -1,6 +1,6 @@
 package enshud.s4.compiler.ir.program;
 
-import enshud.s4.compiler.ir.instructions.Ir;
+import enshud.s4.compiler.ir.instructions.ITInstruction;
 
 import java.util.List;
 
@@ -15,19 +15,19 @@ public class IrFunction {
         this.level = level;
     }
 
-    public void add(Ir function) {
+    public void add(ITInstruction function) {
         this.functions.add(new IrSlot(function));
     }
 
-    public void addAt(int index, Ir function) {
+    public void addAt(int index, ITInstruction function) {
         this.functions.add(index, new IrSlot(function));
     }
 
-    public void addAll(List<? extends Ir> functions) {
+    public void addAll(List<? extends ITInstruction> functions) {
         this.functions.addAll(functions.stream().map(IrSlot::new).toList());
     }
 
-    public List<Ir> getInstructions() {
+    public List<ITInstruction> getInstructions() {
         return functions.stream().map(slot -> slot.instruction).toList();
     }
 
@@ -40,9 +40,9 @@ public class IrFunction {
     }
 
     public static class IrSlot {
-        public Ir instruction;
+        public ITInstruction instruction;
 
-        public IrSlot(Ir instruction) {
+        public IrSlot(ITInstruction instruction) {
             this.instruction = instruction;
         }
     }

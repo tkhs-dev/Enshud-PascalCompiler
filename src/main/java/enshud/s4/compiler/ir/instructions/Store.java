@@ -7,7 +7,7 @@ import enshud.s4.compiler.ir.operand.Variable;
 
 import java.util.List;
 
-public class Store extends Ir{
+public class Store extends ITInstruction {
     public final Variable target;
     public final Operand value;
 

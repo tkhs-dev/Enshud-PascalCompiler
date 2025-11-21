@@ -5,7 +5,7 @@ import enshud.s4.compiler.ir.operand.Temp;
 
 import java.util.List;
 
-public class Call extends Ir {
+public class Call extends ITInstruction {
 
     public final String functionLabel;
     public final List<Temp> args;

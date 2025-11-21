@@ -7,7 +7,7 @@ import enshud.s4.compiler.generator.location.RegisterLocation;
 import enshud.s4.compiler.generator.location.StackLocation;
 import enshud.s4.compiler.ir.instructions.Decl;
 import enshud.s4.compiler.ir.instructions.DeclArray;
-import enshud.s4.compiler.ir.instructions.Ir;
+import enshud.s4.compiler.ir.instructions.ITInstruction;
 import enshud.s4.compiler.ir.operand.Temp;
 import enshud.s4.compiler.ir.program.IrFunction;
 import enshud.s4.compiler.ir.program.IrProgram;
@@ -42,7 +42,7 @@ public class LinearAllocator implements IAllocator {
         System.out.println(out);
 
         var registerAllocations = new HashMap<Symbol, Registers>();
-        for (Ir instruction : instructions) {
+        for (ITInstruction instruction : instructions) {
             for (Symbol symbol : in.getOrDefault(instruction, Collections.emptySet())) {
                 if(symbol instanceof Temp){
                     if (registerAllocations.size() == Registers.GENERAL_PURPOSE_REGISTERS.length) {
@@ -70,10 +70,10 @@ public class LinearAllocator implements IAllocator {
         }
     }
 
-    private Map<Ir, Set<Temp>> getFirstUse(List<Ir> instructions) {
-        Map<Ir, Set<Temp>> in = new HashMap<>();
+    private Map<ITInstruction, Set<Temp>> getFirstUse(List<ITInstruction> instructions) {
+        Map<ITInstruction, Set<Temp>> in = new HashMap<>();
         var alreadyIn = new HashSet<Temp>();
-        for (Ir instruction : instructions) {
+        for (ITInstruction instruction : instructions) {
             var usedTemps = instruction.getUsedTemps();
             for (Symbol symbol : usedTemps) {
                 if (!alreadyIn.contains(symbol)) {
@@ -91,7 +91,7 @@ public class LinearAllocator implements IAllocator {
     private void constructFrame(Map<String, VariableInfo> variables, Allocation allocation, IrFunction function) {
         int frameOffset = 0;
 
-        for (Ir instruction : function.getInstructions()) {
+        for (ITInstruction instruction : function.getInstructions()) {
             if(instruction instanceof Decl decl) {
                 allocation.setFrameSize(function.name, frameOffset);
                 variables.put(decl.varName, new VariableInfo(frameOffset, function.level));

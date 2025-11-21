@@ -5,7 +5,7 @@ import enshud.s4.compiler.ir.operand.Temp;
 
 import java.util.List;
 
-public class DeclArray extends Ir {
+public class DeclArray extends ITInstruction {
     public final String varName;
     public final int upperBound;
     public final int lowerBound;

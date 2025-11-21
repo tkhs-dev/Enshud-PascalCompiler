@@ -5,7 +5,7 @@ import enshud.s4.compiler.ir.operand.Temp;
 
 import java.util.List;
 
-public class Decl extends Ir {
+public class Decl extends ITInstruction {
     public final String varName;
 
     public Decl(String varName) {

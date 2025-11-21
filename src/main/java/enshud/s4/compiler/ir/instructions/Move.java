@@ -7,7 +7,7 @@ import enshud.s4.compiler.ir.operand.Temp;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Move extends Ir {
+public class Move extends ITInstruction {
     public final Temp dest;
     public final Operand src;
 

@@ -8,7 +8,7 @@ import enshud.s4.compiler.ir.operand.Variable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class LoadIndexed extends Ir {
+public class LoadIndexed extends ITInstruction {
     public final Temp targetVar;
     public final Variable arrayVar;
     public final Operand indexVar;

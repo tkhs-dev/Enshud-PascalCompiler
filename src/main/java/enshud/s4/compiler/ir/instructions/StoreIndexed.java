@@ -8,7 +8,7 @@ import enshud.s4.compiler.ir.operand.Variable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class StoreIndexed extends Ir {
+public class StoreIndexed extends ITInstruction {
     public final Variable target;
     public final Operand index;
     public final Operand value;

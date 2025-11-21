@@ -7,7 +7,7 @@ import enshud.s4.compiler.ir.operand.Temp;
 import java.util.ArrayList;
 import java.util.List;
 
-public class BinaryOp extends Ir {
+public class BinaryOp extends ITInstruction {
     public enum OpType {
         ADD, SUB, MUL, DIV, MOD,
         AND, OR, XOR,

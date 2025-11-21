@@ -6,7 +6,7 @@ import enshud.s4.compiler.ir.operand.Temp;
 
 import java.util.List;
 
-public class Writeln extends Ir {
+public class Writeln extends ITInstruction {
     public final List<? extends Operand> operands;
     public Writeln(List<? extends Operand> operands) {
         this.operands = operands;

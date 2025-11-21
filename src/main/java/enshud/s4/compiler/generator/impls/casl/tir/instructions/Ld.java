@@ -1,4 +1,4 @@
 package enshud.s4.compiler.generator.impls.casl.tir.instructions;
 
-public class Ld extends TIr{
+public class Ld extends TIRInstruction {
 }

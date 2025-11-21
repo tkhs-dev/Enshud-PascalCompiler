@@ -5,7 +5,7 @@ import enshud.s4.compiler.ir.operand.Temp;
 
 import java.util.List;
 
-public class Label extends Ir {
+public class Label extends ITInstruction {
     public final String name;
 
     public Label(String name) {
