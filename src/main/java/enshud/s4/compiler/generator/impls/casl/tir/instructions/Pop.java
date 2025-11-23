@@ -13,4 +13,9 @@ public class Pop extends TIRInstruction<Pop> {
     public <T> T accept(ITIRVisitor<T> visitor) {
         return visitor.visit(this);
     }
+
+    @Override
+    public String toString() {
+        return formatInstruction(target);
+    }
 }

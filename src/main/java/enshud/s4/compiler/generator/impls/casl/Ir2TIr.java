@@ -4,6 +4,7 @@ import enshud.s4.compiler.generator.impls.casl.tir.instructions.*;
 import enshud.s4.compiler.generator.impls.casl.tir.operand.*;
 import enshud.s4.compiler.generator.impls.casl.tir.program.FrameInfo;
 import enshud.s4.compiler.generator.impls.casl.tir.program.TIRFunction;
+import enshud.s4.compiler.generator.impls.casl.tir.program.TIRProgram;
 import enshud.s4.compiler.ir.IIrVisitor;
 import enshud.s4.compiler.ir.instructions.*;
 import enshud.s4.compiler.ir.instructions.Call;
@@ -12,11 +13,26 @@ import enshud.s4.compiler.ir.operand.Operand;
 import enshud.s4.compiler.ir.operand.Temp;
 import enshud.s4.compiler.ir.operand.Variable;
 import enshud.s4.compiler.ir.program.IrFunction;
+import enshud.s4.compiler.ir.program.IrProgram;
+import enshud.util.SerialManager;
 
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class Ir2TIr {
+    public TIRProgram convert(IrProgram irProgram) {
+        var main = convert(irProgram.main);
+        var functions = irProgram.functions.entrySet().stream()
+                .collect(java.util.stream.Collectors.toMap(
+                        Map.Entry::getKey,
+                        e -> convert(e.getValue())
+                ));
+        var data = convert(irProgram.data);
+        return new TIRProgram(main, functions, data);
+    }
+
     public TIRFunction convert(IrFunction irFunction) {
         Ir2TIrVisitor visitor = new Ir2TIrVisitor();
         for (var irInstruction : irFunction.getInstructions()) {
@@ -33,10 +49,12 @@ public class Ir2TIr {
 class Ir2TIrVisitor implements IIrVisitor<Void> {
     private final List<TIRInstruction> tirInstructions;
     private final FrameInfo frameInfo;
+    private final SerialManager serialManager;
 
     public Ir2TIrVisitor() {
         this.tirInstructions = new ArrayList<>();
         this.frameInfo = new FrameInfo();
+        this.serialManager = new SerialManager("LL");
     }
 
     public List<TIRInstruction> getInstructions() {
@@ -157,11 +175,102 @@ class Ir2TIrVisitor implements IIrVisitor<Void> {
                         new Lad(convertOperand(binaryOp.left), RealRegister.of(Registers.GR2))
                 ));
             }
-            case NEQ -> {
+            case MOD -> {
                 tirInstructions.addAll(List.of(
-                        new Xor(convertOperand(binaryOp.left), convertOperand(binaryOp.right))
+                        new Lad(RealRegister.of(Registers.GR1), convertOperand(binaryOp.left)),
+                        new Lad(RealRegister.of(Registers.GR2), convertOperand(binaryOp.right)),
+                        new enshud.s4.compiler.generator.impls.casl.tir.instructions.Call("DIV"),
+                        new Lad(convertOperand(binaryOp.left), RealRegister.of(Registers.GR1))
                 ));
             }
+            case AND -> {
+                tirInstructions.add(
+                        new And(convertOperand(binaryOp.left), convertOperand(binaryOp.right))
+                );
+            }
+            case OR -> { // boolean OR
+                tirInstructions.add(
+                        new Or(convertOperand(binaryOp.left), convertOperand(binaryOp.right))
+                );
+            }
+            case XOR -> {
+                tirInstructions.add(
+                        new Xor(convertOperand(binaryOp.left), convertOperand(binaryOp.right))
+                );
+            }
+            case NEQ -> {
+                var labelFalse = serialManager.New();
+                var labelEnd = serialManager.New();
+                tirInstructions.addAll(List.of(
+                        new Cp(convertOperand(binaryOp.left), convertOperand(binaryOp.right)),
+                        new Jmp(labelFalse, Jmp.Type.ZERO),
+                        new Lad(convertOperand(binaryOp.left), Immediate.TRUE),
+                        new Jmp(labelEnd, Jmp.Type.UNCONDITIONAL),
+                        new Lad(convertOperand(binaryOp.left), Immediate.FALSE).setLabel(labelFalse),
+                        new Nop().setLabel(labelEnd)
+                ));
+            }
+            case EQ ->  {
+                var labelFalse = serialManager.New();
+                var labelEnd = serialManager.New();
+                tirInstructions.addAll(List.of(
+                        new Cp(convertOperand(binaryOp.left), convertOperand(binaryOp.right)),
+                        new Jmp(labelFalse, Jmp.Type.NONZERO),
+                        new Lad(convertOperand(binaryOp.left), Immediate.TRUE),
+                        new Jmp(labelEnd, Jmp.Type.UNCONDITIONAL),
+                        new Lad(convertOperand(binaryOp.left), Immediate.FALSE).setLabel(labelFalse),
+                        new Nop().setLabel(labelEnd)
+                ));
+            }
+            case LTE ->   {
+                var labelFalse = serialManager.New();
+                var labelEnd = serialManager.New();
+                tirInstructions.addAll(List.of(
+                        new Sub(convertOperand(binaryOp.left), convertOperand(binaryOp.right)),
+                        new Jmp(labelFalse, Jmp.Type.PLUS),
+                        new Lad(convertOperand(binaryOp.left), Immediate.TRUE),
+                        new Jmp(labelEnd, Jmp.Type.UNCONDITIONAL),
+                        new Lad(convertOperand(binaryOp.left), Immediate.FALSE).setLabel(labelFalse),
+                        new Nop().setLabel(labelEnd)
+                ));
+            }
+            case LT ->    {
+                var labelTrue = serialManager.New();
+                var labelEnd = serialManager.New();
+                tirInstructions.addAll(List.of(
+                        new Sub(convertOperand(binaryOp.left), convertOperand(binaryOp.right)),
+                        new Jmp(labelTrue, Jmp.Type.MINUS),
+                        new Lad(convertOperand(binaryOp.left), Immediate.FALSE),
+                        new Jmp(labelEnd, Jmp.Type.UNCONDITIONAL),
+                        new Lad(convertOperand(binaryOp.left), Immediate.TRUE).setLabel(labelTrue),
+                        new Nop().setLabel(labelEnd)
+                ));
+            }
+            case GTE ->   {
+                var labelFalse = serialManager.New();
+                var labelEnd = serialManager.New();
+                tirInstructions.addAll(List.of(
+                        new Sub(convertOperand(binaryOp.left), convertOperand(binaryOp.right)),
+                        new Jmp(labelFalse, Jmp.Type.MINUS),
+                        new Lad(convertOperand(binaryOp.left), Immediate.TRUE),
+                        new Jmp(labelEnd, Jmp.Type.UNCONDITIONAL),
+                        new Lad(convertOperand(binaryOp.left), Immediate.FALSE).setLabel(labelFalse),
+                        new Nop().setLabel(labelEnd)
+                ));
+            }
+            case GT ->    {
+                var labelFalse = serialManager.New();
+                var labelEnd = serialManager.New();
+                tirInstructions.addAll(List.of(
+                        new Sub(convertOperand(binaryOp.left), convertOperand(binaryOp.right)),
+                        new Jmp(labelFalse, Jmp.Type.PLUS),
+                        new Lad(convertOperand(binaryOp.left), Immediate.FALSE),
+                        new Jmp(labelEnd, Jmp.Type.UNCONDITIONAL),
+                        new Lad(convertOperand(binaryOp.left), Immediate.TRUE).setLabel(labelFalse),
+                        new Nop().setLabel(labelEnd)
+                ));
+            }
+            default -> throw new UnsupportedOperationException("Unsupported binary operation: " + binaryOp.opType);
         }
         return null;
     }
@@ -186,7 +295,7 @@ class Ir2TIrVisitor implements IIrVisitor<Void> {
                 }else if(c.value instanceof Character ch){
                     yield new StringImmediate(String.valueOf(ch));
                 }else {
-                    throw new UnsupportedOperationException("Unsupported constant type: " + c.value.getClass());
+                    throw new UnsupportedOperationException("Unsupported constant type: " + c.value.getClass() + " value: " + c.value);
                 }
             }
             case Temp t -> new VirtualRegister(t.id);

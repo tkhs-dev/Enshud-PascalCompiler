@@ -4,6 +4,8 @@ import enshud.pascal.ast.IAstVisitor;
 import enshud.pascal.ast.nodes.*;
 import enshud.pascal.ast.nodes.expr.*;
 import enshud.pascal.ast.nodes.stmt.*;
+import enshud.pascal.type.ArrayType;
+import enshud.pascal.type.Type;
 import enshud.s4.compiler.ir.instructions.*;
 import enshud.s4.compiler.ir.operand.Const;
 import enshud.s4.compiler.ir.operand.Temp;
@@ -219,7 +221,20 @@ class IrConverterVisitor implements IAstVisitor<Optional<Temp>> {
     public Optional<Temp> visit(ConstNode node) {
         visitAll(node);
         Temp temp = Temp.of(tempManager.New());
-        currentScope.add(new Move(temp, new Const(node.value)));
+        Const constValue;
+        if (node.type == Type.INTEGER) {
+            constValue = new Const(Integer.parseInt(node.value));
+        } else if (node.type == Type.BOOLEAN) {
+            constValue = new Const(Boolean.parseBoolean(node.value));
+        } else if (node.type == Type.CHAR) {
+            constValue = new Const(node.value.charAt(0));
+        } else if (node.type instanceof ArrayType arrayType && arrayType.elementType == Type.CHAR) {
+            constValue = new Const(node.value);
+        } else {
+            throw new IllegalStateException("Unexpected value: " + node.type);
+
+        }
+        currentScope.add(new Move(temp, constValue));
         return Optional.of(temp);
     }
 

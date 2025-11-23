@@ -15,4 +15,9 @@ public class Lad extends TIRInstruction<Lad> {
     public <T> T accept(ITIRVisitor<T> visitor) {
         return visitor.visit(this);
     }
+
+    @Override
+    public String toString() {
+        return formatInstruction(dest, value);
+    }
 }

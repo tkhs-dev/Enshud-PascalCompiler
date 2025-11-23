@@ -6,4 +6,9 @@ public class FrameSlot extends TIROperand {
     public FrameSlot(int slot) {
         this.slot = slot;
     }
+
+    @Override
+    public String toString() {
+        return String.format("Frame[%d]", slot);
+    }
 }

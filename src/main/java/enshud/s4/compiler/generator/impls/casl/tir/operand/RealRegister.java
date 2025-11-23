@@ -12,4 +12,9 @@ public class RealRegister extends TIROperand {
     public static RealRegister of(Registers register) {
         return new RealRegister(register);
     }
+
+    @Override
+    public String toString() {
+        return register.toString();
+    }
 }

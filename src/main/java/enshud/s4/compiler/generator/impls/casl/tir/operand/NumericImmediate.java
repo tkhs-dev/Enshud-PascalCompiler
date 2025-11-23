@@ -8,6 +8,17 @@ public class NumericImmediate extends Immediate<Integer> {
         this.type = type;
     }
 
+    @Override
+    public String toString() {
+        switch (type) {
+            case HEXA:
+                return String.format("0x%X", value);
+            case DECIMAL:
+            default:
+                return String.format("%d", value);
+        }
+    }
+
     public enum Type {
         HEXA,
         DECIMAL

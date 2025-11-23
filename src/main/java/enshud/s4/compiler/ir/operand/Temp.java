@@ -10,4 +10,9 @@ public class Temp extends Operand {
     public static Temp of(String id){
         return new Temp(id);
     }
+
+    @Override
+    public String toString() {
+        return id;
+    }
 }

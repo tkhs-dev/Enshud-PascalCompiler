@@ -15,4 +15,9 @@ public class Sr extends TIRInstruction<Sr> {
     public <T> T accept(ITIRVisitor<T> visitor) {
         return null;
     }
+
+    @Override
+    public String toString() {
+        return formatInstruction(left, right);
+    }
 }

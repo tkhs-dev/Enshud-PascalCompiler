@@ -13,4 +13,9 @@ public class Push extends TIRInstruction<Push> {
     public <T> T accept(ITIRVisitor<T> visitor) {
         return visitor.visit(this);
     }
+
+    @Override
+    public String toString() {
+        return formatInstruction(src);
+    }
 }

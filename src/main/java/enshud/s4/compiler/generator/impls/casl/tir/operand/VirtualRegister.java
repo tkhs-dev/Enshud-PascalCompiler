@@ -5,4 +5,9 @@ public class VirtualRegister extends TIROperand {
     public VirtualRegister(String id) {
         this.id = id;
     }
+
+    @Override
+    public String toString() {
+        return id;
+    }
 }
