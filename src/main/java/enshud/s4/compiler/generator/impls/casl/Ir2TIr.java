@@ -139,73 +139,73 @@ class Ir2TIrVisitor implements IIrVisitor<Void> {
     }
 
     @Override
-    public Void visit(Write write) {
+    public Void visit(Write ir) {
         return null;
     }
 
     @Override
-    public Void visit(BinaryOp binaryOp) {
-        switch(binaryOp.opType){
+    public Void visit(BinaryOp ir) {
+        switch(ir.opType){
             case ADD -> {
                 tirInstructions.add(new Add(
-                        convertOperand(binaryOp.left),
-                        convertOperand(binaryOp.right)
+                        convertOperand(ir.left),
+                        convertOperand(ir.right)
                 ));
             }
             case SUB -> {
                 tirInstructions.add(new Sub(
-                        convertOperand(binaryOp.left),
-                        convertOperand(binaryOp.right)
+                        convertOperand(ir.left),
+                        convertOperand(ir.right)
                 ));
             }
             case MUL -> {
                 tirInstructions.addAll(List.of(
-                        new Lad(RealRegister.of(Registers.GR1), convertOperand(binaryOp.left)),
-                        new Lad(RealRegister.of(Registers.GR2), convertOperand(binaryOp.right)),
+                        new Lad(RealRegister.of(Registers.GR1), convertOperand(ir.left)),
+                        new Lad(RealRegister.of(Registers.GR2), convertOperand(ir.right)),
                         new enshud.s4.compiler.generator.impls.casl.tir.instructions.Call("MULT"),
-                        new Lad(convertOperand(binaryOp.left), RealRegister.of(Registers.GR2))
+                        new Lad(convertOperand(ir.left), RealRegister.of(Registers.GR2))
                 ));
             }
             case DIV -> {
                 tirInstructions.addAll(List.of(
-                        new Lad(RealRegister.of(Registers.GR1), convertOperand(binaryOp.left)),
-                        new Lad(RealRegister.of(Registers.GR2), convertOperand(binaryOp.right)),
+                        new Lad(RealRegister.of(Registers.GR1), convertOperand(ir.left)),
+                        new Lad(RealRegister.of(Registers.GR2), convertOperand(ir.right)),
                         new enshud.s4.compiler.generator.impls.casl.tir.instructions.Call("DIV"),
-                        new Lad(convertOperand(binaryOp.left), RealRegister.of(Registers.GR2))
+                        new Lad(convertOperand(ir.left), RealRegister.of(Registers.GR2))
                 ));
             }
             case MOD -> {
                 tirInstructions.addAll(List.of(
-                        new Lad(RealRegister.of(Registers.GR1), convertOperand(binaryOp.left)),
-                        new Lad(RealRegister.of(Registers.GR2), convertOperand(binaryOp.right)),
+                        new Lad(RealRegister.of(Registers.GR1), convertOperand(ir.left)),
+                        new Lad(RealRegister.of(Registers.GR2), convertOperand(ir.right)),
                         new enshud.s4.compiler.generator.impls.casl.tir.instructions.Call("DIV"),
-                        new Lad(convertOperand(binaryOp.left), RealRegister.of(Registers.GR1))
+                        new Lad(convertOperand(ir.left), RealRegister.of(Registers.GR1))
                 ));
             }
             case AND -> {
                 tirInstructions.add(
-                        new And(convertOperand(binaryOp.left), convertOperand(binaryOp.right))
+                        new And(convertOperand(ir.left), convertOperand(ir.right))
                 );
             }
             case OR -> { // boolean OR
                 tirInstructions.add(
-                        new Or(convertOperand(binaryOp.left), convertOperand(binaryOp.right))
+                        new Or(convertOperand(ir.left), convertOperand(ir.right))
                 );
             }
             case XOR -> {
                 tirInstructions.add(
-                        new Xor(convertOperand(binaryOp.left), convertOperand(binaryOp.right))
+                        new Xor(convertOperand(ir.left), convertOperand(ir.right))
                 );
             }
             case NEQ -> {
                 var labelFalse = serialManager.New();
                 var labelEnd = serialManager.New();
                 tirInstructions.addAll(List.of(
-                        new Cp(convertOperand(binaryOp.left), convertOperand(binaryOp.right)),
+                        new Cp(convertOperand(ir.left), convertOperand(ir.right)),
                         new Jmp(labelFalse, Jmp.Type.ZERO),
-                        new Lad(convertOperand(binaryOp.left), Immediate.TRUE),
+                        new Lad(convertOperand(ir.left), Immediate.TRUE),
                         new Jmp(labelEnd, Jmp.Type.UNCONDITIONAL),
-                        new Lad(convertOperand(binaryOp.left), Immediate.FALSE).setLabel(labelFalse),
+                        new Lad(convertOperand(ir.left), Immediate.FALSE).setLabel(labelFalse),
                         new Nop().setLabel(labelEnd)
                 ));
             }
@@ -213,11 +213,11 @@ class Ir2TIrVisitor implements IIrVisitor<Void> {
                 var labelFalse = serialManager.New();
                 var labelEnd = serialManager.New();
                 tirInstructions.addAll(List.of(
-                        new Cp(convertOperand(binaryOp.left), convertOperand(binaryOp.right)),
+                        new Cp(convertOperand(ir.left), convertOperand(ir.right)),
                         new Jmp(labelFalse, Jmp.Type.NONZERO),
-                        new Lad(convertOperand(binaryOp.left), Immediate.TRUE),
+                        new Lad(convertOperand(ir.left), Immediate.TRUE),
                         new Jmp(labelEnd, Jmp.Type.UNCONDITIONAL),
-                        new Lad(convertOperand(binaryOp.left), Immediate.FALSE).setLabel(labelFalse),
+                        new Lad(convertOperand(ir.left), Immediate.FALSE).setLabel(labelFalse),
                         new Nop().setLabel(labelEnd)
                 ));
             }
@@ -225,11 +225,11 @@ class Ir2TIrVisitor implements IIrVisitor<Void> {
                 var labelFalse = serialManager.New();
                 var labelEnd = serialManager.New();
                 tirInstructions.addAll(List.of(
-                        new Sub(convertOperand(binaryOp.left), convertOperand(binaryOp.right)),
+                        new Sub(convertOperand(ir.left), convertOperand(ir.right)),
                         new Jmp(labelFalse, Jmp.Type.PLUS),
-                        new Lad(convertOperand(binaryOp.left), Immediate.TRUE),
+                        new Lad(convertOperand(ir.left), Immediate.TRUE),
                         new Jmp(labelEnd, Jmp.Type.UNCONDITIONAL),
-                        new Lad(convertOperand(binaryOp.left), Immediate.FALSE).setLabel(labelFalse),
+                        new Lad(convertOperand(ir.left), Immediate.FALSE).setLabel(labelFalse),
                         new Nop().setLabel(labelEnd)
                 ));
             }
@@ -237,11 +237,11 @@ class Ir2TIrVisitor implements IIrVisitor<Void> {
                 var labelTrue = serialManager.New();
                 var labelEnd = serialManager.New();
                 tirInstructions.addAll(List.of(
-                        new Sub(convertOperand(binaryOp.left), convertOperand(binaryOp.right)),
+                        new Sub(convertOperand(ir.left), convertOperand(ir.right)),
                         new Jmp(labelTrue, Jmp.Type.MINUS),
-                        new Lad(convertOperand(binaryOp.left), Immediate.FALSE),
+                        new Lad(convertOperand(ir.left), Immediate.FALSE),
                         new Jmp(labelEnd, Jmp.Type.UNCONDITIONAL),
-                        new Lad(convertOperand(binaryOp.left), Immediate.TRUE).setLabel(labelTrue),
+                        new Lad(convertOperand(ir.left), Immediate.TRUE).setLabel(labelTrue),
                         new Nop().setLabel(labelEnd)
                 ));
             }
@@ -249,11 +249,11 @@ class Ir2TIrVisitor implements IIrVisitor<Void> {
                 var labelFalse = serialManager.New();
                 var labelEnd = serialManager.New();
                 tirInstructions.addAll(List.of(
-                        new Sub(convertOperand(binaryOp.left), convertOperand(binaryOp.right)),
+                        new Sub(convertOperand(ir.left), convertOperand(ir.right)),
                         new Jmp(labelFalse, Jmp.Type.MINUS),
-                        new Lad(convertOperand(binaryOp.left), Immediate.TRUE),
+                        new Lad(convertOperand(ir.left), Immediate.TRUE),
                         new Jmp(labelEnd, Jmp.Type.UNCONDITIONAL),
-                        new Lad(convertOperand(binaryOp.left), Immediate.FALSE).setLabel(labelFalse),
+                        new Lad(convertOperand(ir.left), Immediate.FALSE).setLabel(labelFalse),
                         new Nop().setLabel(labelEnd)
                 ));
             }
@@ -261,26 +261,26 @@ class Ir2TIrVisitor implements IIrVisitor<Void> {
                 var labelFalse = serialManager.New();
                 var labelEnd = serialManager.New();
                 tirInstructions.addAll(List.of(
-                        new Sub(convertOperand(binaryOp.left), convertOperand(binaryOp.right)),
+                        new Sub(convertOperand(ir.left), convertOperand(ir.right)),
                         new Jmp(labelFalse, Jmp.Type.PLUS),
-                        new Lad(convertOperand(binaryOp.left), Immediate.FALSE),
+                        new Lad(convertOperand(ir.left), Immediate.FALSE),
                         new Jmp(labelEnd, Jmp.Type.UNCONDITIONAL),
-                        new Lad(convertOperand(binaryOp.left), Immediate.TRUE).setLabel(labelFalse),
+                        new Lad(convertOperand(ir.left), Immediate.TRUE).setLabel(labelFalse),
                         new Nop().setLabel(labelEnd)
                 ));
             }
-            default -> throw new UnsupportedOperationException("Unsupported binary operation: " + binaryOp.opType);
+            default -> throw new UnsupportedOperationException("Unsupported binary operation: " + ir.opType);
         }
         return null;
     }
 
     @Override
-    public Void visit(Load load) {
+    public Void visit(Load ir) {
         return null;
     }
 
     @Override
-    public Void visit(Store store) {
+    public Void visit(Store ir) {
         return null;
     }
 
