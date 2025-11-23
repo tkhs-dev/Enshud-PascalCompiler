@@ -27,14 +27,6 @@ public class Jump extends ITInstruction {
     }
 
     @Override
-    public List<Temp> getUsedTemps() {
-        if (condition != null && condition instanceof Temp temp) {
-            return List.of(temp);
-        }
-        return List.of();
-    }
-
-    @Override
     public String toString() {
         return String.format("Goto: %s", target);
     }

@@ -22,11 +22,6 @@ public class Label extends ITInstruction {
     }
 
     @Override
-    public List<Temp> getUsedTemps() {
-        return List.of();
-    }
-
-    @Override
     public String toString() {
         return String.format("%s:", name);
     }

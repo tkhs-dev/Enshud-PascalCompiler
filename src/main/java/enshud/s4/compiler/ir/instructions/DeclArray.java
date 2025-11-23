@@ -24,11 +24,6 @@ public class DeclArray extends ITInstruction {
     }
 
     @Override
-    public List<Temp> getUsedTemps() {
-        return List.of();
-    }
-
-    @Override
     public String toString() {
         return String.format("Decl: %s [%d..%d]", varName, lowerBound, upperBound);
     }

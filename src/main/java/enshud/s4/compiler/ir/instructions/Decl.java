@@ -20,11 +20,6 @@ public class Decl extends ITInstruction {
     }
 
     @Override
-    public List<Temp> getUsedTemps() {
-        return List.of();
-    }
-
-    @Override
     public String toString() {
         return String.format("Decl: %s", varName);
     }

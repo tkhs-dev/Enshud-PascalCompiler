@@ -22,15 +22,6 @@ public class Store extends ITInstruction {
     }
 
     @Override
-    public List<Temp> getUsedTemps() {
-        var temps = new java.util.ArrayList<Temp>();
-        if (value instanceof Temp temp) {
-            temps.add(temp);
-        }
-        return temps;
-    }
-
-    @Override
     public String toString() {
         return String.format("Store: %s <- %s", target.name, value);
     }

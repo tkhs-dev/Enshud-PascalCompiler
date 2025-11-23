@@ -31,46 +31,46 @@ end;
 
 procedure printDay(Y, M, D, DD: integer);
 begin
-    writeln(Y, '-', M, '-', D, ' IS');
+    write(Y, '-', M, '-', D, ' IS');
     if DD = 0 then
     begin
-        writeln('SUNDAY');
+        write('SUNDAY');
     end
     else
     begin
         if DD = 1 then
         begin
-            writeln('MONDAY');
+            write('MONDAY');
         end
         else
         begin
             if DD = 2 then
             begin
-                writeln('TUESDAY');
+                write('TUESDAY');
             end
             else
             begin
                 if DD = 3 then
                 begin
-                    writeln('WEDNESDAY');
+                    write('WEDNESDAY');
                 end
                 else
                 begin
                     if DD = 4 then
                     begin
-                        writeln('THURSDAY');
+                        write('THURSDAY');
                     end
                     else
                     begin
                         if DD = 5 then
                         begin
-                            writeln('FRIDAY');
+                            write('FRIDAY');
                         end
                         else
                         begin
                             if DD = 6 then
                             begin
-                                writeln('SATURDAY');
+                                write('SATURDAY');
                             end;
                         end;
                     end;

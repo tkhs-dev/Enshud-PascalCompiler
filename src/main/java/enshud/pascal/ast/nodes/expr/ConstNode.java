@@ -8,12 +8,11 @@ import java.util.List;
 
 public class ConstNode extends Expr {
     public final String value;
-    public final Type type;
 
     public ConstNode(Position position, String value, Type type) {
         super(position);
         this.value = value;
-        this.type = type;
+        setType(type);
     }
 
     @Override

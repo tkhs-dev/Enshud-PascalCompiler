@@ -11,7 +11,7 @@ public interface IIrVisitor<T> {
     T visit(LoadIndexed ir);
     T visit(Move ir);
     T visit(StoreIndexed ir);
-    T visit(Writeln writeln);
+    T visit(Write write);
     T visit(BinaryOp binaryOp);
     T visit(Load load);
     T visit(Store store);

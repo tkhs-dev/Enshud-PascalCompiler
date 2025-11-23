@@ -16,7 +16,6 @@ import enshud.s4.compiler.ir.program.IrFunction;
 import enshud.s4.compiler.ir.program.IrProgram;
 import enshud.util.SerialManager;
 
-import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -140,7 +139,7 @@ class Ir2TIrVisitor implements IIrVisitor<Void> {
     }
 
     @Override
-    public Void visit(Writeln writeln) {
+    public Void visit(Write write) {
         return null;
     }
 

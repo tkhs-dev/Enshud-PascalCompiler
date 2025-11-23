@@ -1,5 +1,5 @@
 program testBasic;
 
 begin
-    writeln('test');
+    write('test');
 end.

@@ -10,26 +10,26 @@ begin
     i := 1;
     while i <= 10 do
     begin
-        writeln('[', msg, '] i=', a[i]);
+        write('[', msg, '] i=', a[i]);
         i := i + 1;
     end;
 end;
 
 { comment test here        }
-{ begin for if end writeln }
+{ begin for if end write }
 { i=1; i='a'; ..., ., : ;* }
 
 begin
     debug := true;
     msg := 'D';
-    writeln('***** calculating ******');
+    write('***** calculating ******');
     i := 1;
     while i <= 10 do
     begin
         a[i] := i * i;
-        if debug = true then begin writeln(i); end;
+        if debug = true then begin write(i); end;
         msg := i + 1;  { <<<< sematic error here }
     end;
-    writeln('***** result ******');
+    write('***** result ******');
     printData;
 end.

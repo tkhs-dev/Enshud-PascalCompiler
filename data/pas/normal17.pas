@@ -17,7 +17,7 @@ begin
     else
     begin
         nextY := x mod y;
-        writeln('  = gcd(', y, ', ', nextY, ')');
+        write('  = gcd(', y, ', ', nextY, ')');
         gcd(y, nextY);
     end;
 end;
@@ -25,13 +25,13 @@ end;
 begin
     x := 36;
     y := 24;
-    writeln('gcd(', x, ', ', y, ')');
+    write('gcd(', x, ', ', y, ')');
     gcd(x, y);
-    writeln('  = ', result);
+    write('  = ', result);
 
     x := 7854;
     y := 3108;
-    writeln('gcd(', x, ', ', y, ')');
+    write('gcd(', x, ', ', y, ')');
     gcd(x, y);
-    writeln('  = ', result);
+    write('  = ', result);
 end.

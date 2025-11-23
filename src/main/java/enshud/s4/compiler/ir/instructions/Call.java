@@ -21,11 +21,6 @@ public class Call extends ITInstruction {
     }
 
     @Override
-    public List<Temp> getUsedTemps() {
-        return args;
-    }
-
-    @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("Call: ").append(functionLabel);

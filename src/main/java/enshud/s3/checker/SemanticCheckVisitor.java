@@ -74,7 +74,7 @@ public class SemanticCheckVisitor implements IAstVisitor<Object> {
         List<String> newNames = new ArrayList<>();
         for (String varName : node.varNames) {
             var vinfo = declareVariable(varName, type, node.getPosition().startLine);
-            newNames.add(varName+"@"+vinfo.scopeId);
+            newNames.add(varName+"@"+ vinfo.scopeId());
         }
         node.varNames = newNames;
         return null;
@@ -111,7 +111,7 @@ public class SemanticCheckVisitor implements IAstVisitor<Object> {
         List<String> newNames = new ArrayList<>();
         for (String paramName : node.params) {
             var vinfo = declareVariable(paramName, type, node.getPosition().startLine);
-            newNames.add(paramName+"@"+vinfo.scopeId);
+            newNames.add(paramName+"@"+ vinfo.scopeId());
         }
         node.params = newNames;
         return type;
@@ -218,6 +218,7 @@ public class SemanticCheckVisitor implements IAstVisitor<Object> {
         Type right = (Type) node.right.accept(this);
 
         if (right == null) {
+            node.setType(left);
             return left;
         }
 
@@ -225,7 +226,7 @@ public class SemanticCheckVisitor implements IAstVisitor<Object> {
             // 型が異なる場合のエラー処理
             throw new SemanticException("Type mismatch", node.getPosition().startLine);
         }
-
+        Type resultType;
         switch (node.op) {
             case ADD:
             case SUB:
@@ -235,40 +236,48 @@ public class SemanticCheckVisitor implements IAstVisitor<Object> {
                 if (!left.equals(Type.INTEGER) || !right.equals(Type.INTEGER)) {
                     throw new SemanticException("Type mismatch in arithmetic operation", node.getPosition().startLine);
                 }
-                return Type.INTEGER;
+                resultType = Type.INTEGER;
+                break;
             case AND:
             case OR:
                 if (!left.equals(Type.BOOLEAN) || !right.equals(Type.BOOLEAN)) {
                     throw new SemanticException("Type mismatch in logical operation", node.getPosition().startLine);
                 }
-                return Type.BOOLEAN;
+                resultType = Type.BOOLEAN;
+                break;
             case EQ:
             case NEQ:
             case LT:
             case LTE:
             case GT:
             case GTE:
-                return Type.BOOLEAN;
+                resultType = Type.BOOLEAN;
+                break;
             default:
                 throw new SemanticException("Unknown binary operator", node.getPosition().startLine);
         }
+        node.setType(resultType);
+        return resultType;
     }
 
     @Override
     public Type visit(ConstNode node) {
-        return node.type;
+        return node.getType().get();
     }
 
     @Override
     public Type visit(UnaryOpNode node) {
-        return (Type) node.operand.accept(this);
+        var type =  (Type) node.operand.accept(this);
+        node.setType(type);
+        return type;
     }
 
     @Override
     public Type visit(StandardVarNode node) {
         var vinfo = lookupVariable(node.name, node.getPosition().startLine);
-        node.name = node.name + "@" + vinfo.scopeId;
-        return vinfo.type;
+        node.name = node.name + "@" + vinfo.scopeId();
+        node.setType(vinfo.type());
+        return vinfo.type();
     }
 
     @Override
@@ -278,22 +287,18 @@ public class SemanticCheckVisitor implements IAstVisitor<Object> {
             throw new SemanticException("Array index must be of type INTEGER", node.getPosition().startLine);
         }
         VariableInfo vinfo = lookupVariable(node.name, node.getPosition().startLine);
-        if (vinfo.type instanceof enshud.pascal.type.ArrayType arrayType){
-            node.name = node.name + "@" + vinfo.scopeId;
+        if (vinfo.type() instanceof enshud.pascal.type.ArrayType arrayType){
+            node.name = node.name + "@" + vinfo.scopeId();
+            node.setType(vinfo.type());
             return arrayType.elementType;
         }
         throw new SemanticException("Variable is not an array: " + node.name, node.getPosition().startLine);
     }
 
-    class SubProgDeclInfo {
-        public final List<Type> paramTypes;
-
-        public SubProgDeclInfo(List<Type> paramTypes) {
-            this.paramTypes = paramTypes;
-        }
+    record SubProgDeclInfo(List<Type> paramTypes) {
     }
 
-    class Scope {
+    static class Scope {
         public final Map<String, Type> variables;
         public final String id;
         public Scope(String id) {
@@ -320,12 +325,5 @@ class SemanticException extends RuntimeException {
     }
 }
 
-class VariableInfo {
-    public final Type type;
-    public final String scopeId;
-
-    public VariableInfo(Type type, String scopeId) {
-        this.type = type;
-        this.scopeId = scopeId;
-    }
+record VariableInfo(Type type, String scopeId) {
 }

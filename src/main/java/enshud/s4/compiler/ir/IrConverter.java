@@ -16,6 +16,9 @@ import enshud.util.SerialManager;
 
 import java.util.Optional;
 
+import static enshud.pascal.type.Type.CHAR;
+import static enshud.pascal.type.Type.INTEGER;
+
 public class IrConverter {
     public static IrProgram convert(AstNode astProgram) {
         IrConverterVisitor visitor = new IrConverterVisitor();
@@ -146,8 +149,20 @@ class IrConverterVisitor implements IAstVisitor<Optional<Temp>> {
 
     @Override
     public Optional<Temp> visit(WriteNode node) {
-        var exprTemp = node.exprs.stream().map(expr -> expr.accept(this).get()).toList();
-        currentScope.add(new Writeln(exprTemp));
+        for(var expr : node.exprs) {
+            var exprTemp = expr.accept(this).get();
+            Type type = expr.getType().get();
+            if (type == INTEGER) {
+                currentScope.add(new Write(exprTemp, Write.WriteType.INT));
+            } else if (type == CHAR) {
+                currentScope.add(new Write(exprTemp, Write.WriteType.CHAR));
+            } else if (type instanceof ArrayType arrayType && arrayType.elementType == CHAR) {
+                currentScope.add(new Write(exprTemp, Write.WriteType.STRING));
+            } else {
+                throw new IllegalStateException("Unexpected value: " + type);
+            }
+        }
+        currentScope.add(new Write());
         return Optional.empty();
     }
 
@@ -222,16 +237,17 @@ class IrConverterVisitor implements IAstVisitor<Optional<Temp>> {
         visitAll(node);
         Temp temp = Temp.of(tempManager.New());
         Const constValue;
-        if (node.type == Type.INTEGER) {
+        Type type = node.getType().get();
+        if (type == INTEGER) {
             constValue = new Const(Integer.parseInt(node.value));
-        } else if (node.type == Type.BOOLEAN) {
+        } else if (type == Type.BOOLEAN) {
             constValue = new Const(Boolean.parseBoolean(node.value));
-        } else if (node.type == Type.CHAR) {
+        } else if (type == CHAR) {
             constValue = new Const(node.value.charAt(0));
-        } else if (node.type instanceof ArrayType arrayType && arrayType.elementType == Type.CHAR) {
+        } else if (type instanceof ArrayType arrayType && arrayType.elementType == CHAR) {
             constValue = new Const(node.value);
         } else {
-            throw new IllegalStateException("Unexpected value: " + node.type);
+            throw new IllegalStateException("Unexpected value: " + type);
 
         }
         currentScope.add(new Move(temp, constValue));

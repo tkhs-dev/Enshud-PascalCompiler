@@ -35,7 +35,7 @@ begin
         a9 := 9;
     end;
 
-    writeln(a1, a2, a3, a4, a5, a6, a7, a8, a9, ' (integer test)');
+    write(a1, a2, a3, a4, a5, a6, a7, a8, a9, ' (integer test)');
 
 
     ca := 'A';
@@ -69,7 +69,7 @@ begin
         b8 := 8;
     end;
 
-    writeln(b1, b2, b3, b4, b5, b6, b7, b8, '9', ' (char/bool test)');
+    write(b1, b2, b3, b4, b5, b6, b7, b8, '9', ' (char/bool test)');
 
 
     i := 1;
@@ -125,5 +125,5 @@ begin
         i := i + 1;
     end;
 
-    writeln(s[1], s[2], s[3], s[4], s[5], s[6], s[7], s[8], s[9], ' (string test)');
+    write(s[1], s[2], s[3], s[4], s[5], s[6], s[7], s[8], s[9], ' (string test)');
 end.

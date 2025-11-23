@@ -25,18 +25,6 @@ public class StoreIndexed extends ITInstruction {
     }
 
     @Override
-    public List<Temp> getUsedTemps() {
-        List<Temp> symbols = new ArrayList<>();
-        if (index instanceof Temp idxTemp) {
-            symbols.add(idxTemp);
-        }
-        if (value instanceof Temp valTemp) {
-            symbols.add(valTemp);
-        }
-        return symbols;
-    }
-
-    @Override
     public String toString() {
         return String.format("Store: %s[%s] <- %s", target.name, index, value);
     }

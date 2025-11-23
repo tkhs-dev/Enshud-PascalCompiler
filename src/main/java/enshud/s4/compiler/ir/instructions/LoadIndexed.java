@@ -25,16 +25,6 @@ public class LoadIndexed extends ITInstruction {
     }
 
     @Override
-    public List<Temp> getUsedTemps() {
-        var symbols = new ArrayList<Temp>();
-        symbols.add(targetVar);
-        if (indexVar instanceof Temp temp) {
-            symbols.add(temp);
-        }
-        return symbols;
-    }
-
-    @Override
     public String toString() {
         return String.format("Load: %s <- %s[%s]", targetVar, arrayVar.name, indexVar);
     }

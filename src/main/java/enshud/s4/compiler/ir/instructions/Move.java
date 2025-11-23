@@ -22,16 +22,6 @@ public class Move extends ITInstruction {
     }
 
     @Override
-    public List<Temp> getUsedTemps() {
-        var temps = new ArrayList<Temp>();
-        temps.add(dest);
-        if (src instanceof Temp srcTemp) {
-            temps.add(srcTemp);
-        }
-        return temps;
-    }
-
-    @Override
     public String toString() {
         return String.format("Move: %s <- %s", dest, src);
     }

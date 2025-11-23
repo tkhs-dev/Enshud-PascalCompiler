@@ -7,5 +7,4 @@ import java.util.List;
 
 public abstract class ITInstruction {
     public abstract <T> T accept(IIrVisitor<T> visitor);
-    public abstract List<Temp> getUsedTemps();
 }

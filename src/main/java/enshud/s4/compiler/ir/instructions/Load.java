@@ -21,11 +21,6 @@ public class Load extends ITInstruction {
     }
 
     @Override
-    public List<Temp> getUsedTemps() {
-        return List.of(targetVar);
-    }
-
-    @Override
     public String toString() {
         return String.format("Load: %s <- %s", targetVar.id, var.name);
     }

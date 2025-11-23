@@ -30,16 +30,6 @@ public class BinaryOp extends ITInstruction {
     }
 
     @Override
-    public List<Temp> getUsedTemps() {
-        var temps =  new ArrayList<Temp>();
-        temps.add(left);
-        if (right instanceof Temp tempRight) {
-            temps.add(tempRight);
-        }
-        return temps;
-    }
-
-    @Override
     public String toString() {
         return String.format("BinaryOp: %s, %s, %s", opType, left, right);
     }

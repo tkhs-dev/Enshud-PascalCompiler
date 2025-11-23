@@ -9,5 +9,5 @@ begin
         a[i] := i * i;
         i := i + 1;
     end;
-    writeln(a[5]);
+    write(a[5]);
 end.
