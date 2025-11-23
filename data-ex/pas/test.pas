@@ -1,6 +1,6 @@
 program testBasic;
-var i: integer;
+var i: boolean;
 
 begin
-    i := i + 1;
+    i := true * false;
 end.

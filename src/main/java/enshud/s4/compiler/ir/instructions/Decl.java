@@ -7,9 +7,11 @@ import java.util.List;
 
 public class Decl extends ITInstruction {
     public final String varName;
+    public final boolean isParam;
 
-    public Decl(String varName) {
+    public Decl(String varName, boolean isParam) {
         this.varName = varName;
+        this.isParam = isParam;
     }
 
     @Override

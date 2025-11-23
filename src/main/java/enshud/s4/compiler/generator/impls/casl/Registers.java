@@ -16,12 +16,12 @@ public enum Registers {
     public final String name;
 
     public static final Registers TEMP = GR0;
-    public static final Registers OFFSET = GR6;
+    public static final Registers OFFSET = GR2;
     public static final Registers FP = GR7;
     public static final Registers SP = GR8;
 
     public static final Registers[] GENERAL_PURPOSE_REGISTERS = {
-            GR1, GR2, GR3, GR4, GR5
+            GR1, GR3, GR4, GR5, GR6
     };
 
     Registers(String name) {

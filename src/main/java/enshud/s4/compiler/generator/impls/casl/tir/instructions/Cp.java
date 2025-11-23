@@ -2,7 +2,7 @@ package enshud.s4.compiler.generator.impls.casl.tir.instructions;
 
 import enshud.s4.compiler.generator.impls.casl.tir.operand.TIROperand;
 
-public class Cp extends TIRInstruction {
+public class Cp extends TIRInstruction<Cp> {
     public final TIROperand left;
     public final TIROperand right;
 

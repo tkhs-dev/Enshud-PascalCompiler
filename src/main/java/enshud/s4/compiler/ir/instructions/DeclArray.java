@@ -9,11 +9,13 @@ public class DeclArray extends ITInstruction {
     public final String varName;
     public final int upperBound;
     public final int lowerBound;
+    public final boolean isParam;
 
-    public DeclArray(String varName, int upperBound, int lowerBound) {
+    public DeclArray(String varName, int upperBound, int lowerBound, boolean isParam) {
         this.varName = varName;
         this.upperBound = upperBound;
         this.lowerBound = lowerBound;
+        this.isParam = isParam;
     }
 
     @Override

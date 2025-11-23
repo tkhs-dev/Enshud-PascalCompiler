@@ -7,22 +7,18 @@ import enshud.s4.compiler.ir.operand.Temp;
 import java.util.List;
 
 public class Jump extends ITInstruction {
-    public static final int TYPE_UNCONDITIONAL = 0;
-    public static final int TYPE_TRUE = 1;
-    public static final int TYPE_FALSE = 2;
-
     public final String target;
     public final Operand condition; // 条件付きジャンプの場合の条件オペランド
-    public final int type;
+    public final Type type;
 
-    public Jump(String target, Operand condition, int type) {
+    public Jump(String target, Operand condition, Type type) {
         this.target = target;
         this.condition = condition;
         this.type = type;
     }
 
     public Jump(String target) {
-        this(target, null, TYPE_UNCONDITIONAL);
+        this(target, null, Type.UNCONDITIONAL);
     }
 
     @Override
@@ -41,5 +37,11 @@ public class Jump extends ITInstruction {
     @Override
     public String toString() {
         return String.format("Goto: %s", target);
+    }
+
+    public enum Type {
+        UNCONDITIONAL,
+        TRUE,
+        FALSE
     }
 }

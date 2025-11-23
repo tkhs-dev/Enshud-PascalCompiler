@@ -60,10 +60,10 @@ class IrConverterVisitor implements IAstVisitor<Optional<Temp>> {
         var p = switch (node.varType) {
             case StandardTypeNode t ->
                 // 標準型変数宣言
-                    node.varNames.stream().map(Decl::new).toList();
+                    node.varNames.stream().map(name -> new Decl(name, false)).toList();
             case ArrayTypeNode t ->
                 // 配列型変数宣言
-                    node.varNames.stream().map(name -> new DeclArray(name, t.upperBound, t.lowerBound)).toList();
+                    node.varNames.stream().map(name -> new DeclArray(name, t.upperBound, t.lowerBound, false)).toList();
             default -> throw new IllegalStateException("Unexpected value: " + node.varType);
         };
         currentScope.addAll(p);
@@ -92,10 +92,10 @@ class IrConverterVisitor implements IAstVisitor<Optional<Temp>> {
         var p = switch (node.type) {
             case StandardTypeNode t ->
                 // 標準型変数宣言
-                    node.params.stream().map(Decl::new).toList();
+                    node.params.stream().map(name -> new Decl(name, true)).toList();
             case ArrayTypeNode t ->
                 // 配列型変数宣言
-                    node.params.stream().map(name -> new DeclArray(name, t.upperBound, t.lowerBound)).toList();
+                    node.params.stream().map(name -> new DeclArray(name, t.upperBound, t.lowerBound, true)).toList();
             default -> throw new IllegalStateException("Unexpected value: " + node.type);
         };
         currentScope.addAll(p);
@@ -162,7 +162,7 @@ class IrConverterVisitor implements IAstVisitor<Optional<Temp>> {
         var endLabel = labelManager.New();
 
         var condition = node.condition.accept(this).get();
-        currentScope.add(new Jump(thenLabel, condition, Jump.TYPE_TRUE));
+        currentScope.add(new Jump(thenLabel, condition, Jump.Type.TRUE));
 
         if(node.elseBranch != null) {
             currentScope.add(Label.of(elseLabel));
@@ -185,7 +185,7 @@ class IrConverterVisitor implements IAstVisitor<Optional<Temp>> {
 
         currentScope.add(Label.of(startLabel));
         var condition = node.condition.accept(this).get();
-        currentScope.add(new Jump(endLabel, condition, Jump.TYPE_FALSE));
+        currentScope.add(new Jump(endLabel, condition, Jump.Type.FALSE));
         node.body.accept(this);
         currentScope.add(Label.of(endLabel));
         return Optional.empty();
