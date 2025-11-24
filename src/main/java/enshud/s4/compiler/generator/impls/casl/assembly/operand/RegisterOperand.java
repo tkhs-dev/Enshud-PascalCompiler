@@ -1,11 +1,11 @@
 package enshud.s4.compiler.generator.impls.casl.assembly.operand;
 
-import enshud.s4.compiler.generator.impls.casl.Registers;
+import enshud.s4.compiler.generator.Register;
 
 public class RegisterOperand implements DataOperand {
-    public final Registers register;
+    public final Register register;
 
-    public RegisterOperand(Registers register) {
+    public RegisterOperand(Register register) {
         this.register = register;
     }
 

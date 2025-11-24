@@ -46,7 +46,7 @@ public class Ir2TIr {
 }
 
 class Ir2TIrVisitor implements IIrVisitor<Void> {
-    private final List<TIRInstruction> tirInstructions;
+    private final List<Instr> tirInstructions;
     private final FrameInfo frameInfo;
     private final SerialManager serialManager;
 
@@ -56,7 +56,7 @@ class Ir2TIrVisitor implements IIrVisitor<Void> {
         this.serialManager = new SerialManager("LL");
     }
 
-    public List<TIRInstruction> getInstructions() {
+    public List<Instr> getInstructions() {
         return tirInstructions;
     }
 
@@ -140,25 +140,25 @@ class Ir2TIrVisitor implements IIrVisitor<Void> {
 
     @Override
     public Void visit(Write ir) {
-        List<TIRInstruction> instr = switch (ir.writeType){
+        List<Instr> instr = switch (ir.writeType){
             case INT -> {
                 yield List.of(
-                        new Lad(RealRegister.of(Registers.GR2), convertOperand(ir.operand)),
+                        new Lad(RealRegister.of(CaslRegisters.GR2), convertOperand(ir.operand)),
                         new enshud.s4.compiler.generator.impls.casl.tir.instructions.Call("WRTINT")
                 );
             }
             case CHAR -> {
                 yield List.of(
-                        new Lad(RealRegister.of(Registers.GR2), convertOperand(ir.operand)),
+                        new Lad(RealRegister.of(CaslRegisters.GR2), convertOperand(ir.operand)),
                         new enshud.s4.compiler.generator.impls.casl.tir.instructions.Call("WRTCH")
                 );
             }
             case STRING -> {
                 var operand = convertOperand(ir.operand);
                 yield List.of(
-                        new Ld(RealRegister.of(Registers.GR1), operand),
-                        new Lad(RealRegister.of(Registers.GR2), convertOperand(ir.operand)),
-                        new Add(RealRegister.of(Registers.GR2), new NumericImmediate(1, NumericImmediate.Type.DECIMAL)),
+                        new Ld(RealRegister.of(CaslRegisters.GR1), operand),
+                        new Lad(RealRegister.of(CaslRegisters.GR2), convertOperand(ir.operand)),
+                        new Add(RealRegister.of(CaslRegisters.GR2), new NumericImmediate(1, NumericImmediate.Type.DECIMAL)),
                         new enshud.s4.compiler.generator.impls.casl.tir.instructions.Call("WRTSTR")
                 );
             }
@@ -189,26 +189,26 @@ class Ir2TIrVisitor implements IIrVisitor<Void> {
             }
             case MUL -> {
                 tirInstructions.addAll(List.of(
-                        new Lad(RealRegister.of(Registers.GR1), convertOperand(ir.left)),
-                        new Lad(RealRegister.of(Registers.GR2), convertOperand(ir.right)),
+                        new Lad(RealRegister.of(CaslRegisters.GR1), convertOperand(ir.left)),
+                        new Lad(RealRegister.of(CaslRegisters.GR2), convertOperand(ir.right)),
                         new enshud.s4.compiler.generator.impls.casl.tir.instructions.Call("MULT"),
-                        new Lad(convertOperand(ir.left), RealRegister.of(Registers.GR2))
+                        new Lad(convertOperand(ir.left), RealRegister.of(CaslRegisters.GR2))
                 ));
             }
             case DIV -> {
                 tirInstructions.addAll(List.of(
-                        new Lad(RealRegister.of(Registers.GR1), convertOperand(ir.left)),
-                        new Lad(RealRegister.of(Registers.GR2), convertOperand(ir.right)),
+                        new Lad(RealRegister.of(CaslRegisters.GR1), convertOperand(ir.left)),
+                        new Lad(RealRegister.of(CaslRegisters.GR2), convertOperand(ir.right)),
                         new enshud.s4.compiler.generator.impls.casl.tir.instructions.Call("DIV"),
-                        new Lad(convertOperand(ir.left), RealRegister.of(Registers.GR2))
+                        new Lad(convertOperand(ir.left), RealRegister.of(CaslRegisters.GR2))
                 ));
             }
             case MOD -> {
                 tirInstructions.addAll(List.of(
-                        new Lad(RealRegister.of(Registers.GR1), convertOperand(ir.left)),
-                        new Lad(RealRegister.of(Registers.GR2), convertOperand(ir.right)),
+                        new Lad(RealRegister.of(CaslRegisters.GR1), convertOperand(ir.left)),
+                        new Lad(RealRegister.of(CaslRegisters.GR2), convertOperand(ir.right)),
                         new enshud.s4.compiler.generator.impls.casl.tir.instructions.Call("DIV"),
-                        new Lad(convertOperand(ir.left), RealRegister.of(Registers.GR1))
+                        new Lad(convertOperand(ir.left), RealRegister.of(CaslRegisters.GR1))
                 ));
             }
             case AND -> {

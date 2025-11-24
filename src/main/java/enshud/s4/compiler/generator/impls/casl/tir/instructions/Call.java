@@ -1,6 +1,6 @@
 package enshud.s4.compiler.generator.impls.casl.tir.instructions;
 
-public class Call extends TIRInstruction<Call> {
+public class Call extends Instr<Call> {
     public final String functionName;
 
     public Call(String functionName) {

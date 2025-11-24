@@ -1,6 +1,6 @@
 package enshud.s4.compiler.generator.impls.casl.tir.instructions;
 
-public class Jmp extends TIRInstruction<Jmp> {
+public class Jmp extends Instr<Jmp> {
     public final String addressLabel;
     public final Type type;
 

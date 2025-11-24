@@ -1,8 +1,8 @@
 package enshud.s4.compiler.generator.impls.casl.assembly.instructions;
 
-import enshud.s4.compiler.generator.impls.casl.assembly.operand.OperandKind;
+import enshud.s4.compiler.generator.impls.casl.assembly.operand.AssemblyOperand;
 
-public abstract class Instr2Op<Op1 extends OperandKind,Op2 extends OperandKind> extends Instr {
+public abstract class Instr2Op<Op1 extends AssemblyOperand,Op2 extends AssemblyOperand> extends Instr<Instr2Op<Op1, Op2>> {
     protected Op1 op1;
     protected Op2 op2;
 

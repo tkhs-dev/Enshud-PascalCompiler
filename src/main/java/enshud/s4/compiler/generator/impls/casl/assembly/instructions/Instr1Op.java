@@ -1,16 +1,16 @@
 package enshud.s4.compiler.generator.impls.casl.assembly.instructions;
 
-import enshud.s4.compiler.generator.impls.casl.assembly.operand.OperandKind;
+import enshud.s4.compiler.generator.impls.casl.assembly.operand.AssemblyOperand;
 
-public class Instr1Op<Op1 extends OperandKind> extends Instr {
-    protected Op1 op1;
+public class Instr1Op<Op1 extends AssemblyOperand> extends Instr<Instr1Op<Op1>> {
+    protected Op1 op;
 
     public Instr1Op(Op1 op1) {
-        this.op1 = op1;
+        this.op = op;
     }
 
     @Override
     public String toString() {
-        return String.format("%s %s", super.toString(), op1);
+        return String.format("%s %s", super.toString(), op);
     }
 }

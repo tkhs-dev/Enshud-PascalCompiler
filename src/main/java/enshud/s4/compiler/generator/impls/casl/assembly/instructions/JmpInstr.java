@@ -1,6 +1,6 @@
 package enshud.s4.compiler.generator.impls.casl.assembly.instructions;
 
-public class JmpInstr extends Instr{
+public class JmpInstr extends Instr<JmpInstr> {
     protected String operand;
 
     public JmpInstr(String operand) {

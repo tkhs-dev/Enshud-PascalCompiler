@@ -2,7 +2,7 @@ package enshud.s4.compiler.generator.impls.casl.tir.instructions;
 
 import java.util.Optional;
 
-public abstract class TIRInstruction<T extends TIRInstruction<T>> {
+public abstract class Instr<T extends Instr<T>> {
     private String label = null;
 
     public abstract <R> R accept(ITIRVisitor<R> visitor);

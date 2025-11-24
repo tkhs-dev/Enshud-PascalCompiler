@@ -1,10 +1,11 @@
 package enshud.s4.compiler.generator.impls.casl.assembly.instructions;
 
-public abstract class Instr {
+public abstract class Instr<T extends Instr<T>> {
     protected String label = null;
 
-    public void setLabel(String label){
+    public T setLabel(String label){
         this.label = label;
+        return (T)this;
     }
 
     public String getInstructionName(){
