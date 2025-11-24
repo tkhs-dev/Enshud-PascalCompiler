@@ -140,6 +140,35 @@ class Ir2TIrVisitor implements IIrVisitor<Void> {
 
     @Override
     public Void visit(Write ir) {
+        List<TIRInstruction> instr = switch (ir.writeType){
+            case INT -> {
+                yield List.of(
+                        new Lad(RealRegister.of(Registers.GR2), convertOperand(ir.operand)),
+                        new enshud.s4.compiler.generator.impls.casl.tir.instructions.Call("WRTINT")
+                );
+            }
+            case CHAR -> {
+                yield List.of(
+                        new Lad(RealRegister.of(Registers.GR2), convertOperand(ir.operand)),
+                        new enshud.s4.compiler.generator.impls.casl.tir.instructions.Call("WRTCH")
+                );
+            }
+            case STRING -> {
+                var operand = convertOperand(ir.operand);
+                yield List.of(
+                        new Ld(RealRegister.of(Registers.GR1), operand),
+                        new Lad(RealRegister.of(Registers.GR2), convertOperand(ir.operand)),
+                        new Add(RealRegister.of(Registers.GR2), new NumericImmediate(1, NumericImmediate.Type.DECIMAL)),
+                        new enshud.s4.compiler.generator.impls.casl.tir.instructions.Call("WRTSTR")
+                );
+            }
+            case NEWLINE -> {
+                yield List.of(
+                        new enshud.s4.compiler.generator.impls.casl.tir.instructions.Call("WRTLN")
+                );
+            }
+        };
+        tirInstructions.addAll(instr);
         return null;
     }
 
@@ -292,7 +321,9 @@ class Ir2TIrVisitor implements IIrVisitor<Void> {
                 }else if(c.value instanceof Boolean b){
                     yield new NumericImmediate(b ? 1 : 0, NumericImmediate.Type.DECIMAL);
                 }else if(c.value instanceof Character ch){
-                    yield new StringImmediate(String.valueOf(ch));
+                    yield new CharImmediate(ch);
+                }else if(c.value instanceof String s){
+                    yield new StringImmediate(s);
                 }else {
                     throw new UnsupportedOperationException("Unsupported constant type: " + c.value.getClass() + " value: " + c.value);
                 }
