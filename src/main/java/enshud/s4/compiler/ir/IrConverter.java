@@ -174,7 +174,6 @@ class IrConverterVisitor implements IAstVisitor<Optional<Temp>> {
 
     @Override
     public Optional<Temp> visit(IfNode node) {
-        var elseLabel = node.elseBranch != null ? labelManager.New() : null;
         var thenLabel = labelManager.New();
         var endLabel = labelManager.New();
 
@@ -182,8 +181,7 @@ class IrConverterVisitor implements IAstVisitor<Optional<Temp>> {
         currentScope.add(new Jump(thenLabel, condition, Jump.Type.TRUE));
 
         if(node.elseBranch != null) {
-            currentScope.add(Label.of(elseLabel));
-            node.elseBranch.accept(this);return Optional.empty();
+            node.elseBranch.accept(this);
         }
 
         currentScope.add(new Jump(endLabel));
