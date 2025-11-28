@@ -15,12 +15,12 @@ public class CaslDescription implements TargetDescription {
 
     @Override
     public List<Register> getAllocatableRegisters() {
-        return List.of(GR0, GR1, GR2, GR3, GR4, GR5, GR6);
+        return List.of(GR0, GR1, GR3, GR4, GR5, GR6);
     }
 
     @Override
     public List<Register> getCallerSaved() {
-        return List.of(GR1, GR2, GR6);
+        return List.of(GR1, GR6);
     }
 
     @Override
@@ -30,11 +30,11 @@ public class CaslDescription implements TargetDescription {
 
     @Override
     public List<Register> getReservedRegisters() {
-        return List.of(GR7, GR8);
+        return List.of(GR1, GR7, GR8);
     }
 
     @Override
     public List<Register> getScratchCandidates() {
-        return List.of(GR1, GR2, GR3, GR4, GR5, GR6);
+        return List.of(GR1, GR3, GR4, GR5, GR6);
     }
 }

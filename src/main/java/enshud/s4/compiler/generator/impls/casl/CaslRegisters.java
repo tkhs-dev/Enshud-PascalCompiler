@@ -13,8 +13,7 @@ public class CaslRegisters {
     public static final Register GR7 = new Register("GR7");
     public static final Register GR8 = new Register("GR8");
 
-    public static final Register TEMP = GR0;
-    public static final Register OFFSET = GR2;
+    public static final Register TEMP = GR2;
     public static final Register FP = GR7;
     public static final Register SP = GR8;
 }
