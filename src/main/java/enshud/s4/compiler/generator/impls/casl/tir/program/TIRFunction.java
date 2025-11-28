@@ -8,15 +8,21 @@ public class TIRFunction {
     public String name;
     public FrameInfo frameInfo;
 
-    private List<Instr> instructions;
+    private List<TIRBlock> blocks;
 
-    public TIRFunction(String name, FrameInfo frameInfo, List<Instr> instructions) {
+    public TIRFunction(String name, FrameInfo frameInfo, List<TIRBlock> blocks) {
         this.name = name;
         this.frameInfo = frameInfo;
-        this.instructions = instructions;
+        this.blocks = blocks;
+    }
+
+    public List<TIRBlock> getBlocks() {
+        return blocks;
     }
 
     public List<Instr> getInstructions() {
-        return this.instructions;
+        return blocks.stream()
+                .flatMap(block -> block.getInstructions().stream())
+                .toList();
     }
 }

@@ -2,6 +2,7 @@ package enshud.s4.compiler.generator.impls.casl;
 
 import enshud.s4.compiler.generator.impls.casl.tir.instructions.*;
 import enshud.s4.compiler.generator.impls.casl.tir.operand.*;
+import enshud.s4.compiler.generator.impls.casl.tir.program.CFGBuilder;
 import enshud.s4.compiler.generator.impls.casl.tir.program.FrameInfo;
 import enshud.s4.compiler.generator.impls.casl.tir.program.TIRFunction;
 import enshud.s4.compiler.generator.impls.casl.tir.program.TIRProgram;
@@ -37,10 +38,12 @@ public class Ir2TIr {
         for (var irInstruction : irFunction.getInstructions()) {
             irInstruction.accept(visitor);
         }
+        var instructions = visitor.getInstructions();
+        var blocks = CFGBuilder.build(instructions);
         return new TIRFunction(
                 irFunction.name,
                 visitor.getFrameInfo(),
-                visitor.getInstructions()
+                blocks
         );
     }
 }
