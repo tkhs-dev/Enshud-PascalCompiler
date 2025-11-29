@@ -1,6 +1,9 @@
 package enshud.s4.compiler.generator.impls.casl.tir.instructions;
 
+import enshud.s4.compiler.generator.impls.casl.tir.operand.RegisterOperand;
 import enshud.s4.compiler.generator.impls.casl.tir.operand.TIROperand;
+
+import java.util.Set;
 
 public class Lad extends Instr<Lad> {
     public final TIROperand dest;
@@ -19,5 +22,15 @@ public class Lad extends Instr<Lad> {
     @Override
     public String toString() {
         return formatInstruction(dest, value);
+    }
+
+    @Override
+    public Set<RegisterOperand> getUse() {
+        return registerSet(value);
+    }
+
+    @Override
+    public Set<RegisterOperand> getDef() {
+        return registerSet(dest);
     }
 }

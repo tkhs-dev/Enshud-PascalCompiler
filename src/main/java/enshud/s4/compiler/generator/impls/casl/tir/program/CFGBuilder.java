@@ -1,60 +1,62 @@
 package enshud.s4.compiler.generator.impls.casl.tir.program;
 
+import enshud.s4.compiler.generator.BasicBlock;
 import enshud.s4.compiler.generator.impls.casl.tir.instructions.Instr;
 import enshud.s4.compiler.generator.impls.casl.tir.instructions.Jmp;
 import enshud.s4.compiler.generator.impls.casl.tir.instructions.Ret;
+import enshud.s4.compiler.generator.impls.casl.tir.operand.RegisterOperand;
 
 import java.util.*;
 
 public class CFGBuilder {
-    public static List<TIRBlock> build(List<Instr> instructions) {
-        List<TIRBlock> blocks = new ArrayList<>();
-        Map<String, TIRBlock> labelToBlock = new HashMap<>();
+    public static List<BasicBlock<RegisterOperand,Instr<?>>> build(List<Instr> instructions) {
+        List<BasicBlock<RegisterOperand,Instr<?>>> blocks = new ArrayList<>();
+        Map<String, BasicBlock<RegisterOperand,Instr<?>>> labelToBlock = new HashMap<>();
 
         // ブロックの分割とラベルのマッピング
-        List<Instr> instrs = new ArrayList<>();
-        for (Instr instr : instructions) {
+        List<Instr<?>> instrs = new ArrayList<>();
+        for (Instr<?> instr : instructions) {
             if (instr.getLabel().isPresent() && !instrs.isEmpty()) {
                 // ラベルで始まる命令が現れた場合、現在の命令リストをブロックとして切り出す
-                var block = new TIRBlock(instrs);
+                var block = new BasicBlock<>(instrs);
                 blocks.add(block);
                 if (instrs.getFirst().getLabel().isPresent()) {
-                    labelToBlock.put((String) instrs.getFirst().getLabel().get(), block);
+                    labelToBlock.put(instrs.getFirst().getLabel().get(), block);
                 }
                 instrs = new ArrayList<>();
             }
             instrs.add(instr);
             if (instr instanceof Jmp) {
-                var block = new TIRBlock(instrs);
+                var block = new BasicBlock<>(instrs);
                 blocks.add(block);
                 if (instrs.size() > 1 && instrs.getFirst().getLabel().isPresent()) {
-                    labelToBlock.put((String) instrs.getFirst().getLabel().get(), block);
+                    labelToBlock.put(instrs.getFirst().getLabel().get(), block);
                 }
                 instrs = new ArrayList<>();
             }
             if (instr instanceof Ret){
-                var block = new TIRBlock(instrs);
+                var block = new BasicBlock<>(instrs);
                 blocks.add(block);
                 if (instrs.size() > 1 && instrs.getFirst().getLabel().isPresent()) {
-                    labelToBlock.put((String) instrs.getFirst().getLabel().get(), block);
+                    labelToBlock.put(instrs.getFirst().getLabel().get(), block);
                 }
                 instrs = new ArrayList<>();
             }
         }
         if (!instrs.isEmpty()) {
-            var block = new TIRBlock(instrs);
+            var block = new BasicBlock<>(instrs);
             blocks.add(block);
             if (instrs.getFirst().getLabel().isPresent()) {
-                labelToBlock.put((String) instrs.getFirst().getLabel().get(), block);
+                labelToBlock.put(instrs.getFirst().getLabel().get(), block);
             }
         }
 
         // ラベルの関連付け
-        for (TIRBlock block : blocks) {
+        for (BasicBlock<RegisterOperand,Instr<?>> block : blocks) {
             Instr lastInstr = block.getInstructions().getLast();
             if (lastInstr instanceof Jmp jmp) {
                 String targetLabel = jmp.addressLabel;
-                TIRBlock targetBlock = labelToBlock.get(targetLabel);
+                BasicBlock<RegisterOperand,Instr<?>> targetBlock = labelToBlock.get(targetLabel);
                 if (targetBlock != null) {
                     block.addSuccessor(targetBlock);
                     targetBlock.addPredecessor(block);
@@ -63,7 +65,7 @@ public class CFGBuilder {
                     // 条件分岐命令の場合、次のブロックも後続ブロックになる
                     int currentIndex = blocks.indexOf(block);
                     if (currentIndex + 1 < blocks.size()) {
-                        TIRBlock nextBlock = blocks.get(currentIndex + 1);
+                        BasicBlock<RegisterOperand,Instr<?>> nextBlock = blocks.get(currentIndex + 1);
                         block.addSuccessor(nextBlock);
                         nextBlock.addPredecessor(block);
                     }
@@ -74,30 +76,30 @@ public class CFGBuilder {
                 // 最後の命令がジャンプ命令でない場合、次のブロックが後続ブロックになる
                 int currentIndex = blocks.indexOf(block);
                 if (currentIndex + 1 < blocks.size()) {
-                    TIRBlock nextBlock = blocks.get(currentIndex + 1);
+                    BasicBlock<RegisterOperand,Instr<?>> nextBlock = blocks.get(currentIndex + 1);
                     block.addSuccessor(nextBlock);
                     nextBlock.addPredecessor(block);
                 }
             }
         }
-
-        System.out.println("---- Block ----");
-        for (TIRBlock block : blocks) {
-            System.out.println("Block:");
-            for (Instr instr : block.getInstructions()) {
-                System.out.println("  " + instr);
-            }
-            System.out.print("  Successors: ");
-            for (TIRBlock succ : block.getSuccessors()) {
-                System.out.print("[" + succ.getInstructions().getFirst() + "] ");
-            }
-            System.out.println();
-            System.out.print("  Predecessors: ");
-            for (TIRBlock pred : block.getPredecessors()) {
-                System.out.print("[" + pred.getInstructions().getFirst() + "] ");
-            }
-            System.out.println("\n");
-        }
+//
+//        System.out.println("---- Block ----");
+//        for (BasicBlock<RegisterOperand,Instr<?>> block : blocks) {
+//            System.out.println("Block:");
+//            for (Instr<?> instr : block.getInstructions()) {
+//                System.out.println("  " + instr);
+//            }
+//            System.out.print("  Successors: ");
+//            for (BasicBlock<RegisterOperand,Instr<?>> succ : block.getSuccessors()) {
+//                System.out.print("[" + succ.getInstructions().getFirst() + "] ");
+//            }
+//            System.out.println();
+//            System.out.print("  Predecessors: ");
+//            for (BasicBlock<RegisterOperand,Instr<?>> pred : block.getPredecessors()) {
+//                System.out.print("[" + pred.getInstructions().getFirst() + "] ");
+//            }
+//            System.out.println("\n");
+//        }
 
         return blocks;
     }

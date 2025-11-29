@@ -4,7 +4,7 @@ var i,j,k: integer;
 begin
     i := 10;
     j := 20;
-    k := i + j * 3 * j div k;
+    k := i + j;
     if k > 100 then
     begin
         k := k - 100;

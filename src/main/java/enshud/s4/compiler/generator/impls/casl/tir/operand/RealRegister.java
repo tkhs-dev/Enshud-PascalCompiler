@@ -22,6 +22,11 @@ public class RealRegister extends RegisterOperand {
     }
 
     @Override
+    public int hashCode() {
+        return register.hashCode();
+    }
+
+    @Override
     public String toString() {
         return register.toString();
     }

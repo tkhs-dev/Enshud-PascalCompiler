@@ -2,15 +2,10 @@ package enshud.s3.checker;
 
 import enshud.pascal.ast.AstParseException;
 import enshud.pascal.ast.AstParser;
-import enshud.pascal.ast.IAstVisitor;
 import enshud.pascal.ast.nodes.*;
-import enshud.pascal.ast.nodes.expr.*;
-import enshud.pascal.ast.nodes.stmt.*;
-import enshud.pascal.type.Type;
 import enshud.token.FileFormatException;
 import enshud.token.Token;
 import enshud.token.TokenFile;
-import enshud.util.SerialManager;
 
 import java.io.IOException;
 import java.util.*;

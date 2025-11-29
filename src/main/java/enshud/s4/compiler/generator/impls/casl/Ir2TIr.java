@@ -1,5 +1,6 @@
 package enshud.s4.compiler.generator.impls.casl;
 
+import enshud.s4.compiler.generator.LivenessAnalyzer;
 import enshud.s4.compiler.generator.impls.casl.tir.instructions.*;
 import enshud.s4.compiler.generator.impls.casl.tir.operand.*;
 import enshud.s4.compiler.generator.impls.casl.tir.program.CFGBuilder;
@@ -40,6 +41,9 @@ public class Ir2TIr {
         }
         var instructions = visitor.getInstructions();
         var blocks = CFGBuilder.build(instructions);
+        var analyzer = new LivenessAnalyzer<>(blocks);
+        analyzer.analyze();
+
         return new TIRFunction(
                 irFunction.name,
                 visitor.getFrameInfo(),
