@@ -312,11 +312,13 @@ class Ir2TIrVisitor implements IIrVisitor<Void> {
 
     @Override
     public Void visit(Load ir) {
+        tirInstructions.add(new Ld(convertOperand(ir.targetVar), convertOperand(ir.var)));
         return null;
     }
 
     @Override
     public Void visit(Store ir) {
+        tirInstructions.add(new St(convertOperand(ir.target), convertOperand(ir.value)));
         return null;
     }
 
