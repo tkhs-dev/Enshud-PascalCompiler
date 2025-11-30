@@ -36,15 +36,15 @@ public class LivenessAnalyzer<T, R extends AnalysableInstruction<T>> {
 
                 // liveOut[B] = ∪ liveIn[succ]
                 Set<T> newOut = new HashSet<>();
-                for (BasicBlock<T, R> succ : b.getPredecessors()) {
+                for (BasicBlock<T, R> succ : b.getSuccessors()) {
                     newOut.addAll(succ.liveIn);
                 }
                 b.liveOut = newOut;
 
                 // liveIn[B] = use[B] ∪ (liveOut[B] − def[B])
-                Set<T> newIn = new HashSet<>(b.getDef());
+                Set<T> newIn = new HashSet<>(b.getUse());
                 Set<T> outMinusDef = new HashSet<>(b.liveOut);
-                outMinusDef.removeAll(b.getUse());
+                outMinusDef.removeAll(b.getDef());
                 newIn.addAll(outMinusDef);
                 b.liveIn = newIn;
 
@@ -95,6 +95,12 @@ public class LivenessAnalyzer<T, R extends AnalysableInstruction<T>> {
             for (AnalysableInstruction<T> instr : block.getInstructions()) {
                 System.out.println("  " + instr);
             }
+            System.out.println("  Successors: ");
+            for (BasicBlock<T, R> succ : block.getSuccessors()) {
+                System.out.println("    " + succ.getInstructions().getFirst());
+            }
+            System.out.println("  use: " + block.getUse());
+            System.out.println("  def: " + block.getDef());
             System.out.println("  liveIn: " + block.liveIn);
             System.out.println("  liveOut: " + block.liveOut);
         }
