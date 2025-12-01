@@ -82,25 +82,6 @@ public class CFGBuilder {
                 }
             }
         }
-//
-//        System.out.println("---- Block ----");
-//        for (BasicBlock<RegisterOperand,Instr<?>> block : blocks) {
-//            System.out.println("Block:");
-//            for (Instr<?> instr : block.getInstructions()) {
-//                System.out.println("  " + instr);
-//            }
-//            System.out.print("  Successors: ");
-//            for (BasicBlock<RegisterOperand,Instr<?>> succ : block.getSuccessors()) {
-//                System.out.print("[" + succ.getInstructions().getFirst() + "] ");
-//            }
-//            System.out.println();
-//            System.out.print("  Predecessors: ");
-//            for (BasicBlock<RegisterOperand,Instr<?>> pred : block.getPredecessors()) {
-//                System.out.print("[" + pred.getInstructions().getFirst() + "] ");
-//            }
-//            System.out.println("\n");
-//        }
-
         return blocks;
     }
 }
