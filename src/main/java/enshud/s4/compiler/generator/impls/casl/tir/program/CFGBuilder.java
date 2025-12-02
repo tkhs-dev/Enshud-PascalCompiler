@@ -9,7 +9,7 @@ import enshud.s4.compiler.generator.impls.casl.tir.operand.RegisterOperand;
 import java.util.*;
 
 public class CFGBuilder {
-    public static List<BasicBlock<RegisterOperand,Instr<?>>> build(List<Instr> instructions) {
+    public static List<BasicBlock<RegisterOperand,Instr<?>>> build(List<Instr<?>> instructions) {
         List<BasicBlock<RegisterOperand,Instr<?>>> blocks = new ArrayList<>();
         Map<String, BasicBlock<RegisterOperand,Instr<?>>> labelToBlock = new HashMap<>();
 

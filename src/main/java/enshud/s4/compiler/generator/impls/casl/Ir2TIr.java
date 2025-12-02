@@ -53,7 +53,7 @@ public class Ir2TIr {
 }
 
 class Ir2TIrVisitor implements IIrVisitor<Void> {
-    private final List<Instr> tirInstructions;
+    private final List<Instr<?>> tirInstructions;
     private final FrameInfo frameInfo;
     private final SerialManager serialManager;
 
@@ -63,7 +63,7 @@ class Ir2TIrVisitor implements IIrVisitor<Void> {
         this.serialManager = new SerialManager("LL");
     }
 
-    public List<Instr> getInstructions() {
+    public List<Instr<?>> getInstructions() {
         return tirInstructions;
     }
 
@@ -147,7 +147,7 @@ class Ir2TIrVisitor implements IIrVisitor<Void> {
 
     @Override
     public Void visit(Write ir) {
-        List<Instr> instr = switch (ir.writeType){
+        List<Instr<?>> instr = switch (ir.writeType){
             case INT -> {
                 yield List.of(
                         new Lad(RealRegister.of(CaslRegisters.GR2), convertOperand(ir.operand)),
