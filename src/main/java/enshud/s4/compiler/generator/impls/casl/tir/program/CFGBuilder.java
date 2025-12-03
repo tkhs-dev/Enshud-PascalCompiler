@@ -9,9 +9,9 @@ import enshud.s4.compiler.generator.impls.casl.tir.operand.RegisterOperand;
 import java.util.*;
 
 public class CFGBuilder {
-    public static List<BasicBlock<RegisterOperand,Instr<?>>> build(List<Instr<?>> instructions) {
-        List<BasicBlock<RegisterOperand,Instr<?>>> blocks = new ArrayList<>();
-        Map<String, BasicBlock<RegisterOperand,Instr<?>>> labelToBlock = new HashMap<>();
+    public static List<BasicBlock<Instr<?>>> build(List<Instr<?>> instructions) {
+        List<BasicBlock<Instr<?>>> blocks = new ArrayList<>();
+        Map<String, BasicBlock<Instr<?>>> labelToBlock = new HashMap<>();
 
         // ブロックの分割とラベルのマッピング
         List<Instr<?>> instrs = new ArrayList<>();
@@ -52,11 +52,11 @@ public class CFGBuilder {
         }
 
         // ラベルの関連付け
-        for (BasicBlock<RegisterOperand,Instr<?>> block : blocks) {
-            Instr lastInstr = block.getInstructions().getLast();
+        for (BasicBlock<Instr<?>> block : blocks) {
+            var lastInstr = block.getInstructions().getLast();
             if (lastInstr instanceof Jmp jmp) {
                 String targetLabel = jmp.addressLabel;
-                BasicBlock<RegisterOperand,Instr<?>> targetBlock = labelToBlock.get(targetLabel);
+                var targetBlock = labelToBlock.get(targetLabel);
                 if (targetBlock != null) {
                     block.addSuccessor(targetBlock);
                     targetBlock.addPredecessor(block);
@@ -65,7 +65,7 @@ public class CFGBuilder {
                     // 条件分岐命令の場合、次のブロックも後続ブロックになる
                     int currentIndex = blocks.indexOf(block);
                     if (currentIndex + 1 < blocks.size()) {
-                        BasicBlock<RegisterOperand,Instr<?>> nextBlock = blocks.get(currentIndex + 1);
+                        BasicBlock<Instr<?>> nextBlock = blocks.get(currentIndex + 1);
                         block.addSuccessor(nextBlock);
                         nextBlock.addPredecessor(block);
                     }
@@ -76,7 +76,7 @@ public class CFGBuilder {
                 // 最後の命令がジャンプ命令でない場合、次のブロックが後続ブロックになる
                 int currentIndex = blocks.indexOf(block);
                 if (currentIndex + 1 < blocks.size()) {
-                    BasicBlock<RegisterOperand,Instr<?>> nextBlock = blocks.get(currentIndex + 1);
+                    BasicBlock<Instr<?>> nextBlock = blocks.get(currentIndex + 1);
                     block.addSuccessor(nextBlock);
                     nextBlock.addPredecessor(block);
                 }

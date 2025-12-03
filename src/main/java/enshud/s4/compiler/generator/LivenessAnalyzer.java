@@ -4,11 +4,11 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-public class LivenessAnalyzer<T, R extends AnalysableInstruction<T>> {
+public class LivenessAnalyzer<R extends AnalysableInstruction> {
 
-    private final List<BasicBlock<T, R>> blocks;
+    private final List<BasicBlock<R>> blocks;
 
-    public LivenessAnalyzer(List<BasicBlock<T, R>> blocks) {
+    public LivenessAnalyzer(List<BasicBlock<R>> blocks) {
         this.blocks = blocks;
     }
 
@@ -17,7 +17,7 @@ public class LivenessAnalyzer<T, R extends AnalysableInstruction<T>> {
     // -------------------------
     public void computeBlockLiveness() {
         // 初期化
-        for (BasicBlock<T, R> b : blocks) {
+        for (BasicBlock<R> b : blocks) {
             b.liveIn  = new HashSet<>();
             b.liveOut = new HashSet<>();
         }
@@ -29,21 +29,21 @@ public class LivenessAnalyzer<T, R extends AnalysableInstruction<T>> {
 
             // 逆順（後方分析なので基本は後ろから）
             for (int i = blocks.size() - 1; i >= 0; i--) {
-                BasicBlock<T, R> b = blocks.get(i);
+                BasicBlock<R> b = blocks.get(i);
 
-                Set<T> oldIn  = new HashSet<>(b.liveIn);
-                Set<T> oldOut = new HashSet<>(b.liveOut);
+                var oldIn  = new HashSet<>(b.liveIn);
+                var oldOut = new HashSet<>(b.liveOut);
 
                 // liveOut[B] = ∪ liveIn[succ]
-                Set<T> newOut = new HashSet<>();
-                for (BasicBlock<T, R> succ : b.getSuccessors()) {
+                Set<AllocatableRegister> newOut = new HashSet<>();
+                for (BasicBlock<R> succ : b.getSuccessors()) {
                     newOut.addAll(succ.liveIn);
                 }
                 b.liveOut = newOut;
 
                 // liveIn[B] = use[B] ∪ (liveOut[B] − def[B])
-                Set<T> newIn = new HashSet<>(b.getUse());
-                Set<T> outMinusDef = new HashSet<>(b.liveOut);
+                var newIn = new HashSet<>(b.getUse());
+                var outMinusDef = new HashSet<>(b.liveOut);
                 outMinusDef.removeAll(b.getDef());
                 newIn.addAll(outMinusDef);
                 b.liveIn = newIn;
@@ -60,21 +60,21 @@ public class LivenessAnalyzer<T, R extends AnalysableInstruction<T>> {
     // 2. 命令単位の LiveIn / LiveOut を計算
     // -------------------------
     public void computeInstrLiveness() {
-        for (BasicBlock block : blocks) {
+        for (BasicBlock<R> block : blocks) {
 
             // ブロックの末尾は block.liveOut
-            Set<T> live = new HashSet<>(block.liveOut);
+            var live = new HashSet<>(block.liveOut);
 
-            List<AnalysableInstruction<T>> insts = block.getInstructions();
+            var insts = block.getInstructions();
 
             // 逆順で命令を処理
             for (int i = insts.size() - 1; i >= 0; i--) {
-                AnalysableInstruction<T> inst = insts.get(i);
+                var inst = insts.get(i);
 
                 inst.liveOut = new HashSet<>(live);
 
                 // liveIn = use(inst) ∪ (liveOut − def(inst))
-                Set<T> in = new HashSet<>(inst.liveOut);
+                var in = new HashSet<>(inst.liveOut);
                 in.removeAll(inst.getDef());
                 in.addAll(inst.getUse());
 

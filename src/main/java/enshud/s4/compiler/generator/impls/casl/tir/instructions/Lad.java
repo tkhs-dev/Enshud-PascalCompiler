@@ -1,5 +1,6 @@
 package enshud.s4.compiler.generator.impls.casl.tir.instructions;
 
+import enshud.s4.compiler.generator.AllocatableRegister;
 import enshud.s4.compiler.generator.impls.casl.tir.operand.RegisterOperand;
 import enshud.s4.compiler.generator.impls.casl.tir.operand.TIROperand;
 
@@ -25,12 +26,12 @@ public class Lad extends Instr<Lad> {
     }
 
     @Override
-    public Set<RegisterOperand> getUse() {
+    public Set<AllocatableRegister> getUse() {
         return registerSet(value);
     }
 
     @Override
-    public Set<RegisterOperand> getDef() {
+    public Set<AllocatableRegister> getDef() {
         return registerSet(dest);
     }
 }

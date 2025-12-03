@@ -3,13 +3,13 @@ package enshud.s4.compiler.generator;
 import java.util.List;
 import java.util.Set;
 
-public class BasicBlock<T, R extends AnalysableInstruction<T>> {
+public class BasicBlock<R extends AnalysableInstruction> {
     private List<R> instructions;
-    private List<BasicBlock<T, R>> successors;
-    private List<BasicBlock<T, R>> predecessors;
+    private List<BasicBlock<R>> successors;
+    private List<BasicBlock<R>> predecessors;
 
-    public Set<T> liveIn;
-    public Set<T> liveOut;
+    public Set<AllocatableRegister> liveIn;
+    public Set<AllocatableRegister> liveOut;
 
     public BasicBlock(List<R> instructions) {
         this.instructions = instructions;
@@ -21,31 +21,31 @@ public class BasicBlock<T, R extends AnalysableInstruction<T>> {
         return instructions;
     }
 
-    public List<BasicBlock<T, R>> getSuccessors() {
+    public List<BasicBlock<R>> getSuccessors() {
         return successors;
     }
 
-    public List<BasicBlock<T, R>> getPredecessors() {
+    public List<BasicBlock<R>> getPredecessors() {
         return predecessors;
     }
 
-    public void addSuccessor(BasicBlock<T, R> block) {
+    public void addSuccessor(BasicBlock<R> block) {
         this.successors.add(block);
     }
 
-    public void addPredecessor(BasicBlock<T, R> block) {
+    public void addPredecessor(BasicBlock<R> block) {
         this.predecessors.add(block);
     }
 
-    public Set<T> getUse() {
-        Set<T> useSet = new java.util.HashSet<>();
-        Set<T> defSet = new java.util.HashSet<>();
+    public Set<AllocatableRegister> getUse() {
+        Set<AllocatableRegister> useSet = new java.util.HashSet<>();
+        Set<AllocatableRegister> defSet = new java.util.HashSet<>();
 
         for (R instr : instructions) {
-            Set<T> instrUses = instr.getUse();
-            Set<T> instrDefs = instr.getDef();
+            var instrUses = instr.getUse();
+            var instrDefs = instr.getDef();
 
-            for (T reg : instrUses) {
+            for (var reg : instrUses) {
                 if (!defSet.contains(reg)) {
                     useSet.add(reg);
                 }
@@ -57,8 +57,8 @@ public class BasicBlock<T, R extends AnalysableInstruction<T>> {
         return useSet;
     }
 
-    public Set<T> getDef() {
-        Set<T> defSet = new java.util.HashSet<>();
+    public Set<AllocatableRegister> getDef() {
+        Set<AllocatableRegister> defSet = new java.util.HashSet<>();
 
         for (R instr : instructions) {
             defSet.addAll(instr.getDef());

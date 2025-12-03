@@ -10,15 +10,15 @@ public class TIRFunction {
     public String name;
     public FrameInfo frameInfo;
 
-    private List<BasicBlock<RegisterOperand, Instr<?>>> blocks;
+    private List<BasicBlock<Instr<?>>> blocks;
 
-    public TIRFunction(String name, FrameInfo frameInfo, List<BasicBlock<RegisterOperand, Instr<?>>> blocks) {
+    public TIRFunction(String name, FrameInfo frameInfo, List<BasicBlock<Instr<?>>> blocks) {
         this.name = name;
         this.frameInfo = frameInfo;
         this.blocks = blocks;
     }
 
-    public List<BasicBlock<RegisterOperand, Instr<?>>> getBlocks() {
+    public List<BasicBlock<Instr<?>>> getBlocks() {
         return blocks;
     }
 

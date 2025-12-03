@@ -2,6 +2,8 @@ package enshud.s4.compiler.generator.impls.casl.tir.operand;
 
 import enshud.s4.compiler.generator.Register;
 
+import java.util.Optional;
+
 public class RealRegister extends RegisterOperand {
     public final Register register;
 
@@ -29,5 +31,10 @@ public class RealRegister extends RegisterOperand {
     @Override
     public String toString() {
         return register.toString();
+    }
+
+    @Override
+    public Optional<Register> getPredefined() {
+        return Optional.of(register);
     }
 }

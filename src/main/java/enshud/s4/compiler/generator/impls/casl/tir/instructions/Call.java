@@ -1,5 +1,6 @@
 package enshud.s4.compiler.generator.impls.casl.tir.instructions;
 
+import enshud.s4.compiler.generator.AllocatableRegister;
 import enshud.s4.compiler.generator.impls.casl.tir.operand.RegisterOperand;
 
 import java.util.Set;
@@ -22,12 +23,17 @@ public class Call extends Instr<Call> {
     }
 
     @Override
-    public Set<RegisterOperand> getUse() {
+    public Set<AllocatableRegister> getUse() {
         return Set.of();
     }
 
     @Override
-    public Set<RegisterOperand> getDef() {
+    public Set<AllocatableRegister> getDef() {
         return Set.of();
+    }
+
+    @Override
+    public boolean isCall() {
+        return true;
     }
 }

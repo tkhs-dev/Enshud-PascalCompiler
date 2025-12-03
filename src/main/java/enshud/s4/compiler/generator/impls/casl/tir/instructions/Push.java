@@ -1,5 +1,6 @@
 package enshud.s4.compiler.generator.impls.casl.tir.instructions;
 
+import enshud.s4.compiler.generator.AllocatableRegister;
 import enshud.s4.compiler.generator.impls.casl.tir.operand.RegisterOperand;
 import enshud.s4.compiler.generator.impls.casl.tir.operand.TIROperand;
 
@@ -23,12 +24,12 @@ public class Push extends Instr<Push> {
     }
 
     @Override
-    public Set<RegisterOperand> getUse() {
+    public Set<AllocatableRegister> getUse() {
         return registerSet(src);
     }
 
     @Override
-    public Set<RegisterOperand> getDef() {
+    public Set<AllocatableRegister> getDef() {
         return Set.of();
     }
 }

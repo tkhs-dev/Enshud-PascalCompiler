@@ -1,25 +1,25 @@
 package enshud.s4.compiler.generator.allocate;
 
+import enshud.s4.compiler.generator.AllocatableRegister;
 import enshud.s4.compiler.generator.Register;
-import enshud.s4.compiler.generator.impls.casl.tir.operand.VirtualRegister;
 
 import java.util.Map;
 import java.util.Set;
 
 public class Allocation {
-    private final Map<VirtualRegister, Register> allocationMap;
-    private final Set<VirtualRegister> spilled;
+    private final Map<AllocatableRegister, Register> allocationMap;
+    private final Set<AllocatableRegister> spilled;
 
-    public Allocation(Map<VirtualRegister, Register> allocationMap, Set<VirtualRegister> spilled) {
+    public Allocation(Map<AllocatableRegister, Register> allocationMap, Set<AllocatableRegister> spilled) {
         this.allocationMap = allocationMap;
         this.spilled = spilled;
     }
 
-    public Map<VirtualRegister, Register> getAllocationMap() {
+    public Map<AllocatableRegister, Register> getAllocationMap() {
         return allocationMap;
     }
 
-    public Set<VirtualRegister> getSpilled() {
+    public Set<AllocatableRegister> getSpilled() {
         return spilled;
     }
 }

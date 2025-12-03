@@ -1,5 +1,9 @@
 package enshud.s4.compiler.generator.impls.casl.tir.operand;
 
+import enshud.s4.compiler.generator.Register;
+
+import java.util.Optional;
+
 public class VirtualRegister extends RegisterOperand {
     public final String id;
     public final double spillCost;
@@ -39,5 +43,10 @@ public class VirtualRegister extends RegisterOperand {
     @Override
     public String toString() {
         return id;
+    }
+
+    @Override
+    public Optional<Register> getPredefined() {
+        return Optional.empty();
     }
 }

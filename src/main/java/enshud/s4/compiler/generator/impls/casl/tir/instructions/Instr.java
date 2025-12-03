@@ -1,14 +1,14 @@
 package enshud.s4.compiler.generator.impls.casl.tir.instructions;
 
+import enshud.s4.compiler.generator.AllocatableRegister;
 import enshud.s4.compiler.generator.AnalysableInstruction;
-import enshud.s4.compiler.generator.impls.casl.tir.operand.RegisterOperand;
 import enshud.s4.compiler.generator.impls.casl.tir.operand.TIROperand;
 
 import java.util.Arrays;
 import java.util.Optional;
 import java.util.Set;
 
-public abstract class Instr<T extends Instr<T>> extends AnalysableInstruction<RegisterOperand> {
+public abstract class Instr<T extends Instr<T>> extends AnalysableInstruction {
     private String label = null;
 
     public abstract <R> R accept(ITIRVisitor<R> visitor);
@@ -47,10 +47,10 @@ public abstract class Instr<T extends Instr<T>> extends AnalysableInstruction<Re
         return formatInstructionWithOpCode(this.getClass().getSimpleName().toUpperCase());
     }
 
-    protected Set<RegisterOperand> registerSet(TIROperand... ops) {
+    protected Set<AllocatableRegister> registerSet(TIROperand... ops) {
         return Arrays.stream(ops)
-                .filter(op -> op instanceof RegisterOperand)
-                .map(op -> (RegisterOperand) op)
+                .filter(op -> op instanceof AllocatableRegister)
+                .map(op -> (AllocatableRegister) op)
                 .collect(java.util.stream.Collectors.toSet());
     }
 }

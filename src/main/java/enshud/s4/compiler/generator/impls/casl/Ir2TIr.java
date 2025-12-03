@@ -1,6 +1,8 @@
 package enshud.s4.compiler.generator.impls.casl;
 
+import enshud.s4.compiler.generator.InterferenceGraph;
 import enshud.s4.compiler.generator.LivenessAnalyzer;
+import enshud.s4.compiler.generator.allocate.RegisterAllocator;
 import enshud.s4.compiler.generator.impls.casl.tir.instructions.*;
 import enshud.s4.compiler.generator.impls.casl.tir.operand.*;
 import enshud.s4.compiler.generator.impls.casl.tir.program.CFGBuilder;
@@ -43,6 +45,11 @@ public class Ir2TIr {
         var blocks = CFGBuilder.build(instructions);
         var analyzer = new LivenessAnalyzer<>(blocks);
         analyzer.analyze();
+        var desc = new CaslDescription();
+        var interferenceGraph = InterferenceGraph.build(blocks, desc, RealRegister::of);
+        var allocator = new RegisterAllocator(interferenceGraph, desc);
+        var allocation = allocator.allocate();
+        System.out.println(allocation);
 
         return new TIRFunction(
                 irFunction.name,
