@@ -31,30 +31,47 @@ public class InterferenceGraph {
     //---------------------------------------------------------
     // Simplify フェーズ: ノードを削除する（currentAdj から消す）
     //---------------------------------------------------------
-    public void removeNode(AllocatableRegister r) {
-        // currentAdj の情報だけ操作する
-        Set<AllocatableRegister> neighs = currentAdj.get(r);
-        if (neighs == null) return;
+    public void removeNode(AllocatableRegister node) {
+        // 1. ノード自身のエントリを削除する
+        Set<AllocatableRegister> neighbors = currentAdj.remove(node);
+        if (neighbors == null) return;
 
-        for (AllocatableRegister n : neighs) {
-            currentAdj.get(n).remove(r);
+        // 2. 他のノードの隣接リストから node を削除する
+        for (AllocatableRegister adj : neighbors) {
+            Set<AllocatableRegister> set = currentAdj.get(adj);
+            if (set != null) {
+                set.remove(node);
+            }
         }
-        currentAdj.get(r).clear();
     }
 
     //---------------------------------------------------------
     // Select フェーズ: ノードを復元する
     //---------------------------------------------------------
     public void restoreNode(AllocatableRegister r) {
-        // originalAdj の内容から currentAdj を復元
+        // originalAdj から復元すべき隣接ノード集合を取得
         Set<AllocatableRegister> orig = originalAdj.get(r);
+        if (orig == null) {
+            // originalAdj になければ干渉関係を持たないノード
+            currentAdj.putIfAbsent(r, new HashSet<>());
+            return;
+        }
 
+        // 1. 自ノード r のエントリを currentAdj に作成する（ない場合）
+        currentAdj.putIfAbsent(r, new HashSet<>());
+
+        // 2. 隣接ノードを復元する
         for (AllocatableRegister n : orig) {
-            // ただし、相手ノードが "すでに削除済み" なら復元しない
-            if (currentAdj.containsKey(n)) {
-                currentAdj.get(r).add(n);
-                currentAdj.get(n).add(r);
+            // 相手がまだグラフに残っていないなら（Simplify 済みなら）復元しない
+            if (!currentAdj.containsKey(n)) {
+                continue;
             }
+
+            // 自ノード側に追加
+            currentAdj.get(r).add(n);
+
+            // 相手側にも r を追加（相互干渉）
+            currentAdj.get(n).add(r);
         }
     }
 

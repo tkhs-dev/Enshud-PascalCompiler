@@ -22,4 +22,18 @@ public class Allocation {
     public Set<AllocatableRegister> getSpilled() {
         return spilled;
     }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("Allocation:\n");
+        for (Map.Entry<AllocatableRegister, Register> entry : allocationMap.entrySet()) {
+            sb.append("  ").append(entry.getKey()).append(" -> ").append(entry.getValue()).append("\n");
+        }
+        sb.append("Spilled Registers:\n");
+        for (AllocatableRegister r : spilled) {
+            sb.append("  ").append(r).append("\n");
+        }
+        return sb.toString();
+    }
 }
