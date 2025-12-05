@@ -5,5 +5,5 @@ var i: integer;
 begin
     i := 11;
     a[5] := i;
-    write(a[5]);
+    writeln(a[5]);
 end.

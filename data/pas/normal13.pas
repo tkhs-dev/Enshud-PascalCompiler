@@ -49,10 +49,10 @@ begin
             end;
         end;
         j := 1;
-        write(' ANARISE ', DATA[k], ' = ');
+        writeln(' ANARISE ', DATA[k], ' = ');
         while j <= i do
         begin
-            write('               ', FACTOR[j], '^', TIMES[j]);
+            writeln('               ', FACTOR[j], '^', TIMES[j]);
             j := j + 1;
         end;
         k := k + 1;

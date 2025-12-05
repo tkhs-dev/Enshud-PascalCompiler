@@ -10,26 +10,26 @@ begin
     i := 1;
     while i <= 10 do
     begin
-        write('[', msg, '] i=', a[i]);
+        writeln('[', msg, '] i=', a[i]);
         i := i + 1;
     end;
 end;
 
 { comment test here        }
-{ begin for if end write }
+{ begin for if end writeln }
 { i=1; i='a'; ..., ., : ;* }
 
 begin
     debug := true;
     msg := 'D';
-    write('***** calculating ******');
+    writeln('***** calculating ******');
     i := 1;
     while i <= 10 do
     begin
         a[i] := i * i;
-        if debug = true then       write(i); end; { <<<< syntax error here }
+        if debug = true then       writeln(i); end; { <<<< syntax error here }
         i := i + 1;
     end;
-    write('***** result ******');
+    writeln('***** result ******');
     printData;
 end.

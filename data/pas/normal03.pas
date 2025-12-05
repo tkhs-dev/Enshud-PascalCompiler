@@ -3,5 +3,5 @@ var i: integer;
 
 begin
     i := 1 + 10;
-    write(i);
+    writeln(i);
 end.

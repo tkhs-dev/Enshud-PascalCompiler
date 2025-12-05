@@ -9,7 +9,7 @@ begin
     i := 1;
     while i <= n do
     begin
-        write(A[i]);
+        writeln(A[i]);
         i := i + 1;
     end;
 end;
@@ -75,11 +75,11 @@ begin
     A[8] := -10;
     A[9] := -1;
     A[10] := 123;
-    write(n);
-    write('Data : ');
+    writeln(n);
+    writeln('Data : ');
     printData;
     sort;
-    write('Data (sorted) :');
+    writeln('Data (sorted) :');
     printData;
     sum := A[1];
     max := A[1];
@@ -87,8 +87,8 @@ begin
     mean := A[1];
     v := A[1];
     calculate;
-    write('SUM      : ', sum);
-    write('MAX      : ', max);
-    write('MIN      : ', min);
-    write('MEAN     : ', mean);
+    writeln('SUM      : ', sum);
+    writeln('MAX      : ', max);
+    writeln('MIN      : ', min);
+    writeln('MEAN     : ', mean);
 end.

@@ -5,6 +5,6 @@ begin
     f := true;
     if f = true then
     begin
-        write('then');
+        writeln('then');
     end;
 end.

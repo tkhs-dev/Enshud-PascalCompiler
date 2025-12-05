@@ -5,7 +5,7 @@ procedure subproc;
 var  c: char;
 begin
     c := 's';
-    write(c);
+    writeln(c);
 end;
 
 begin

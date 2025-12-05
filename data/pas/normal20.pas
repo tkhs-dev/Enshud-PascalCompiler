@@ -51,17 +51,17 @@ begin
         y := y + 1;
     end;
     i := 0;
-    write('               **** magic square ****');
+    writeln('               **** magic square ****');
     while i < a do
     begin
-        write('      +-------+-------+-------+-------+-------+');
-        write('      |       |       |       |       |       |');
-        write('      |  ', s[1+i*a], '   |  ', s[2+i*a], '   |  ', s[3+i*a],
+        writeln('      +-------+-------+-------+-------+-------+');
+        writeln('      |       |       |       |       |       |');
+        writeln('      |  ', s[1+i*a], '   |  ', s[2+i*a], '   |  ', s[3+i*a],
                 '   |  ', s[4+i*a], '   |  ', s[5+i*a], '   |');
-        write('      |       |       |       |       |       |');
+        writeln('      |       |       |       |       |       |');
         i := i + 1;
     end;
-    write('      +-------+-------+-------+-------+-------+');
+    writeln('      +-------+-------+-------+-------+-------+');
     sum := (1 + max) * max div (2 * a);
-    write('sum of integers of lines, columns, or diagonals  = ', sum);
+    writeln('sum of integers of lines, columns, or diagonals  = ', sum);
 end.

@@ -6,11 +6,11 @@ procedure subproc;
 var  c: char;
 begin
     c := 's';
-    write(c);
+    writeln(c);
 end;
 
 begin
     c := 'm';
     subproc;
-    write(c);
+    writeln(c);
 end.

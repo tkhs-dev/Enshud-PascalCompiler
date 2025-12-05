@@ -11,7 +11,7 @@ var v: array[1..100] of integer;
 
 begin
     n := 20;
-    write('***** quick sort *****');
+    writeln('***** quick sort *****');
     v[1] := 12;
     i := 2;
     while i <= n do
@@ -20,11 +20,11 @@ begin
         v[i] := v[i] - v[i] div 256 * 256;
         i := i + 1;
     end;
-    write('***** data ******');
+    writeln('***** data ******');
     i := 1;
     while i <= n do
     begin
-        write(v[i], ' ', v[i+1], ' ', v[i+2], ' ', v[i+3], ' ', v[i+4]);
+        writeln(v[i], ' ', v[i+1], ' ', v[i+2], ' ', v[i+3], ' ', v[i+4]);
         i := i + 5;
     end;
     lv[1] := 1;
@@ -82,11 +82,11 @@ begin
             p := p + 1;
         end;
     end;
-    write('***** result ******');
+    writeln('***** result ******');
     i := 1;
     while i <= n do
     begin
-        write(v[i], ' ', v[i+1], ' ', v[i+2], ' ', v[i+3], ' ', v[i+4]);
+        writeln(v[i], ' ', v[i+1], ' ', v[i+2], ' ', v[i+3], ' ', v[i+4]);
         i := i + 5;
     end;
 end.

@@ -113,7 +113,7 @@ begin
                 end;
             end;
         end;
-        write(out[1], out[2], out[3], out[4], out[5], out[6],
+        writeln(out[1], out[2], out[3], out[4], out[5], out[6],
                 out[7], out[8], out[9], out[10], out[11], '  ', x);
         x := x+1;
         out[po1] := 11111;

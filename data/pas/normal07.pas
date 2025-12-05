@@ -5,10 +5,10 @@ begin
     f := true;
     if not f = true then
     begin
-        write('then');
+        writeln('then');
     end
     else
     begin
-        write('else');
+        writeln('else');
     end;
 end.
