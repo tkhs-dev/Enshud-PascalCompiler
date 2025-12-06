@@ -289,7 +289,7 @@ public class SemanticCheckVisitor implements IAstVisitor<Object> {
         VariableInfo vinfo = lookupVariable(node.name, node.getPosition().startLine);
         if (vinfo.type() instanceof enshud.pascal.type.ArrayType arrayType){
             node.name = node.name + "@" + vinfo.scopeId();
-            node.setType(vinfo.type());
+            node.setType(arrayType.elementType);
             return arrayType.elementType;
         }
         throw new SemanticException("Variable is not an array: " + node.name, node.getPosition().startLine);
