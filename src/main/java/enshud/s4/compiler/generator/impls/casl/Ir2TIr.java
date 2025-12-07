@@ -36,7 +36,7 @@ public class Ir2TIr {
         return new TIRProgram(main, functions, data);
     }
 
-    public TIRFunction convert(IrFunction irFunction) {
+    private TIRFunction convert(IrFunction irFunction) {
         Ir2TIrVisitor visitor = new Ir2TIrVisitor();
         for (var irInstruction : irFunction.getInstructions()) {
             irInstruction.accept(visitor);
@@ -138,6 +138,13 @@ class Ir2TIrVisitor implements IIrVisitor<Void> {
 
     @Override
     public Void visit(LoadIndexed ir) {
+        var slotOpt = frameInfo.getSlot(ir.arrayVar.name);
+        if (slotOpt.isEmpty()) {
+            throw new RuntimeException("Variable not found in frame: " + ir.arrayVar.name);
+        }
+        tirInstructions.addAll(List.of(
+            new Ld(convertOperand(ir.targetVar), new FrameSlot(slotOpt.get().slot).setOffset(convertOperand(ir.indexVar)))
+        ));
         return null;
     }
 
@@ -149,6 +156,13 @@ class Ir2TIrVisitor implements IIrVisitor<Void> {
 
     @Override
     public Void visit(StoreIndexed ir) {
+        var slotOpt = frameInfo.getSlot(ir.target.name);
+        if (slotOpt.isEmpty()) {
+            throw new RuntimeException("Variable not found in frame: " + ir.target.name);
+        }
+        tirInstructions.addAll(List.of(
+            new St(convertOperand(ir.value), new FrameSlot(slotOpt.get().slot).setOffset(convertOperand(ir.index)))
+        ));
         return null;
     }
 
