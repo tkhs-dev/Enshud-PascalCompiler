@@ -11,6 +11,10 @@ public class ArrayType extends Type {
         this.elementType = elementType;
     }
 
+    public int getSize() {
+        return upperBound - lowerBound + 1;
+    }
+
     @Override
     public boolean equals(Object obj) {
         if (this == obj) return true;
