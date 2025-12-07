@@ -71,6 +71,7 @@ public class SemanticCheckVisitor implements IAstVisitor<Object> {
     @Override
     public Void visit(VarDeclNode node) {
         Type type = (Type) node.varType.accept(this);
+        node.setType(type);
         List<String> newNames = new ArrayList<>();
         for (String varName : node.varNames) {
             var vinfo = declareVariable(varName, type, node.getPosition().startLine);
@@ -107,7 +108,7 @@ public class SemanticCheckVisitor implements IAstVisitor<Object> {
 
     @Override
     public Type visit(FormalParamNode node) {
-        Type type = (Type) node.type.accept(this);
+        Type type = (Type) node.typeNode.accept(this);
         List<String> newNames = new ArrayList<>();
         for (String paramName : node.params) {
             var vinfo = declareVariable(paramName, type, node.getPosition().startLine);

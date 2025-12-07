@@ -62,16 +62,13 @@ class IrConverterVisitor implements IAstVisitor<Optional<Temp>> {
 
     @Override
     public Optional<Temp> visit(VarDeclNode node) {
-        var p = switch (node.varType) {
-            case StandardTypeNode t ->
-                // 標準型変数宣言
-                    node.varNames.stream().map(name -> new Decl(name, false)).toList();
-            case ArrayTypeNode t ->
-                // 配列型変数宣言
-                    node.varNames.stream().map(name -> new DeclArray(name, t.upperBound, t.lowerBound, false)).toList();
-            default -> throw new IllegalStateException("Unexpected value: " + node.varType);
-        };
-        currentScope.addAll(p);
+        var type = node.getType();
+        if (type.isEmpty()) {
+            throw new IllegalStateException("Type is not set for VarDeclNode");
+        }
+        node.varNames.forEach(varName -> {
+            currentScope.addVariable(varName, type.get());
+        });
         return Optional.empty();
     }
 
@@ -94,16 +91,13 @@ class IrConverterVisitor implements IAstVisitor<Optional<Temp>> {
 
     @Override
     public Optional<Temp> visit(FormalParamNode node) {
-        var p = switch (node.type) {
-            case StandardTypeNode t ->
-                // 標準型変数宣言
-                    node.params.stream().map(name -> new Decl(name, true)).toList();
-            case ArrayTypeNode t ->
-                // 配列型変数宣言
-                    node.params.stream().map(name -> new DeclArray(name, t.upperBound, t.lowerBound, true)).toList();
-            default -> throw new IllegalStateException("Unexpected value: " + node.type);
-        };
-        currentScope.addAll(p);
+        var type = node.getType();
+        if (type.isEmpty()) {
+            throw new IllegalStateException("Type is not set for FormalParamNode");
+        }
+        node.params.forEach(paramName -> {
+            currentScope.addParameter(paramName, type.get());
+        });
         return Optional.empty();
     }
 

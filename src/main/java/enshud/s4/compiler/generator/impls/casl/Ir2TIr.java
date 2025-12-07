@@ -36,7 +36,8 @@ public class Ir2TIr {
     }
 
     private TIRFunction convert(IrFunction irFunction) {
-        Ir2TIrVisitor visitor = new Ir2TIrVisitor();
+        var frameInfo = generateFrameInfo(irFunction);
+        Ir2TIrVisitor visitor = new Ir2TIrVisitor(frameInfo);
         for (var irInstruction : irFunction.getInstructions()) {
             irInstruction.accept(visitor);
         }
@@ -52,29 +53,46 @@ public class Ir2TIr {
 
         return new TIRFunction(
                 irFunction.name,
-                visitor.getFrameInfo(),
+                frameInfo,
                 blocks
         );
+    }
+
+    private FrameInfo generateFrameInfo(IrFunction irFunction) {
+        FrameInfo frameInfo = new FrameInfo();
+        for (var entry : irFunction.variables.entrySet()) {
+            var type = entry.getValue();
+            if (type instanceof enshud.pascal.type.ArrayType arrType) {
+                frameInfo.addLocalVar(entry.getKey(), arrType.getSize());
+            } else {
+                frameInfo.addLocalVar(entry.getKey(), 1); // assuming non-array types take 1 slot
+            }
+        }
+        for (var entry : irFunction.parameters.entrySet()) {
+            var type = entry.getValue();
+            if (type instanceof enshud.pascal.type.ArrayType arrType) {
+                frameInfo.addParam(entry.getKey(), arrType.getSize());
+            } else {
+                frameInfo.addParam(entry.getKey(), 1); // assuming non-array types take 1 slot
+            }
+        }
+        return frameInfo;
     }
 }
 
 class Ir2TIrVisitor implements IIrVisitor<Void> {
     private final List<Instr<?>> tirInstructions;
-    private final FrameInfo frameInfo;
     private final SerialManager serialManager;
+    private final FrameInfo frameInfo;
 
-    public Ir2TIrVisitor() {
+    public Ir2TIrVisitor(FrameInfo frameInfo) {
         this.tirInstructions = new ArrayList<>();
-        this.frameInfo = new FrameInfo();
         this.serialManager = new SerialManager("LL");
+        this.frameInfo = frameInfo;
     }
 
     public List<Instr<?>> getInstructions() {
         return tirInstructions;
-    }
-
-    public FrameInfo getFrameInfo() {
-        return frameInfo;
     }
 
     @Override
@@ -85,27 +103,6 @@ class Ir2TIrVisitor implements IIrVisitor<Void> {
             ));
         });
         tirInstructions.add(new enshud.s4.compiler.generator.impls.casl.tir.instructions.Call(ir.functionLabel));
-        return null;
-    }
-
-    @Override
-    public Void visit(Decl ir) {
-        if(ir.isParam) {
-            frameInfo.addParam(ir.varName, 1);
-        } else {
-            frameInfo.addLocalVar(ir.varName, 1);
-        }
-        return null;
-    }
-
-    @Override
-    public Void visit(DeclArray ir) {
-        int size =  ir.upperBound - ir.lowerBound + 1;
-        if(ir.isParam) {
-            frameInfo.addParam(ir.varName, size);
-        } else {
-            frameInfo.addLocalVar(ir.varName, size);
-        }
         return null;
     }
 
