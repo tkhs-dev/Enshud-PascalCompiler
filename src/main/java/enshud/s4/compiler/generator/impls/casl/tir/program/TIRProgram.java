@@ -6,10 +6,9 @@ public class TIRProgram {
     public final TIRFunction main;
 
     public final Map<String, TIRFunction> functions;
-    public final TIRFunction data;
-    public TIRProgram(TIRFunction main, Map<String, TIRFunction> functions, TIRFunction data) {
+
+    public TIRProgram(TIRFunction main, Map<String, TIRFunction> functions) {
         this.main = main;
         this.functions = functions;
-        this.data = data;
     }
 }

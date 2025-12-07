@@ -77,7 +77,7 @@ class IrConverterVisitor implements IAstVisitor<Optional<Temp>> {
 
     @Override
     public Optional<Temp> visit(SubProgDeclNode node) {
-        IrFunction func = IrFunction.empty(node.header.name, 1);
+        IrFunction func = IrFunction.empty(node.header.name, 1, program.main);
         program.functions.put(node.header.name, func);
         currentScope = func;
         visitAll(node);

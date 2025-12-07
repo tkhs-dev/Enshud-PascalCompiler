@@ -12,12 +12,9 @@ public class IrProgram {
 
     public final Map<String, IrFunction> functions;
 
-    public final IrFunction data;
-
     public IrProgram() {
-        this.main = IrFunction.empty("MAIN", 0);
+        this.main = IrFunction.empty("MAIN", 0, null);
         this.functions = new HashMap<>();
-        this.data = IrFunction.empty("DATA", 0);
     }
 
     public List<ITInstruction> getInstructions() {
@@ -26,7 +23,6 @@ public class IrProgram {
         for(IrFunction f : functions.values()) {
             instructions.addAll(f.getInstructions());
         }
-        instructions.addAll(data.getInstructions());
         return instructions;
     }
 }

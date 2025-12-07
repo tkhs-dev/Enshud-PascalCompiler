@@ -32,8 +32,7 @@ public class Ir2TIr {
                         Map.Entry::getKey,
                         e -> convert(e.getValue())
                 ));
-        var data = convert(irProgram.data);
-        return new TIRProgram(main, functions, data);
+        return new TIRProgram(main, functions);
     }
 
     private TIRFunction convert(IrFunction irFunction) {
