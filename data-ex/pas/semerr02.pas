@@ -6,12 +6,12 @@ procedure subproc(x: integer; y: char);
 var  c: char;
 begin
     c := 's';
-    write(c);
-    write(x);
+    writeln(c);
+    writeln(x);
 end;
 
 begin
     c := 'm';
     subproc(99);
-    write(c);
+    writeln(c);
 end.

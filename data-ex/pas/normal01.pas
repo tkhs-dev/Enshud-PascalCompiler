@@ -6,7 +6,7 @@ procedure integers;
 var  c: char;
 begin
     c := 'C';
-    write(c);
+    writeln(c);
 end;
 
 begin
