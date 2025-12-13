@@ -40,7 +40,7 @@ public class Ir2TIr {
 
     private TIRFunction convert(IrFunction irFunction) {
         var frameInfo = frameInfoMap.get(irFunction);
-        Ir2TIrConverter visitor = new Ir2TIrConverter(frameInfo, frameInfoMap, irFunction);
+        Ir2TIrConverter visitor = new Ir2TIrConverter(frameInfoMap, irFunction);
         var instructions = visitor.convertInstructions();
 
         var blocks = CFGBuilder.build(instructions);
@@ -107,14 +107,12 @@ public class Ir2TIr {
 class Ir2TIrConverter implements IIrVisitor<Void> {
     private final List<TIrInstr<?>> tirInstructions;
     private final SerialManager serialManager;
-    private final FrameInfo frameInfo;
     private final Map<IrFunction, FrameInfo> frameInfoMap;
     private final IrFunction currentFunction;
 
-    public Ir2TIrConverter(FrameInfo frameInfo, Map<IrFunction, FrameInfo> frameInfoMap, IrFunction currentFunction) {
+    public Ir2TIrConverter(Map<IrFunction, FrameInfo> frameInfoMap, IrFunction currentFunction) {
         this.tirInstructions = new ArrayList<>();
         this.serialManager = new SerialManager("LL");
-        this.frameInfo = frameInfo;
         this.frameInfoMap = frameInfoMap;
         this.currentFunction = currentFunction;
     }
