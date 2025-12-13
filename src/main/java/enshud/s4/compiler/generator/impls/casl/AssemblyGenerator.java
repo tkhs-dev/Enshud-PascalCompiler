@@ -15,6 +15,7 @@ import enshud.s4.compiler.generator.impls.casl.tir.program.TIRFunction;
 import enshud.s4.compiler.generator.impls.casl.tir.program.TIRProgram;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class AssemblyGenerator {
@@ -35,6 +36,7 @@ public class AssemblyGenerator {
         for (var function : program.functions.values()) {
             processFunction(function);
         }
+        instructions.add(new END());
         return instructions;
     }
 
@@ -73,7 +75,7 @@ class TIRConverter implements ITIRVisitor<Void>{
 
     @Override
     public Void visit(Add ir) {
-        instructions.add(
+        addInstructions(ir,
                 new ADDA(reg(ir.left),  data(ir.right))
         );
         return null;
@@ -81,7 +83,7 @@ class TIRConverter implements ITIRVisitor<Void>{
 
     @Override
     public Void visit(And ir) {
-        instructions.add(
+        addInstructions(ir,
                 new AND(reg(ir.left),  data(ir.right))
         );
         return null;
@@ -95,7 +97,7 @@ class TIRConverter implements ITIRVisitor<Void>{
 
     @Override
     public Void visit(Cp ir) {
-        instructions.add(
+        addInstructions(ir,
                 new CPA(reg(ir.left),  data(ir.right))
         );
         return null;
@@ -105,22 +107,22 @@ class TIRConverter implements ITIRVisitor<Void>{
     public Void visit(Jmp ir) {
         switch(ir.type){
             case PLUS -> {
-                instructions.add(new JPL(ir.addressLabel));
+                addInstructions(ir, new JPL(ir.addressLabel));
             }
             case MINUS -> {
-                instructions.add(new JMI(ir.addressLabel));
+                addInstructions(ir, new JMI(ir.addressLabel));
             }
             case ZERO -> {
-                instructions.add(new JZE(ir.addressLabel));
+                addInstructions(ir, new JZE(ir.addressLabel));
             }
             case NONZERO -> {
-                instructions.add(new JNZ(ir.addressLabel));
+                addInstructions(ir, new JNZ(ir.addressLabel));
             }
             case OVERFLOW -> {
-                instructions.add(new JOV(ir.addressLabel));
+                addInstructions(ir, new JOV(ir.addressLabel));
             }
             case UNCONDITIONAL -> {
-                instructions.add(new JUMP(ir.addressLabel));
+                addInstructions(ir, new JUMP(ir.addressLabel));
             }
         }
         return null;
@@ -128,7 +130,7 @@ class TIRConverter implements ITIRVisitor<Void>{
 
     @Override
     public Void visit(Lad ir) {
-        instructions.add(
+        addInstructions(ir,
                 new LAD(reg(ir.dest), mem(ir.value))
         );
         return null;
@@ -136,7 +138,7 @@ class TIRConverter implements ITIRVisitor<Void>{
 
     @Override
     public Void visit(Ld ir) {
-        instructions.add(
+        addInstructions(ir,
                 new LD(reg(ir.dest), data(ir.src))
         );
         return null;
@@ -144,13 +146,13 @@ class TIRConverter implements ITIRVisitor<Void>{
 
     @Override
     public Void visit(Nop ir) {
-        instructions.add(new NOP());
+        addInstructions(ir, new NOP());
         return null;
     }
 
     @Override
     public Void visit(Or ir) {
-        instructions.add(
+        addInstructions(ir,
                 new OR(reg(ir.left),  data(ir.right))
         );
         return null;
@@ -158,7 +160,7 @@ class TIRConverter implements ITIRVisitor<Void>{
 
     @Override
     public Void visit(Pop ir) {
-        instructions.add(
+        addInstructions(ir,
                 new POP(reg(ir.target))
         );
         return null;
@@ -166,7 +168,7 @@ class TIRConverter implements ITIRVisitor<Void>{
 
     @Override
     public Void visit(Push ir) {
-        instructions.add(
+        addInstructions(ir,
                 new PUSH(mem(ir.src))
         );
         return null;
@@ -174,15 +176,15 @@ class TIRConverter implements ITIRVisitor<Void>{
 
     @Override
     public Void visit(Ret ir) {
-        instructions.add(
-                new END()
+        addInstructions(ir,
+                new RET()
         );
         return null;
     }
 
     @Override
     public Void visit(Sl ir) {
-        instructions.add(
+        addInstructions(ir,
                 new SLA(reg(ir.left), data(ir.right))
         );
         return null;
@@ -190,7 +192,7 @@ class TIRConverter implements ITIRVisitor<Void>{
 
     @Override
     public Void visit(Sr ir) {
-        instructions.add(
+        addInstructions(ir,
                 new SRA(reg(ir.left), data(ir.right))
         );
         return null;
@@ -198,7 +200,7 @@ class TIRConverter implements ITIRVisitor<Void>{
 
     @Override
     public Void visit(St ir) {
-        instructions.add(
+        addInstructions(ir,
                 new ST(reg(ir.src), mem(ir.dest))
         );
         return null;
@@ -206,7 +208,7 @@ class TIRConverter implements ITIRVisitor<Void>{
 
     @Override
     public Void visit(Sub ir) {
-        instructions.add(
+        addInstructions(ir,
                 new SUBA(reg(ir.left),  data(ir.right))
         );
         return null;
@@ -214,10 +216,17 @@ class TIRConverter implements ITIRVisitor<Void>{
 
     @Override
     public Void visit(Xor ir) {
-        instructions.add(
+        addInstructions(ir,
                 new XOR(reg(ir.left),  data(ir.right))
         );
         return null;
+    }
+
+    private void addInstructions(TIrInstr<?> ir, AssemblyInstr<?>... instrs) {
+        if(ir.getLabel().isPresent()){
+            instrs[0].setLabel(ir.getLabel().get());
+        }
+        Collections.addAll(instructions, instrs);
     }
 
     private RegisterOperand reg(TIROperand operand) {

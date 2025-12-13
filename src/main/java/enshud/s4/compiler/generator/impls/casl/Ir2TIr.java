@@ -123,6 +123,7 @@ class Ir2TIrConverter implements IIrVisitor<Void> {
         for (var irInstruction : currentFunction.getInstructions()) {
             irInstruction.accept(this);
         }
+        tirInstructions.add(new Ret());
         return tirInstructions;
     }
 
@@ -174,7 +175,7 @@ class Ir2TIrConverter implements IIrVisitor<Void> {
 
     @Override
     public Void visit(Move ir) {
-        tirInstructions.add(new Ld(convertOperand(ir.dest), convertOperand(ir.src)));
+        tirInstructions.add(move(ir.dest, ir.src));
         return null;
     }
 
