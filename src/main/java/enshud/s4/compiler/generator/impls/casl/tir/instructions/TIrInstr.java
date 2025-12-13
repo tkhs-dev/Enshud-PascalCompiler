@@ -8,7 +8,7 @@ import java.util.Arrays;
 import java.util.Optional;
 import java.util.Set;
 
-public abstract class Instr<T extends Instr<T>> extends AnalysableInstruction {
+public abstract class TIrInstr<T extends TIrInstr<T>> extends AnalysableInstruction {
     private String label = null;
 
     public abstract <R> R accept(ITIRVisitor<R> visitor);

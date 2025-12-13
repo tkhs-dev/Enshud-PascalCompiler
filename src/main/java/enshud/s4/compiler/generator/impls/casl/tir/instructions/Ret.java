@@ -1,11 +1,10 @@
 package enshud.s4.compiler.generator.impls.casl.tir.instructions;
 
 import enshud.s4.compiler.generator.AllocatableRegister;
-import enshud.s4.compiler.generator.impls.casl.tir.operand.RegisterOperand;
 
 import java.util.Set;
 
-public class Ret extends Instr<Ret> {
+public class Ret extends TIrInstr<Ret> {
     @Override
     public <T> T accept(ITIRVisitor<T> visitor) {
         return visitor.visit(this);

@@ -1,12 +1,11 @@
 package enshud.s4.compiler.generator.impls.casl.tir.instructions;
 
 import enshud.s4.compiler.generator.AllocatableRegister;
-import enshud.s4.compiler.generator.impls.casl.tir.operand.RegisterOperand;
 import enshud.s4.compiler.generator.impls.casl.tir.operand.TIROperand;
 
 import java.util.Set;
 
-public class Push extends Instr<Push> {
+public class Push extends TIrInstr<Push> {
     public final TIROperand src;
 
     public Push(TIROperand src) {

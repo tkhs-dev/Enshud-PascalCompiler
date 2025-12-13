@@ -2,7 +2,7 @@ package enshud.s4.compiler.generator.impls.casl.assembly.instructions;
 
 import java.util.List;
 
-public class DC extends Instr<DC>{
+public class DC extends AssemblyInstr<DC> {
     public final List<Integer> values;
 
     public DC(List<Integer> values) {

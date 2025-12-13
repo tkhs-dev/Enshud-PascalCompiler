@@ -1,6 +1,6 @@
 package enshud.s4.compiler.generator.impls.casl.assembly.instructions;
 
-public class DS extends Instr<DS>{
+public class DS extends AssemblyInstr<DS> {
     public final int size;
 
     public DS(int size){

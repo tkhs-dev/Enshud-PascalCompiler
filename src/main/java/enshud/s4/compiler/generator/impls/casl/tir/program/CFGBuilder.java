@@ -1,21 +1,20 @@
 package enshud.s4.compiler.generator.impls.casl.tir.program;
 
 import enshud.s4.compiler.generator.BasicBlock;
-import enshud.s4.compiler.generator.impls.casl.tir.instructions.Instr;
+import enshud.s4.compiler.generator.impls.casl.tir.instructions.TIrInstr;
 import enshud.s4.compiler.generator.impls.casl.tir.instructions.Jmp;
 import enshud.s4.compiler.generator.impls.casl.tir.instructions.Ret;
-import enshud.s4.compiler.generator.impls.casl.tir.operand.RegisterOperand;
 
 import java.util.*;
 
 public class CFGBuilder {
-    public static List<BasicBlock<Instr<?>>> build(List<Instr<?>> instructions) {
-        List<BasicBlock<Instr<?>>> blocks = new ArrayList<>();
-        Map<String, BasicBlock<Instr<?>>> labelToBlock = new HashMap<>();
+    public static List<BasicBlock<TIrInstr<?>>> build(List<TIrInstr<?>> instructions) {
+        List<BasicBlock<TIrInstr<?>>> blocks = new ArrayList<>();
+        Map<String, BasicBlock<TIrInstr<?>>> labelToBlock = new HashMap<>();
 
         // ブロックの分割とラベルのマッピング
-        List<Instr<?>> instrs = new ArrayList<>();
-        for (Instr<?> instr : instructions) {
+        List<TIrInstr<?>> instrs = new ArrayList<>();
+        for (TIrInstr<?> instr : instructions) {
             if (instr.getLabel().isPresent() && !instrs.isEmpty()) {
                 // ラベルで始まる命令が現れた場合、現在の命令リストをブロックとして切り出す
                 var block = new BasicBlock<>(instrs);
@@ -52,7 +51,7 @@ public class CFGBuilder {
         }
 
         // ラベルの関連付け
-        for (BasicBlock<Instr<?>> block : blocks) {
+        for (BasicBlock<TIrInstr<?>> block : blocks) {
             var lastInstr = block.getInstructions().getLast();
             if (lastInstr instanceof Jmp jmp) {
                 String targetLabel = jmp.addressLabel;
@@ -65,7 +64,7 @@ public class CFGBuilder {
                     // 条件分岐命令の場合、次のブロックも後続ブロックになる
                     int currentIndex = blocks.indexOf(block);
                     if (currentIndex + 1 < blocks.size()) {
-                        BasicBlock<Instr<?>> nextBlock = blocks.get(currentIndex + 1);
+                        BasicBlock<TIrInstr<?>> nextBlock = blocks.get(currentIndex + 1);
                         block.addSuccessor(nextBlock);
                         nextBlock.addPredecessor(block);
                     }
@@ -76,7 +75,7 @@ public class CFGBuilder {
                 // 最後の命令がジャンプ命令でない場合、次のブロックが後続ブロックになる
                 int currentIndex = blocks.indexOf(block);
                 if (currentIndex + 1 < blocks.size()) {
-                    BasicBlock<Instr<?>> nextBlock = blocks.get(currentIndex + 1);
+                    BasicBlock<TIrInstr<?>> nextBlock = blocks.get(currentIndex + 1);
                     block.addSuccessor(nextBlock);
                     nextBlock.addPredecessor(block);
                 }

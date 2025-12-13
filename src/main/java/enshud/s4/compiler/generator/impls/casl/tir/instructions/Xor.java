@@ -1,12 +1,11 @@
 package enshud.s4.compiler.generator.impls.casl.tir.instructions;
 
 import enshud.s4.compiler.generator.AllocatableRegister;
-import enshud.s4.compiler.generator.impls.casl.tir.operand.RegisterOperand;
 import enshud.s4.compiler.generator.impls.casl.tir.operand.TIROperand;
 
 import java.util.Set;
 
-public class Xor extends Instr<Xor> {
+public class Xor extends TIrInstr<Xor> {
     public final TIROperand left;
     public final TIROperand right;
 

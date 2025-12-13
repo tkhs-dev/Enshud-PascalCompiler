@@ -12,6 +12,14 @@ public class CaslGenerator extends GeneratorBase<String> {
         program.functions.values().forEach(func -> {
             func.getInstructions().forEach(System.out::println);
         });
-        return "";
+
+        var assemblyGenerator = new AssemblyGenerator(program);
+        var instructions = assemblyGenerator.generate();
+        StringBuilder sb = new StringBuilder();
+        for (var instr : instructions) {
+            sb.append(instr.toString()).append("\n");
+        }
+
+        return sb.toString();
     }
 }

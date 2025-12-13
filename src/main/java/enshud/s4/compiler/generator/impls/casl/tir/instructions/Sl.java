@@ -1,12 +1,11 @@
 package enshud.s4.compiler.generator.impls.casl.tir.instructions;
 
 import enshud.s4.compiler.generator.AllocatableRegister;
-import enshud.s4.compiler.generator.impls.casl.tir.operand.RegisterOperand;
 import enshud.s4.compiler.generator.impls.casl.tir.operand.TIROperand;
 
 import java.util.Set;
 
-public class Sl extends Instr<Sl> {
+public class Sl extends TIrInstr<Sl> {
     public final TIROperand left;
     public final TIROperand right;
 
@@ -17,7 +16,7 @@ public class Sl extends Instr<Sl> {
 
     @Override
     public <T> T accept(ITIRVisitor<T> visitor) {
-        return null;
+        return visitor.visit(this);
     }
 
     @Override

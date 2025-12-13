@@ -1,8 +1,6 @@
 package enshud.s4.compiler.generator.impls.casl;
 
-import enshud.s4.compiler.generator.InterferenceGraph;
-import enshud.s4.compiler.generator.LivenessAnalyzer;
-import enshud.s4.compiler.generator.allocate.RegisterAllocator;
+import enshud.s4.compiler.generator.Register;
 import enshud.s4.compiler.generator.impls.casl.tir.instructions.*;
 import enshud.s4.compiler.generator.impls.casl.tir.operand.*;
 import enshud.s4.compiler.generator.impls.casl.tir.program.CFGBuilder;
@@ -46,13 +44,6 @@ public class Ir2TIr {
         var instructions = visitor.convertInstructions();
 
         var blocks = CFGBuilder.build(instructions);
-        var analyzer = new LivenessAnalyzer<>(blocks);
-        analyzer.analyze();
-        var desc = new CaslDescription();
-        var interferenceGraph = InterferenceGraph.build(blocks, desc, RealRegister::of);
-        var allocator = new RegisterAllocator(interferenceGraph, desc);
-        var allocation = allocator.allocate();
-        System.out.println(allocation);
 
         return new TIRFunction(
                 irFunction.name,
@@ -114,7 +105,7 @@ public class Ir2TIr {
 }
 
 class Ir2TIrConverter implements IIrVisitor<Void> {
-    private final List<Instr<?>> tirInstructions;
+    private final List<TIrInstr<?>> tirInstructions;
     private final SerialManager serialManager;
     private final FrameInfo frameInfo;
     private final Map<IrFunction, FrameInfo> frameInfoMap;
@@ -128,7 +119,7 @@ class Ir2TIrConverter implements IIrVisitor<Void> {
         this.currentFunction = currentFunction;
     }
 
-    public List<Instr<?>> convertInstructions() {
+    public List<TIrInstr<?>> convertInstructions() {
         for (var irInstruction : currentFunction.getInstructions()) {
             irInstruction.accept(this);
         }
@@ -183,7 +174,7 @@ class Ir2TIrConverter implements IIrVisitor<Void> {
 
     @Override
     public Void visit(Move ir) {
-        tirInstructions.add(new Lad(convertOperand(ir.dest), convertOperand(ir.src)));
+        tirInstructions.add(new Ld(convertOperand(ir.dest), convertOperand(ir.src)));
         return null;
     }
 
@@ -198,24 +189,23 @@ class Ir2TIrConverter implements IIrVisitor<Void> {
 
     @Override
     public Void visit(Write ir) {
-        List<Instr<?>> instr = switch (ir.writeType){
+        List<TIrInstr<?>> instr = switch (ir.writeType){
             case INT -> {
                 yield List.of(
-                        new Lad(RealRegister.of(CaslRegisters.GR2), convertOperand(ir.operand)),
+                        move(CaslRegisters.GR2, ir.operand),
                         new enshud.s4.compiler.generator.impls.casl.tir.instructions.Call("WRTINT")
                 );
             }
             case CHAR -> {
                 yield List.of(
-                        new Lad(RealRegister.of(CaslRegisters.GR2), convertOperand(ir.operand)),
+                        move(CaslRegisters.GR2, ir.operand),
                         new enshud.s4.compiler.generator.impls.casl.tir.instructions.Call("WRTCH")
                 );
             }
             case STRING -> {
-                var operand = convertOperand(ir.operand);
                 yield List.of(
-                        new Ld(RealRegister.of(CaslRegisters.GR1), operand),
-                        new Lad(RealRegister.of(CaslRegisters.GR2), convertOperand(ir.operand)),
+                        move(CaslRegisters.GR1, ir.operand),
+                        move(CaslRegisters.GR2, ir.operand),
                         new Add(RealRegister.of(CaslRegisters.GR2), new NumericImmediate(1, NumericImmediate.Type.DECIMAL)),
                         new enshud.s4.compiler.generator.impls.casl.tir.instructions.Call("WRTSTR")
                 );
@@ -247,26 +237,26 @@ class Ir2TIrConverter implements IIrVisitor<Void> {
             }
             case MUL -> {
                 tirInstructions.addAll(List.of(
-                        new Lad(RealRegister.of(CaslRegisters.GR1), convertOperand(ir.left)),
-                        new Lad(RealRegister.of(CaslRegisters.GR2), convertOperand(ir.right)),
+                        move(CaslRegisters.GR1, ir.left),
+                        move(CaslRegisters.GR2, ir.right),
                         new enshud.s4.compiler.generator.impls.casl.tir.instructions.Call("MULT"),
-                        new Lad(convertOperand(ir.left), RealRegister.of(CaslRegisters.GR2))
+                        new Ld(convertOperand(ir.left), RealRegister.of(CaslRegisters.GR2))
                 ));
             }
             case DIV -> {
                 tirInstructions.addAll(List.of(
-                        new Lad(RealRegister.of(CaslRegisters.GR1), convertOperand(ir.left)),
-                        new Lad(RealRegister.of(CaslRegisters.GR2), convertOperand(ir.right)),
+                        move(CaslRegisters.GR1, ir.left),
+                        move(CaslRegisters.GR2, ir.right),
                         new enshud.s4.compiler.generator.impls.casl.tir.instructions.Call("DIV"),
-                        new Lad(convertOperand(ir.left), RealRegister.of(CaslRegisters.GR2))
+                        new Ld(convertOperand(ir.left), RealRegister.of(CaslRegisters.GR2))
                 ));
             }
             case MOD -> {
                 tirInstructions.addAll(List.of(
-                        new Lad(RealRegister.of(CaslRegisters.GR1), convertOperand(ir.left)),
-                        new Lad(RealRegister.of(CaslRegisters.GR2), convertOperand(ir.right)),
+                        move(CaslRegisters.GR1, ir.left),
+                        move(CaslRegisters.GR2, ir.right),
                         new enshud.s4.compiler.generator.impls.casl.tir.instructions.Call("DIV"),
-                        new Lad(convertOperand(ir.left), RealRegister.of(CaslRegisters.GR1))
+                        new Ld(convertOperand(ir.left), RealRegister.of(CaslRegisters.GR1))
                 ));
             }
             case AND -> {
@@ -371,6 +361,28 @@ class Ir2TIrConverter implements IIrVisitor<Void> {
     public Void visit(Store ir) {
         tirInstructions.add(new St(convertOperand(ir.value), convertOperand(ir.target)));
         return null;
+    }
+
+    private TIrInstr<?> move(Operand dest, Operand src) {
+        return switch (src) {
+            case Const c -> {
+                yield new Lad(convertOperand(dest), convertOperand(src));
+            }
+            default -> {
+                yield new Ld(convertOperand(dest), convertOperand(src));
+            }
+        };
+    }
+
+    private TIrInstr<?> move(Register dest, Operand src) {
+        return switch (src) {
+            case Const c -> {
+                yield new Lad(new RealRegister(dest), convertOperand(src));
+            }
+            default -> {
+                yield new Ld(new RealRegister(dest), convertOperand(src));
+            }
+        };
     }
 
     private FrameSlot lookupVariableSlot(Variable var) {

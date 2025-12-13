@@ -1,11 +1,10 @@
 package enshud.s4.compiler.generator.impls.casl.tir.instructions;
 
 import enshud.s4.compiler.generator.AllocatableRegister;
-import enshud.s4.compiler.generator.impls.casl.tir.operand.RegisterOperand;
 
 import java.util.Set;
 
-public class Call extends Instr<Call> {
+public class Call extends TIrInstr<Call> {
     public final String functionName;
 
     public Call(String functionName) {

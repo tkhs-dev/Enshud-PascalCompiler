@@ -1,11 +1,10 @@
 package enshud.s4.compiler.generator.impls.casl.tir.instructions;
 
 import enshud.s4.compiler.generator.AllocatableRegister;
-import enshud.s4.compiler.generator.impls.casl.tir.operand.RegisterOperand;
 
 import java.util.Set;
 
-public class Jmp extends Instr<Jmp> {
+public class Jmp extends TIrInstr<Jmp> {
     public final String addressLabel;
     public final Type type;
 
@@ -16,7 +15,7 @@ public class Jmp extends Instr<Jmp> {
 
     @Override
     public <T> T accept(ITIRVisitor<T> visitor) {
-        return null;
+        return visitor.visit(this);
     }
 
     @Override
