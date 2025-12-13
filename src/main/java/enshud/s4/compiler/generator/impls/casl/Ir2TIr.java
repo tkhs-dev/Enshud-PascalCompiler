@@ -25,7 +25,12 @@ import java.util.List;
 import java.util.Map;
 
 public class Ir2TIr {
+    private Map<String, Integer> variableLevelMap;
+    private Map<IrFunction, FrameInfo> frameInfoMap;
+
     public TIRProgram convert(IrProgram irProgram) {
+        this.variableLevelMap = generateVariableLevelMap(irProgram);
+        this.frameInfoMap = generateFrameInfoMap(irProgram);
         var main = convert(irProgram.main);
         var functions = irProgram.functions.entrySet().stream()
                 .collect(java.util.stream.Collectors.toMap(
@@ -36,12 +41,10 @@ public class Ir2TIr {
     }
 
     private TIRFunction convert(IrFunction irFunction) {
-        var frameInfo = generateFrameInfo(irFunction);
-        Ir2TIrVisitor visitor = new Ir2TIrVisitor(frameInfo);
-        for (var irInstruction : irFunction.getInstructions()) {
-            irInstruction.accept(visitor);
-        }
-        var instructions = visitor.getInstructions();
+        var frameInfo = frameInfoMap.get(irFunction);
+        Ir2TIrConverter visitor = new Ir2TIrConverter(frameInfo, frameInfoMap, irFunction);
+        var instructions = visitor.convertInstructions();
+
         var blocks = CFGBuilder.build(instructions);
         var analyzer = new LivenessAnalyzer<>(blocks);
         analyzer.analyze();
@@ -58,7 +61,37 @@ public class Ir2TIr {
         );
     }
 
-    private FrameInfo generateFrameInfo(IrFunction irFunction) {
+    private Map<String, Integer> generateVariableLevelMap(IrProgram irProgram) {
+        Map<String, Integer> variableLevelMap = new java.util.HashMap<>();
+        for (var entry : irProgram.functions.entrySet()) {
+            var function = entry.getValue();
+            for (var varEntry : function.variables.entrySet()) {
+                variableLevelMap.put(varEntry.getKey(), function.level);
+            }
+            for (var paramEntry : function.parameters.entrySet()) {
+                variableLevelMap.put(paramEntry.getKey(), function.level);
+            }
+        }
+        for (var varEntry : irProgram.main.variables.entrySet()) {
+            variableLevelMap.put(varEntry.getKey(), irProgram.main.level);
+        }
+        for (var paramEntry : irProgram.main.parameters.entrySet()) {
+            variableLevelMap.put(paramEntry.getKey(), irProgram.main.level);
+        }
+        return variableLevelMap;
+    }
+
+    private static Map<IrFunction, FrameInfo> generateFrameInfoMap(IrProgram irProgram) {
+        Map<IrFunction, FrameInfo> frameInfoMap = new java.util.HashMap<>();
+        for (var entry : irProgram.functions.entrySet()) {
+            var function = entry.getValue();
+            frameInfoMap.put(function, generateFrameInfo(function));
+        }
+        frameInfoMap.put(irProgram.main, generateFrameInfo(irProgram.main));
+        return frameInfoMap;
+    }
+
+    private static FrameInfo generateFrameInfo(IrFunction irFunction) {
         FrameInfo frameInfo = new FrameInfo();
         for (var entry : irFunction.variables.entrySet()) {
             var type = entry.getValue();
@@ -80,18 +113,25 @@ public class Ir2TIr {
     }
 }
 
-class Ir2TIrVisitor implements IIrVisitor<Void> {
+class Ir2TIrConverter implements IIrVisitor<Void> {
     private final List<Instr<?>> tirInstructions;
     private final SerialManager serialManager;
     private final FrameInfo frameInfo;
+    private final Map<IrFunction, FrameInfo> frameInfoMap;
+    private final IrFunction currentFunction;
 
-    public Ir2TIrVisitor(FrameInfo frameInfo) {
+    public Ir2TIrConverter(FrameInfo frameInfo, Map<IrFunction, FrameInfo> frameInfoMap, IrFunction currentFunction) {
         this.tirInstructions = new ArrayList<>();
         this.serialManager = new SerialManager("LL");
         this.frameInfo = frameInfo;
+        this.frameInfoMap = frameInfoMap;
+        this.currentFunction = currentFunction;
     }
 
-    public List<Instr<?>> getInstructions() {
+    public List<Instr<?>> convertInstructions() {
+        for (var irInstruction : currentFunction.getInstructions()) {
+            irInstruction.accept(this);
+        }
         return tirInstructions;
     }
 
@@ -134,12 +174,9 @@ class Ir2TIrVisitor implements IIrVisitor<Void> {
 
     @Override
     public Void visit(LoadIndexed ir) {
-        var slotOpt = frameInfo.getSlot(ir.arrayVar.name);
-        if (slotOpt.isEmpty()) {
-            throw new RuntimeException("Variable not found in frame: " + ir.arrayVar.name);
-        }
+        var slotOpt = lookupVariableSlot(ir.arrayVar);
         tirInstructions.addAll(List.of(
-            new Ld(convertOperand(ir.targetVar), new FrameSlot(slotOpt.get().slot).setOffset(convertOperand(ir.indexVar)))
+            new Ld(convertOperand(ir.targetVar), new FrameSlot(slotOpt.slot, 0).setOffset(convertOperand(ir.indexVar)))
         ));
         return null;
     }
@@ -152,12 +189,9 @@ class Ir2TIrVisitor implements IIrVisitor<Void> {
 
     @Override
     public Void visit(StoreIndexed ir) {
-        var slotOpt = frameInfo.getSlot(ir.target.name);
-        if (slotOpt.isEmpty()) {
-            throw new RuntimeException("Variable not found in frame: " + ir.target.name);
-        }
+        var slotOpt = lookupVariableSlot(ir.target);
         tirInstructions.addAll(List.of(
-            new St(convertOperand(ir.value), new FrameSlot(slotOpt.get().slot).setOffset(convertOperand(ir.index)))
+            new St(convertOperand(ir.value), new FrameSlot(slotOpt.slot, 0).setOffset(convertOperand(ir.index)))
         ));
         return null;
     }
@@ -339,6 +373,20 @@ class Ir2TIrVisitor implements IIrVisitor<Void> {
         return null;
     }
 
+    private FrameSlot lookupVariableSlot(Variable var) {
+        var func = currentFunction;
+        while(func != null){
+            var slotOpt = frameInfoMap.get(func).getSlot(var.name);
+            if(slotOpt.isPresent()){
+                var slot = slotOpt.get();
+                var levelDiff = currentFunction.level - func.level;
+                return new FrameSlot(slot.slot, levelDiff);
+            }
+            func = func.parent;
+        }
+        throw new RuntimeException("Variable not found in any frame: " + var.name);
+    }
+
     private TIROperand convertOperand(Operand irOperand) {
         return switch(irOperand){
             case Const c ->{
@@ -356,12 +404,7 @@ class Ir2TIrVisitor implements IIrVisitor<Void> {
             }
             case Temp t -> new VirtualRegister(t.id);
             case Variable v -> {
-                var slotOpt = frameInfo.getSlot(v.name);
-                if (slotOpt.isEmpty()) {
-                    throw new RuntimeException("Variable not found in frame: " + v.name);
-                }
-                var slot = slotOpt.get();
-                yield new FrameSlot(slot.slot);
+                yield lookupVariableSlot(v);
             }
             default -> throw new IllegalStateException("Unexpected value: " + irOperand);
         };
