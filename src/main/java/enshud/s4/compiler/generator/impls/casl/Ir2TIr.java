@@ -195,9 +195,6 @@ class Ir2TIrConverter implements IIrVisitor<Void> {
 
     @Override
     public Void visit(Write ir) {
-        tirInstructions.addAll(List.of(
-
-        ));
         List<TIrInstr<?>> instr = switch (ir.writeType){
             case INT -> {
                 yield List.of(

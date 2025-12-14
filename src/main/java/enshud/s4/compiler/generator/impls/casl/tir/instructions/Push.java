@@ -29,6 +29,6 @@ public class Push extends TIrInstr<Push> {
 
     @Override
     public Set<AllocatableRegister> getDef() {
-        return Set.of();
+        return registerSet();
     }
 }
