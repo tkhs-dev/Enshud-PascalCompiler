@@ -196,6 +196,7 @@ class IrConverterVisitor implements IAstVisitor<Optional<Temp>> {
         var condition = node.condition.accept(this).get();
         currentScope.add(new Jump(endLabel, condition, Jump.Type.FALSE));
         node.body.accept(this);
+        currentScope.add(new Jump(startLabel));
         currentScope.add(Label.of(endLabel));
         return Optional.empty();
     }
