@@ -8,13 +8,15 @@ import java.util.List;
 public class TIRFunction {
     public String name;
     public FrameInfo frameInfo;
+    public List<ConstData<?>> constDataList;
 
     private List<BasicBlock<TIrInstr<?>>> blocks;
 
-    public TIRFunction(String name, FrameInfo frameInfo, List<BasicBlock<TIrInstr<?>>> blocks) {
+    public TIRFunction(String name, FrameInfo frameInfo, List<BasicBlock<TIrInstr<?>>> blocks, List<ConstData<?>> constDataList) {
         this.name = name;
         this.frameInfo = frameInfo;
         this.blocks = blocks;
+        this.constDataList = constDataList;
     }
 
     public List<BasicBlock<TIrInstr<?>>> getBlocks() {

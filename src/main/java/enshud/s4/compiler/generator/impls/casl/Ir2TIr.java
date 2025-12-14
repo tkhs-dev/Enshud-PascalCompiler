@@ -3,10 +3,7 @@ package enshud.s4.compiler.generator.impls.casl;
 import enshud.s4.compiler.generator.Register;
 import enshud.s4.compiler.generator.impls.casl.tir.instructions.*;
 import enshud.s4.compiler.generator.impls.casl.tir.operand.*;
-import enshud.s4.compiler.generator.impls.casl.tir.program.CFGBuilder;
-import enshud.s4.compiler.generator.impls.casl.tir.program.FrameInfo;
-import enshud.s4.compiler.generator.impls.casl.tir.program.TIRFunction;
-import enshud.s4.compiler.generator.impls.casl.tir.program.TIRProgram;
+import enshud.s4.compiler.generator.impls.casl.tir.program.*;
 import enshud.s4.compiler.ir.IIrVisitor;
 import enshud.s4.compiler.ir.instructions.*;
 import enshud.s4.compiler.ir.instructions.Call;
@@ -42,13 +39,15 @@ public class Ir2TIr {
         var frameInfo = frameInfoMap.get(irFunction);
         Ir2TIrConverter visitor = new Ir2TIrConverter(frameInfoMap, irFunction);
         var instructions = visitor.convertInstructions();
+        var constDataList = visitor.getConstDataList();
 
         var blocks = CFGBuilder.build(instructions);
 
         return new TIRFunction(
                 irFunction.name,
                 frameInfo,
-                blocks
+                blocks,
+                constDataList
         );
     }
 
@@ -109,12 +108,16 @@ class Ir2TIrConverter implements IIrVisitor<Void> {
     private final SerialManager serialManager;
     private final Map<IrFunction, FrameInfo> frameInfoMap;
     private final IrFunction currentFunction;
+    private final List<ConstData<?>> constDataList;
+    private final SerialManager constDataSerialManager;
 
     public Ir2TIrConverter(Map<IrFunction, FrameInfo> frameInfoMap, IrFunction currentFunction) {
         this.tirInstructions = new ArrayList<>();
         this.serialManager = new SerialManager("LL");
+        this.constDataSerialManager = new SerialManager("CD");
         this.frameInfoMap = frameInfoMap;
         this.currentFunction = currentFunction;
+        this.constDataList = new ArrayList<>();
     }
 
     public List<TIrInstr<?>> convertInstructions() {
@@ -123,6 +126,10 @@ class Ir2TIrConverter implements IIrVisitor<Void> {
         }
         tirInstructions.add(new Ret());
         return tirInstructions;
+    }
+
+    public List<ConstData<?>> getConstDataList() {
+        return constDataList;
     }
 
     @Override
@@ -203,9 +210,9 @@ class Ir2TIrConverter implements IIrVisitor<Void> {
             }
             case STRING -> {
                 yield List.of(
-                        move(CaslRegisters.GR1, ir.operand),
-                        move(CaslRegisters.GR2, ir.operand),
-                        new Add(RealRegister.of(CaslRegisters.GR2), new NumericImmediate(1, NumericImmediate.Type.DECIMAL)),
+                        new Lad(new RealRegister(CaslRegisters.GR7), new Address("BUF")),
+                        new Ld(RealRegister.of(CaslRegisters.GR1), new Address("-1").setOffset(convertOperand(ir.operand))),
+                        new Lad(RealRegister.of(CaslRegisters.GR6), new NumericImmediate(0, NumericImmediate.Type.DECIMAL)),
                         new enshud.s4.compiler.generator.impls.casl.tir.instructions.Call("WRTSTR")
                 );
             }
@@ -408,7 +415,12 @@ class Ir2TIrConverter implements IIrVisitor<Void> {
                 }else if(c.value instanceof Character ch){
                     yield new CharImmediate(ch);
                 }else if(c.value instanceof String s){
-                    yield new StringImmediate(s);
+                    var label = constDataSerialManager.New();
+                    this.constDataList.add(new StringData(
+                            label,
+                            s
+                    ));
+                    yield new StringImmediate(label);
                 }else {
                     throw new UnsupportedOperationException("Unsupported constant type: " + c.value.getClass() + " value: " + c.value);
                 }

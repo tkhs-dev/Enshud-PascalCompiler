@@ -11,6 +11,8 @@ import enshud.s4.compiler.generator.impls.casl.assembly.operand.MemoryOperand;
 import enshud.s4.compiler.generator.impls.casl.assembly.operand.RegisterOperand;
 import enshud.s4.compiler.generator.impls.casl.tir.instructions.*;
 import enshud.s4.compiler.generator.impls.casl.tir.operand.*;
+import enshud.s4.compiler.generator.impls.casl.tir.program.ConstData;
+import enshud.s4.compiler.generator.impls.casl.tir.program.StringData;
 import enshud.s4.compiler.generator.impls.casl.tir.program.TIRFunction;
 import enshud.s4.compiler.generator.impls.casl.tir.program.TIRProgram;
 
@@ -36,6 +38,8 @@ public class AssemblyGenerator {
         for (var function : program.functions.values()) {
             processFunction(function);
         }
+        processConstData(program.getConstDataList());
+        instructions.add(new DS(256).setLabel("BUF"));
         instructions.add(new END());
         return instructions;
     }
@@ -52,6 +56,17 @@ public class AssemblyGenerator {
         var converter = new TIRConverter(allocation, function);
         var funcInstructions = converter.getInstructions();
         instructions.addAll(funcInstructions);
+    }
+
+    private void processConstData(List<ConstData<?>> constDataList) {
+        for (var constData : constDataList) {
+            if (constData instanceof StringData strData) {
+                instructions.addAll(List.of(
+                        new DC(strData.value.length()),
+                        new DC(strData.value).setLabel(strData.label)
+                ));
+            }
+        }
     }
 }
 
@@ -91,7 +106,9 @@ class TIRConverter implements ITIRVisitor<Void>{
 
     @Override
     public Void visit(Call ir) {
-
+        addInstructions(ir,
+                new CALL(ir.functionName)
+        );
         return null;
     }
 
@@ -284,6 +301,22 @@ class TIRConverter implements ITIRVisitor<Void>{
                     instructions.add(new LD(new RegisterOperand(CaslRegisters.TEMP), data(f.offset)));
                 }
                 yield new MemoryOperand(String.valueOf(f.slot), CaslRegisters.FP);
+            }
+            case Address a -> {
+                if (a.offset == null) {
+                    yield new MemoryOperand(a.base);
+                } else {
+                    if (a.offset instanceof Immediate i) {
+                        if(i instanceof NumericImmediate n){
+                            instructions.add(new LAD(new RegisterOperand(CaslRegisters.TEMP), new MemoryOperand(String.valueOf(n.value))));
+                        } else {
+                            throw new IllegalArgumentException("Address offset must be NumericImmediate: " + i);
+                        }
+                    } else {
+                        instructions.add(new LD(new RegisterOperand(CaslRegisters.TEMP), data(a.offset)));
+                    }
+                    yield new MemoryOperand(a.base, CaslRegisters.TEMP);
+                }
             }
             default -> throw new IllegalArgumentException("Unknown operand type: " + operand);
         };
