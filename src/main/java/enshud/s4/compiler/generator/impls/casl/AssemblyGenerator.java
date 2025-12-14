@@ -27,7 +27,10 @@ public class AssemblyGenerator {
     public AssemblyGenerator(TIRProgram program) {
         this.program = program;
         this.instructions = new ArrayList<>();
-        instructions.add(new START("BEGIN").setLabel("CASL"));
+        instructions.addAll(List.of(
+                new START("BEGIN").setLabel("CASL"),
+                new LD(new RegisterOperand(CaslRegisters.FP), new RegisterOperand(CaslRegisters.SP))
+        ));
     }
 
     public List<AssemblyInstr<?>> generate() {
@@ -52,6 +55,8 @@ public class AssemblyGenerator {
         var interferenceGraph = InterferenceGraph.build(blocks, desc, RealRegister::of);
         var allocator = new RegisterAllocator(interferenceGraph, desc);
         var allocation = allocator.allocate();
+
+        System.out.println(allocation);
 
         var converter = new TIRConverter(allocation, function);
         var funcInstructions = converter.getInstructions();
@@ -82,10 +87,27 @@ class TIRConverter implements ITIRVisitor<Void>{
     }
 
     public List<AssemblyInstr<?>> getInstructions() {
+        constructFrame();
         for (var ir : function.getInstructions()) {
             ir.accept(this);
         }
         return instructions;
+    }
+
+    private void constructFrame(){
+        var frame = function.frameInfo;
+        instructions.addAll(List.of(
+                new PUSH(new MemoryOperand("0", CaslRegisters.FP)),
+                new LD(new RegisterOperand(CaslRegisters.FP), new RegisterOperand(CaslRegisters.SP)),
+                new ADDA(new RegisterOperand(CaslRegisters.SP), new MemoryOperand(String.valueOf(frame.localVarSize)))
+        ));
+    }
+
+    private void destructFrame(){
+        var frame = function.frameInfo;
+        instructions.addAll(List.of(
+                new SUBA(new RegisterOperand(CaslRegisters.FP), new MemoryOperand(String.valueOf(frame.localVarSize)))
+        ));
     }
 
     @Override
