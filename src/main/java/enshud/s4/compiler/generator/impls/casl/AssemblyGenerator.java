@@ -328,7 +328,7 @@ class TIRConverter implements ITIRVisitor<Void>{
                 } else {
                     instructions.add(new LD(new RegisterOperand(CaslRegisters.TEMP), data(f.offset)));
                 }
-                yield new MemoryOperand(String.valueOf(f.slot), CaslRegisters.FP);
+                yield new MemoryOperand(String.valueOf(f.slot), CaslRegisters.TEMP);
             }
             case Address a -> {
                 if (a.offset == null) {
