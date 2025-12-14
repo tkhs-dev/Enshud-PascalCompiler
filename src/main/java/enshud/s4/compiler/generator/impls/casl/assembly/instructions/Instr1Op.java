@@ -6,7 +6,7 @@ public class Instr1Op<Op1 extends AssemblyOperand> extends AssemblyInstr<Instr1O
     protected Op1 op;
 
     public Instr1Op(Op1 op1) {
-        this.op = op;
+        this.op = op1;
     }
 
     @Override
