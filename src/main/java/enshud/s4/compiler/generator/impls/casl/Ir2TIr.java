@@ -286,9 +286,9 @@ class Ir2TIrConverter implements IIrVisitor<Void> {
                 tirInstructions.addAll(List.of(
                         new Cp(convertOperand(ir.left), convertOperand(ir.right)),
                         new Jmp(labelFalse, Jmp.Type.ZERO),
-                        new Lad(convertOperand(ir.left), Immediate.TRUE),
+                        new Ld(convertOperand(ir.left), Immediate.TRUE),
                         new Jmp(labelEnd, Jmp.Type.UNCONDITIONAL),
-                        new Lad(convertOperand(ir.left), Immediate.FALSE).setLabel(labelFalse),
+                        new Ld(convertOperand(ir.left), Immediate.FALSE).setLabel(labelFalse),
                         new Nop().setLabel(labelEnd)
                 ));
             }
@@ -298,9 +298,9 @@ class Ir2TIrConverter implements IIrVisitor<Void> {
                 tirInstructions.addAll(List.of(
                         new Cp(convertOperand(ir.left), convertOperand(ir.right)),
                         new Jmp(labelFalse, Jmp.Type.NONZERO),
-                        new Lad(convertOperand(ir.left), Immediate.TRUE),
+                        new Ld(convertOperand(ir.left), Immediate.TRUE),
                         new Jmp(labelEnd, Jmp.Type.UNCONDITIONAL),
-                        new Lad(convertOperand(ir.left), Immediate.FALSE).setLabel(labelFalse),
+                        new Ld(convertOperand(ir.left), Immediate.FALSE).setLabel(labelFalse),
                         new Nop().setLabel(labelEnd)
                 ));
             }
@@ -310,9 +310,9 @@ class Ir2TIrConverter implements IIrVisitor<Void> {
                 tirInstructions.addAll(List.of(
                         new Sub(convertOperand(ir.left), convertOperand(ir.right)),
                         new Jmp(labelFalse, Jmp.Type.PLUS),
-                        new Lad(convertOperand(ir.left), Immediate.TRUE),
+                        new Ld(convertOperand(ir.left), Immediate.TRUE),
                         new Jmp(labelEnd, Jmp.Type.UNCONDITIONAL),
-                        new Lad(convertOperand(ir.left), Immediate.FALSE).setLabel(labelFalse),
+                        new Ld(convertOperand(ir.left), Immediate.FALSE).setLabel(labelFalse),
                         new Nop().setLabel(labelEnd)
                 ));
             }
@@ -322,9 +322,9 @@ class Ir2TIrConverter implements IIrVisitor<Void> {
                 tirInstructions.addAll(List.of(
                         new Sub(convertOperand(ir.left), convertOperand(ir.right)),
                         new Jmp(labelTrue, Jmp.Type.MINUS),
-                        new Lad(convertOperand(ir.left), Immediate.FALSE),
+                        new Ld(convertOperand(ir.left), Immediate.FALSE),
                         new Jmp(labelEnd, Jmp.Type.UNCONDITIONAL),
-                        new Lad(convertOperand(ir.left), Immediate.TRUE).setLabel(labelTrue),
+                        new Ld(convertOperand(ir.left), Immediate.TRUE).setLabel(labelTrue),
                         new Nop().setLabel(labelEnd)
                 ));
             }
@@ -334,9 +334,9 @@ class Ir2TIrConverter implements IIrVisitor<Void> {
                 tirInstructions.addAll(List.of(
                         new Sub(convertOperand(ir.left), convertOperand(ir.right)),
                         new Jmp(labelFalse, Jmp.Type.MINUS),
-                        new Lad(convertOperand(ir.left), Immediate.TRUE),
+                        new Ld(convertOperand(ir.left), Immediate.TRUE),
                         new Jmp(labelEnd, Jmp.Type.UNCONDITIONAL),
-                        new Lad(convertOperand(ir.left), Immediate.FALSE).setLabel(labelFalse),
+                        new Ld(convertOperand(ir.left), Immediate.FALSE).setLabel(labelFalse),
                         new Nop().setLabel(labelEnd)
                 ));
             }
@@ -346,9 +346,9 @@ class Ir2TIrConverter implements IIrVisitor<Void> {
                 tirInstructions.addAll(List.of(
                         new Sub(convertOperand(ir.left), convertOperand(ir.right)),
                         new Jmp(labelFalse, Jmp.Type.PLUS),
-                        new Lad(convertOperand(ir.left), Immediate.FALSE),
+                        new Ld(convertOperand(ir.left), Immediate.FALSE),
                         new Jmp(labelEnd, Jmp.Type.UNCONDITIONAL),
-                        new Lad(convertOperand(ir.left), Immediate.TRUE).setLabel(labelFalse),
+                        new Ld(convertOperand(ir.left), Immediate.TRUE).setLabel(labelFalse),
                         new Nop().setLabel(labelEnd)
                 ));
             }

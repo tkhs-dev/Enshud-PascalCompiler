@@ -5,8 +5,8 @@ public abstract class Immediate<T> extends TIROperand {
 
     public static final Immediate<Integer> ZERO = new NumericImmediate(0, NumericImmediate.Type.DECIMAL);
     public static final Immediate<Integer> ONE = new NumericImmediate(1, NumericImmediate.Type.DECIMAL);
-    public static final Immediate<Integer> TRUE = ONE;
-    public static final Immediate<Integer> FALSE = ZERO;
+    public static final Address TRUE = new Address("TRUE");
+    public static final Address FALSE = new Address("FALSE");
 
     public Immediate(T value) {
         this.value = value;

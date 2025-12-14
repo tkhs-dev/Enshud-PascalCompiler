@@ -42,8 +42,12 @@ public class AssemblyGenerator {
             processFunction(function);
         }
         processConstData(program.getConstDataList());
-        instructions.add(new DS(256).setLabel("BUF"));
-        instructions.add(new END());
+        instructions.addAll(List.of(
+                new DS(256).setLabel("BUF"),
+                new DC(1).setLabel("TRUE"),
+                new DC(0).setLabel("FALSE"),
+                new END()
+        ));
         return instructions;
     }
 
@@ -104,9 +108,8 @@ class TIRConverter implements ITIRVisitor<Void>{
     }
 
     private void destructFrame(){
-        var frame = function.frameInfo;
         instructions.addAll(List.of(
-                new SUBA(new RegisterOperand(CaslRegisters.FP), new MemoryOperand(String.valueOf(frame.localVarSize)))
+                new LD(new RegisterOperand(CaslRegisters.SP), new RegisterOperand(CaslRegisters.FP))
         ));
     }
 
@@ -136,6 +139,7 @@ class TIRConverter implements ITIRVisitor<Void>{
 
     @Override
     public Void visit(Cp ir) {
+        System.out.println(ir.right);
         addInstructions(ir,
                 new CPA(reg(ir.left),  data(ir.right))
         );
