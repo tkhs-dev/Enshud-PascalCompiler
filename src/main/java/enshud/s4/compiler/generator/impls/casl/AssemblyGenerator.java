@@ -15,6 +15,7 @@ import enshud.s4.compiler.generator.impls.casl.tir.program.ConstData;
 import enshud.s4.compiler.generator.impls.casl.tir.program.StringData;
 import enshud.s4.compiler.generator.impls.casl.tir.program.TIRFunction;
 import enshud.s4.compiler.generator.impls.casl.tir.program.TIRProgram;
+import enshud.util.Ascii;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -310,7 +311,7 @@ class TIRConverter implements ITIRVisitor<Void>{
             case enshud.s4.compiler.generator.impls.casl.tir.operand.Immediate<?> i -> {
                 yield switch(i) {
                     case NumericImmediate n -> new MemoryOperand(String.valueOf(n.value));
-                    case CharImmediate c -> new MemoryOperand(String.valueOf(c.value));
+                    case CharImmediate c -> new MemoryOperand(String.valueOf(Ascii.toAscii(c.value)));
                     case StringImmediate n -> new MemoryOperand(String.valueOf(n.value));
                     default -> throw new IllegalArgumentException("Unknown immediate type: " + i.value);
                 };
