@@ -123,8 +123,6 @@ public class InterferenceGraph {
                 }
             }
         }
-        System.out.println(graph.originalAdj);
-        System.out.println(graph.currentAdj);
 
         return graph;
     }
