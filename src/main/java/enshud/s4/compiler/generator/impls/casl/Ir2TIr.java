@@ -195,7 +195,9 @@ class Ir2TIrConverter implements IIrVisitor<Void> {
 
     @Override
     public Void visit(Write ir) {
-        tirInstructions.add(new Lad(new RealRegister(CaslRegisters.GR7), new Address("BUF")));
+        tirInstructions.addAll(List.of(
+
+        ));
         List<TIrInstr<?>> instr = switch (ir.writeType){
             case INT -> {
                 yield List.of(
@@ -212,7 +214,6 @@ class Ir2TIrConverter implements IIrVisitor<Void> {
             case STRING -> {
                 yield List.of(
                         new Ld(RealRegister.of(CaslRegisters.GR1), new Address("-1").setOffset(convertOperand(ir.operand))),
-                        new Lad(RealRegister.of(CaslRegisters.GR6), new NumericImmediate(0, NumericImmediate.Type.DECIMAL)),
                         new enshud.s4.compiler.generator.impls.casl.tir.instructions.Call("WRTSTR")
                 );
             }

@@ -29,7 +29,9 @@ public class AssemblyGenerator {
         this.instructions = new ArrayList<>();
         instructions.addAll(List.of(
                 new START("BEGIN").setLabel("CASL"),
-                new LD(new RegisterOperand(CaslRegisters.FP), new RegisterOperand(CaslRegisters.SP))
+                new LD(new RegisterOperand(CaslRegisters.FP), new RegisterOperand(CaslRegisters.SP)),
+                new LAD(new RegisterOperand(CaslRegisters.GR7), new MemoryOperand("BUF")),
+                new LAD(new RegisterOperand(CaslRegisters.GR6), new MemoryOperand("0"))
         ));
     }
 
