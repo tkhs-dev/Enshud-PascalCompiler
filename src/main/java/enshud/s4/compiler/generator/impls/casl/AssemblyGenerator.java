@@ -49,6 +49,8 @@ public class AssemblyGenerator {
                 new DS(256).setLabel("BUF"),
                 new DC(1).setLabel("TRUE"),
                 new DC(0).setLabel("FALSE"),
+                new DC(0).setLabel("ZERO"),
+                new DC(1).setLabel("ONE"),
                 new END()
         ));
         return instructions;
@@ -106,7 +108,8 @@ class TIRConverter implements ITIRVisitor<Void>{
         instructions.addAll(List.of(
                 new PUSH(new MemoryOperand("0", CaslRegisters.FP)),
                 new LD(new RegisterOperand(CaslRegisters.FP), new RegisterOperand(CaslRegisters.SP)),
-                new ADDA(new RegisterOperand(CaslRegisters.SP), new MemoryOperand(String.valueOf(frame.localVarSize)))
+                new LAD(new RegisterOperand(CaslRegisters.TEMP), new MemoryOperand(String.valueOf(-frame.localVarSize))),
+                new ADDA(new RegisterOperand(CaslRegisters.SP), new RegisterOperand(CaslRegisters.TEMP))
         ));
     }
 
@@ -222,6 +225,7 @@ class TIRConverter implements ITIRVisitor<Void>{
 
     @Override
     public Void visit(Ret ir) {
+        destructFrame();
         addInstructions(ir,
                 new RET()
         );
