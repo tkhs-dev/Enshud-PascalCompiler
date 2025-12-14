@@ -14,6 +14,8 @@ import enshud.s4.compiler.ir.program.IrFunction;
 import enshud.s4.compiler.ir.program.IrProgram;
 import enshud.util.SerialManager;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 
 import static enshud.pascal.type.Type.CHAR;
@@ -30,13 +32,18 @@ public class IrConverter {
 class IrConverterVisitor implements IAstVisitor<Optional<Temp>> {
     private final SerialManager tempManager;
     private final SerialManager labelManager;
+    private final SerialManager funcManager;
     private IrFunction currentScope;
     private IrProgram program;
+
+    private final Map<String, String> funcLabelMap;
 
     public IrConverterVisitor() {
         this.tempManager = new SerialManager("t");
         this.labelManager = new SerialManager("L");
+        this.funcManager = new SerialManager("F");
         this.program = new IrProgram();
+        this.funcLabelMap = new HashMap<>();
     }
 
     private void visitAll(AstNode node) {
@@ -84,7 +91,9 @@ class IrConverterVisitor implements IAstVisitor<Optional<Temp>> {
 
     @Override
     public Optional<Temp> visit(SubProgHeaderNode node) {
-        currentScope.add(new Label("FUNC:"+node.name));
+        var label = funcManager.New();
+        funcLabelMap.put(node.name, label);
+        currentScope.add(Label.of(label));
         visitAll(node);
         return Optional.empty();
     }
@@ -137,7 +146,11 @@ class IrConverterVisitor implements IAstVisitor<Optional<Temp>> {
     @Override
     public Optional<Temp> visit(CallNode node) {
         var args = node.args.stream().map(arg -> arg.accept(this).get()).toList();
-        currentScope.add(new Call("FUNC:"+node.name, args));
+        var label = funcLabelMap.get(node.name);
+        if (label == null) {
+            throw new IllegalStateException("Function label not found for function: " + node.name);
+        }
+        currentScope.add(new Call(label, args));
         return Optional.empty();
     }
 
