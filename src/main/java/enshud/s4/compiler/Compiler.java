@@ -63,7 +63,8 @@ public class Compiler {
 			String caslCode = generator.generate(prog);
 			System.out.println(caslCode);
             // ファイルに書き出し
-//            java.nio.file.Files.writeString(java.nio.file.Path.of(outputFileName), caslCode);
+            java.nio.file.Files.writeString(java.nio.file.Path.of(outputFileName), caslCode);
+            CaslSimulator.appendLibcas(outputFileName);
             // 構文解析が成功した場合
             return "OK";
         } catch (FileFormatException | IOException e) {
