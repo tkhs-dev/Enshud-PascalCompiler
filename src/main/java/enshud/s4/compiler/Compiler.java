@@ -6,6 +6,7 @@ import enshud.pascal.ast.AstParser;
 import enshud.pascal.ast.nodes.AstNode;
 import enshud.s1.lexer.Lexer;
 import enshud.s3.checker.SemanticCheckVisitor;
+import enshud.s3.checker.SemanticException;
 import enshud.s4.compiler.generator.impls.casl.CaslGenerator;
 import enshud.s4.compiler.ir.IrConverter;
 import enshud.token.FileFormatException;
@@ -71,6 +72,8 @@ public class Compiler {
             return "File not found";
         } catch (AstParseException e) {
             return "Syntax error: line " + e.token.line;
+        } catch (SemanticException e) {
+            return "Semantic error: line " + e.line;
         }
 	}
 }
