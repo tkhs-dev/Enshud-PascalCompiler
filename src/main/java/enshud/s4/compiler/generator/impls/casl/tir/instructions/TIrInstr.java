@@ -2,6 +2,7 @@ package enshud.s4.compiler.generator.impls.casl.tir.instructions;
 
 import enshud.s4.compiler.generator.AllocatableRegister;
 import enshud.s4.compiler.generator.AnalysableInstruction;
+import enshud.s4.compiler.generator.impls.casl.tir.operand.Address;
 import enshud.s4.compiler.generator.impls.casl.tir.operand.TIROperand;
 
 import java.util.Arrays;
@@ -48,9 +49,18 @@ public abstract class TIrInstr<T extends TIrInstr<T>> extends AnalysableInstruct
     }
 
     protected Set<AllocatableRegister> registerSet(TIROperand... ops) {
-        return Arrays.stream(ops)
+        var allocatableReg =  Arrays.stream(ops)
                 .filter(op -> op instanceof AllocatableRegister)
                 .map(op -> (AllocatableRegister) op)
                 .collect(java.util.stream.Collectors.toSet());
+        var fromOffset = Arrays.stream(ops)
+                .filter(op -> op instanceof Address)
+                .map(op -> (Address) op)
+                .map(addr -> addr.offset)
+                .filter(offset -> offset instanceof AllocatableRegister)
+                .map(offset -> (AllocatableRegister) offset)
+                .collect(java.util.stream.Collectors.toSet());
+        allocatableReg.addAll(fromOffset);
+        return allocatableReg;
     }
 }

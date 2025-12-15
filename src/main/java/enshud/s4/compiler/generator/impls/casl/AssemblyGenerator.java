@@ -32,7 +32,9 @@ public class AssemblyGenerator {
                 new START("BEGIN").setLabel("CASL"),
                 new LD(new RegisterOperand(CaslRegisters.FP), new RegisterOperand(CaslRegisters.SP)),
                 new LAD(new RegisterOperand(CaslRegisters.GR7), new MemoryOperand("BUF")),
-                new LAD(new RegisterOperand(CaslRegisters.GR6), new MemoryOperand("0"))
+                new LAD(new RegisterOperand(CaslRegisters.GR6), new MemoryOperand("0")),
+                new ST(new RegisterOperand(CaslRegisters.GR6), new MemoryOperand("WRTGR6")),
+                new ST(new RegisterOperand(CaslRegisters.GR7), new MemoryOperand("WRTGR7"))
         ));
     }
 
@@ -51,6 +53,8 @@ public class AssemblyGenerator {
                 new DC(0).setLabel("FALSE"),
                 new DC(0).setLabel("ZERO"),
                 new DC(1).setLabel("ONE"),
+                new DC(1).setLabel("WRTGR6"),
+                new DC(1).setLabel("WRTGR7"),
                 new END()
         ));
         return instructions;
@@ -307,6 +311,9 @@ class TIRConverter implements ITIRVisitor<Void>{
         return switch (operand) {
             case enshud.s4.compiler.generator.impls.casl.tir.operand.VirtualRegister r -> {
                 var reg = allocation.getAllocationMap().get(r);
+                if (reg == null) {
+                    throw new IllegalArgumentException("Register not allocated: " + r);
+                }
                 yield new RegisterOperand(reg);
             }
             case enshud.s4.compiler.generator.impls.casl.tir.operand.Immediate<?> i -> {

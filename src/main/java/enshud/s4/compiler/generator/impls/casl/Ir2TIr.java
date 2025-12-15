@@ -195,6 +195,12 @@ class Ir2TIrConverter implements IIrVisitor<Void> {
 
     @Override
     public Void visit(Write ir) {
+        tirInstructions.addAll(List.of(
+                new Push(new Address("0").setOffset(VirtualRegister.tmpWithPredefined(CaslRegisters.GR6))),
+                new Push(new Address("0").setOffset(VirtualRegister.tmpWithPredefined(CaslRegisters.GR7))),
+                new Ld(VirtualRegister.tmpWithPredefined(CaslRegisters.GR6), new Address("WRTGR6")),
+                new Ld(VirtualRegister.tmpWithPredefined(CaslRegisters.GR7), new Address("WRTGR7"))
+        ));
         List<TIrInstr<?>> instr = switch (ir.writeType){
             case INT -> {
                 yield List.of(
@@ -221,6 +227,12 @@ class Ir2TIrConverter implements IIrVisitor<Void> {
             }
         };
         tirInstructions.addAll(instr);
+        tirInstructions.addAll(List.of(
+                new St(VirtualRegister.tmpWithPredefined(CaslRegisters.GR7), new Address("WRTGR7")),
+                new St(VirtualRegister.tmpWithPredefined(CaslRegisters.GR6), new Address("WRTGR6")),
+                new Pop(VirtualRegister.tmpWithPredefined(CaslRegisters.GR7)),
+                new Pop(VirtualRegister.tmpWithPredefined(CaslRegisters.GR6))
+        ));
         return null;
     }
 
