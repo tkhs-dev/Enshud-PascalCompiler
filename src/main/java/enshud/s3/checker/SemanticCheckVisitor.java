@@ -317,14 +317,5 @@ public class SemanticCheckVisitor implements IAstVisitor<Object> {
     }
 }
 
-class SemanticException extends RuntimeException {
-    public final int line;
-
-    public SemanticException(String message, int line) {
-        super(message);
-        this.line = line;
-    }
-}
-
 record VariableInfo(Type type, String scopeId) {
 }
