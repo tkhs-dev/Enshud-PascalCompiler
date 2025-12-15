@@ -13,7 +13,7 @@ public class RegisterAllocator extends Allocator{
     private final Map<AllocatableRegister, Register> allocation = new HashMap<>();
 
     // Spill が必要な register
-    private final Set<AllocatableRegister> spilled = new HashSet<>();
+    private final Map<AllocatableRegister, Integer> spilled = new HashMap<>();
 
     // 彩色用スタック（Simplifyフェーズ）
     private final Deque<AllocatableRegister> stack = new ArrayDeque<>();
@@ -27,7 +27,7 @@ public class RegisterAllocator extends Allocator{
         return allocation;
     }
 
-    public Set<AllocatableRegister> getSpilledRegisters() {
+    public Map<AllocatableRegister, Integer> getSpilled() {
         return spilled;
     }
 
@@ -35,23 +35,10 @@ public class RegisterAllocator extends Allocator{
     // メイン処理
     //-------------------------------------------------------------
     public Allocation allocate() {
-        simplifyPhase();
-        spillPhase();
+        buildStack();
         selectPhase();
+        // リロード退避用のスピルを求める
         return new Allocation(allocation, spilled);
-    }
-
-    //-------------------------------------------------------------
-    // 1. Simplify (degree < K のノードを削除して stack に積む)
-    //-------------------------------------------------------------
-    private void simplifyPhase() {
-        while (true) {
-            AllocatableRegister removable = findRemovableNode();
-            if (removable == null) break;
-
-            graph.removeNode(removable);
-            stack.push(removable);
-        }
     }
 
     private AllocatableRegister findRemovableNode() {
@@ -60,23 +47,13 @@ public class RegisterAllocator extends Allocator{
         for (AllocatableRegister r : graph.getNodes()) {
 
             // 事前割当レジスタは除外（色固定なので Simplify しない）
-            if (r.getPredefined().isPresent()) continue;
+            if (r.getPredefined().isPresent()) return r;
 
             if (graph.getAdjacents(r).size() < K) {
                 return r;
             }
         }
         return null;
-    }
-
-    //-------------------------------------------------------------
-    // 2. Spill すべきノード（degree >= K かつ簡約できなかったもの）
-    //-------------------------------------------------------------
-    private void spillPhase() {
-        for (AllocatableRegister r : graph.getNodes()) {
-            if (r.getPredefined().isPresent()) continue;
-            spilled.add(r);
-        }
     }
 
     //-------------------------------------------------------------
@@ -97,7 +74,7 @@ public class RegisterAllocator extends Allocator{
             Register color = chooseColor(r);
 
             if (color == null) {
-                spilled.add(r);
+                spilled.put(r, spilled.size());
             } else {
                 allocation.put(r, color);
             }
@@ -129,5 +106,31 @@ public class RegisterAllocator extends Allocator{
         }
 
         return null; // Spill 必要
+    }
+
+    private void buildStack() {
+        while (!graph.getNodes().isEmpty()) {
+
+            AllocatableRegister removable = findRemovableNode();
+
+            if (removable != null) {
+                graph.removeNode(removable);
+                stack.push(removable);
+            } else {
+                // Simplify 不可 → spill 候補を 1 つ選ぶ
+                AllocatableRegister victim = chooseSpillCandidate();
+                graph.removeNode(victim);
+                spilled.put(victim, spilled.size());
+            }
+        }
+    }
+
+    private AllocatableRegister chooseSpillCandidate() {
+        for (AllocatableRegister r : graph.getNodes()) {
+            if (r.getPredefined().isEmpty()) {
+                return r;
+            }
+        }
+        throw new IllegalStateException("No spill candidate");
     }
 }
