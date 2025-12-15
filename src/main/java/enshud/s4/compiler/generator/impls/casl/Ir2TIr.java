@@ -210,7 +210,7 @@ class Ir2TIrConverter implements IIrVisitor<Void> {
             }
             case STRING -> {
                 yield List.of(
-                        new Ld(RealRegister.of(CaslRegisters.GR1), new Address("-1").setOffset(convertOperand(ir.operand))),
+                        new Ld(VirtualRegister.tmpWithPredefined(CaslRegisters.GR1), new Address("-1").setOffset(convertOperand(ir.operand))),
                         new enshud.s4.compiler.generator.impls.casl.tir.instructions.Call("WRTSTR")
                 );
             }
@@ -244,7 +244,7 @@ class Ir2TIrConverter implements IIrVisitor<Void> {
                         move(CaslRegisters.GR1, ir.left),
                         move(CaslRegisters.GR2, ir.right),
                         new enshud.s4.compiler.generator.impls.casl.tir.instructions.Call("MULT"),
-                        new Ld(convertOperand(ir.left), RealRegister.of(CaslRegisters.GR2))
+                        new Ld(convertOperand(ir.left), VirtualRegister.tmpWithPredefined(CaslRegisters.GR2))
                 ));
             }
             case DIV -> {
@@ -252,7 +252,7 @@ class Ir2TIrConverter implements IIrVisitor<Void> {
                         move(CaslRegisters.GR1, ir.left),
                         move(CaslRegisters.GR2, ir.right),
                         new enshud.s4.compiler.generator.impls.casl.tir.instructions.Call("DIV"),
-                        new Ld(convertOperand(ir.left), RealRegister.of(CaslRegisters.GR2))
+                        new Ld(convertOperand(ir.left), VirtualRegister.tmpWithPredefined(CaslRegisters.GR2))
                 ));
             }
             case MOD -> {
@@ -260,7 +260,7 @@ class Ir2TIrConverter implements IIrVisitor<Void> {
                         move(CaslRegisters.GR1, ir.left),
                         move(CaslRegisters.GR2, ir.right),
                         new enshud.s4.compiler.generator.impls.casl.tir.instructions.Call("DIV"),
-                        new Ld(convertOperand(ir.left), RealRegister.of(CaslRegisters.GR1))
+                        new Ld(convertOperand(ir.left), VirtualRegister.tmpWithPredefined(CaslRegisters.GR1))
                 ));
             }
             case AND -> {
@@ -381,10 +381,10 @@ class Ir2TIrConverter implements IIrVisitor<Void> {
     private TIrInstr<?> move(Register dest, Operand src) {
         return switch (src) {
             case Const c -> {
-                yield new Lad(new RealRegister(dest), convertOperand(src));
+                yield new Lad(VirtualRegister.tmpWithPredefined(dest), convertOperand(src));
             }
             default -> {
-                yield new Ld(new RealRegister(dest), convertOperand(src));
+                yield new Ld(VirtualRegister.tmpWithPredefined(dest), convertOperand(src));
             }
         };
     }

@@ -61,7 +61,7 @@ public class AssemblyGenerator {
         var analyzer = new LivenessAnalyzer<>(blocks);
         analyzer.analyze();
         var desc = new CaslDescription();
-        var interferenceGraph = InterferenceGraph.build(blocks, desc, RealRegister::of);
+        var interferenceGraph = InterferenceGraph.build(blocks, desc, VirtualRegister::tmpWithPredefined);
         var allocator = new RegisterAllocator(interferenceGraph, desc);
         var allocation = allocator.allocate();
 
@@ -308,9 +308,6 @@ class TIRConverter implements ITIRVisitor<Void>{
             case enshud.s4.compiler.generator.impls.casl.tir.operand.VirtualRegister r -> {
                 var reg = allocation.getAllocationMap().get(r);
                 yield new RegisterOperand(reg);
-            }
-            case enshud.s4.compiler.generator.impls.casl.tir.operand.RealRegister r -> {
-                yield new RegisterOperand(r.register);
             }
             case enshud.s4.compiler.generator.impls.casl.tir.operand.Immediate<?> i -> {
                 yield switch(i) {

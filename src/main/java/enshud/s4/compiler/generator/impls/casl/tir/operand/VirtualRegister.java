@@ -1,10 +1,11 @@
 package enshud.s4.compiler.generator.impls.casl.tir.operand;
 
+import enshud.s4.compiler.generator.AllocatableRegister;
 import enshud.s4.compiler.generator.Register;
 
 import java.util.Optional;
 
-public class VirtualRegister extends RegisterOperand {
+public class VirtualRegister extends TIROperand implements AllocatableRegister {
     public final String id;
     public final double spillCost;
     private Register predefined;
@@ -17,6 +18,15 @@ public class VirtualRegister extends RegisterOperand {
 
     public VirtualRegister(String id) {
         this(id, 1.0);
+    }
+
+    private static int tmpCounter = 0;
+    public static VirtualRegister tmpWithPredefined(Register predefined) {
+        return new VirtualRegister(String.valueOf(tmpCounter++)).withPredefined(predefined);
+    }
+
+    public static VirtualRegister withPredefined(String id, Register predefined) {
+        return new VirtualRegister(id).withPredefined(predefined);
     }
 
     public VirtualRegister withPredefined(Register predefined) {
