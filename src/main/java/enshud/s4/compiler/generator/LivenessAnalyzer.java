@@ -90,9 +90,9 @@ public class LivenessAnalyzer<R extends AnalysableInstruction> {
     public void analyze() {
         computeBlockLiveness();
         // show block liveness for debug
-//        for (BasicBlock<T, R> block : blocks) {
+//        for (BasicBlock<R> block : blocks) {
 //            System.out.println("Block:");
-//            for (AnalysableInstruction<T> instr : block.getInstructions()) {
+//            for (AnalysableInstruction instr : block.getInstructions()) {
 //                System.out.println("  " + instr);
 //            }
 //            System.out.println("  use: " + block.getUse());
@@ -102,8 +102,8 @@ public class LivenessAnalyzer<R extends AnalysableInstruction> {
 //        }
         computeInstrLiveness();
         // show instruction liveness for debug
-//        for (BasicBlock<T, R> block : blocks) {
-//            for (AnalysableInstruction<T> instr : block.getInstructions()) {
+//        for (BasicBlock<R> block : blocks) {
+//            for (AnalysableInstruction instr : block.getInstructions()) {
 //                System.out.println(instr);
 //                System.out.println("  liveIn: " + instr.liveIn);
 //                System.out.println("  liveOut: " + instr.liveOut);

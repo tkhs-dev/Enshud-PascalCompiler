@@ -7,24 +7,21 @@ import java.util.Optional;
 public class VirtualRegister extends RegisterOperand {
     public final String id;
     public final double spillCost;
-    public final boolean needsAddressable;
-
-    public VirtualRegister(String id, double spillCost, boolean needsAddressable) {
-        this.id = id;
-        this.spillCost = spillCost;
-        this.needsAddressable = needsAddressable;
-    }
+    private Register predefined;
 
     public VirtualRegister(String id, double spillCost) {
-        this(id, spillCost, false);
-    }
-
-    public VirtualRegister(String id, boolean needsAddressable) {
-        this(id, 1.0, needsAddressable);
+        this.id = id;
+        this.spillCost = spillCost;
+        predefined = null;
     }
 
     public VirtualRegister(String id) {
-        this(id, 1.0, false);
+        this(id, 1.0);
+    }
+
+    public VirtualRegister withPredefined(Register predefined) {
+        this.predefined = predefined;
+        return this;
     }
 
     @Override
@@ -47,6 +44,6 @@ public class VirtualRegister extends RegisterOperand {
 
     @Override
     public Optional<Register> getPredefined() {
-        return Optional.empty();
+        return Optional.ofNullable(predefined);
     }
 }

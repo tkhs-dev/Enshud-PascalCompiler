@@ -89,6 +89,12 @@ public class InterferenceGraph {
     public static InterferenceGraph build(List<? extends BasicBlock<? extends AnalysableInstruction>> blocks, TargetDescription desc, Function<Register, AllocatableRegister> mapper) {
         var graph = new InterferenceGraph();
 
+        // 最初のブロックで　liveIn されている変数を擬似的にdef しているとみなす
+        var entryBlock = blocks.getFirst();
+        for (var r : entryBlock.liveIn) {
+            graph.addNode(r);
+        }
+
         for (var block : blocks) {
             for (var inst : block.getInstructions()) {
 
