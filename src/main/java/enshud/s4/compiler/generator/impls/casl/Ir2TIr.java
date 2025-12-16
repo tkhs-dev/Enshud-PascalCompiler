@@ -41,12 +41,10 @@ public class Ir2TIr {
         var instructions = visitor.convertInstructions();
         var constDataList = visitor.getConstDataList();
 
-        var blocks = CFGBuilder.build(instructions);
-
         return new TIRFunction(
                 irFunction.name,
                 frameInfo,
-                blocks,
+                instructions,
                 constDataList
         );
     }

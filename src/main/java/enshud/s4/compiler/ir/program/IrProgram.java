@@ -12,9 +12,9 @@ public class IrProgram {
 
     public final Map<String, IrFunction> functions;
 
-    public IrProgram() {
-        this.main = IrFunction.empty("MAIN", 0, null);
-        this.functions = new HashMap<>();
+    public IrProgram(IrFunction main, Map<String, IrFunction> functions) {
+        this.main = main;
+        this.functions = functions;
     }
 
     public List<ITInstruction> getInstructions() {
