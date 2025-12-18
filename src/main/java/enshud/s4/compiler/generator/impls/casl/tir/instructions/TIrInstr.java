@@ -63,4 +63,14 @@ public abstract class TIrInstr<T extends TIrInstr<T>> extends AnalysableInstruct
         allocatableReg.addAll(fromOffset);
         return allocatableReg;
     }
+
+    protected void replaceAllocatable(TIROperand target, AllocatableRegister oldOp, AllocatableRegister newOp) {
+        if (target instanceof AllocatableRegister ar && ar.equals(oldOp)) {
+            ar.replaceRegister(newOp);
+        } else if (target instanceof Address addr) {
+            if (addr.offset instanceof AllocatableRegister offsetReg && offsetReg.equals(oldOp)) {
+                offsetReg.replaceRegister(newOp);
+            }
+        }
+    }
 }

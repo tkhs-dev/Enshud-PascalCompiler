@@ -31,4 +31,14 @@ public class Pop extends TIrInstr<Pop> {
     public Set<AllocatableRegister> getDef() {
         return registerSet(target);
     }
+
+    @Override
+    public void replaceUse(AllocatableRegister oldReg, AllocatableRegister newReg) {
+
+    }
+
+    @Override
+    public void replaceDef(AllocatableRegister oldReg, AllocatableRegister newReg) {
+        replaceAllocatable(target, oldReg, newReg);
+    }
 }

@@ -19,4 +19,14 @@ public class Nop extends TIrInstr<Nop> {
     public Set<AllocatableRegister> getDef() {
         return Set.of();
     }
+
+    @Override
+    public void replaceUse(AllocatableRegister oldReg, AllocatableRegister newReg) {
+
+    }
+
+    @Override
+    public void replaceDef(AllocatableRegister oldReg, AllocatableRegister newReg) {
+
+    }
 }

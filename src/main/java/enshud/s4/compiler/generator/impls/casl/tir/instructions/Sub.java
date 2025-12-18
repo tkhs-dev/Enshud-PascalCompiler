@@ -33,4 +33,15 @@ public class Sub extends TIrInstr<Sub> {
     public Set<AllocatableRegister> getDef() {
         return registerSet(left);
     }
+
+    @Override
+    public void replaceUse(AllocatableRegister oldReg, AllocatableRegister newReg) {
+        replaceAllocatable(left, oldReg, newReg);
+        replaceAllocatable(right, oldReg, newReg);
+    }
+
+    @Override
+    public void replaceDef(AllocatableRegister oldReg, AllocatableRegister newReg) {
+        replaceAllocatable(left, oldReg, newReg);
+    }
 }

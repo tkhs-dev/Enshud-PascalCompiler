@@ -6,8 +6,8 @@ import enshud.s4.compiler.generator.Register;
 import java.util.Optional;
 
 public class VirtualRegister extends TIROperand implements AllocatableRegister {
-    public final String id;
-    public final double spillCost;
+    public String id;
+    public double spillCost;
     private Register predefined;
 
     public VirtualRegister(String id, double spillCost) {
@@ -55,5 +55,16 @@ public class VirtualRegister extends TIROperand implements AllocatableRegister {
     @Override
     public Optional<Register> getPredefined() {
         return Optional.ofNullable(predefined);
+    }
+
+    @Override
+    public void replaceRegister(AllocatableRegister newReg) {
+        if (newReg instanceof VirtualRegister vr) {
+            this.id = vr.id;
+            this.spillCost = vr.spillCost;
+            this.predefined = vr.predefined;
+        } else {
+            throw new IllegalArgumentException("Cannot replace VirtualRegister with non-VirtualRegister");
+        }
     }
 }

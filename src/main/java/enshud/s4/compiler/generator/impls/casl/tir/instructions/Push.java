@@ -31,4 +31,14 @@ public class Push extends TIrInstr<Push> {
     public Set<AllocatableRegister> getDef() {
         return registerSet();
     }
+
+    @Override
+    public void replaceUse(AllocatableRegister oldReg, AllocatableRegister newReg) {
+        replaceAllocatable(src, oldReg, newReg);
+    }
+
+    @Override
+    public void replaceDef(AllocatableRegister oldReg, AllocatableRegister newReg) {
+
+    }
 }

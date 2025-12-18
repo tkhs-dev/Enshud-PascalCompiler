@@ -34,6 +34,16 @@ public class Call extends TIrInstr<Call> {
     }
 
     @Override
+    public void replaceUse(AllocatableRegister oldReg, AllocatableRegister newReg) {
+
+    }
+
+    @Override
+    public void replaceDef(AllocatableRegister oldReg, AllocatableRegister newReg) {
+
+    }
+
+    @Override
     public boolean isCall() {
         return true;
     }

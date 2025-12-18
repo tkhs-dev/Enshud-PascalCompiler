@@ -13,7 +13,7 @@ public class RegisterAllocator extends Allocator{
     private final Map<AllocatableRegister, Register> allocation = new HashMap<>();
 
     // Spill が必要な register
-    private final Map<AllocatableRegister, Integer> spilled = new HashMap<>();
+    private final Set<AllocatableRegister> spilled = new HashSet<>();
 
     // 彩色用スタック（Simplifyフェーズ）
     private final Deque<AllocatableRegister> stack = new ArrayDeque<>();
@@ -27,7 +27,7 @@ public class RegisterAllocator extends Allocator{
         return allocation;
     }
 
-    public Map<AllocatableRegister, Integer> getSpilled() {
+    public Set<AllocatableRegister> getSpilled() {
         return spilled;
     }
 
@@ -74,7 +74,7 @@ public class RegisterAllocator extends Allocator{
             Register color = chooseColor(r);
 
             if (color == null) {
-                spilled.put(r, spilled.size());
+                spilled.add(r);
             } else {
                 allocation.put(r, color);
             }
@@ -120,7 +120,7 @@ public class RegisterAllocator extends Allocator{
                 // Simplify 不可 → spill 候補を 1 つ選ぶ
                 AllocatableRegister victim = chooseSpillCandidate();
                 graph.removeNode(victim);
-                spilled.put(victim, spilled.size());
+                spilled.add(victim);
             }
         }
     }

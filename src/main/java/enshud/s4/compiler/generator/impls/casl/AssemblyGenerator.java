@@ -1,5 +1,6 @@
 package enshud.s4.compiler.generator.impls.casl;
 
+import enshud.s4.compiler.generator.AllocatableRegister;
 import enshud.s4.compiler.generator.InterferenceGraph;
 import enshud.s4.compiler.generator.LivenessAnalyzer;
 import enshud.s4.compiler.generator.allocate.Allocation;
@@ -16,10 +17,9 @@ import enshud.s4.compiler.generator.impls.casl.tir.program.StringData;
 import enshud.s4.compiler.generator.impls.casl.tir.program.TIRFunction;
 import enshud.s4.compiler.generator.impls.casl.tir.program.TIRProgram;
 import enshud.util.Ascii;
+import enshud.util.SerialManager;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 public class AssemblyGenerator {
     private final TIRProgram program;
@@ -28,6 +28,9 @@ public class AssemblyGenerator {
     public AssemblyGenerator(TIRProgram program) {
         this.program = program;
         this.instructions = new ArrayList<>();
+    }
+
+    public List<AssemblyInstr<?>> generate() {
         instructions.addAll(List.of(
                 new START("BEGIN").setLabel("CASL"),
                 new LD(new RegisterOperand(CaslRegisters.FP), new RegisterOperand(CaslRegisters.SP)),
@@ -36,9 +39,6 @@ public class AssemblyGenerator {
                 new ST(new RegisterOperand(CaslRegisters.GR6), new MemoryOperand("WRTGR6")),
                 new ST(new RegisterOperand(CaslRegisters.GR7), new MemoryOperand("WRTGR7"))
         ));
-    }
-
-    public List<AssemblyInstr<?>> generate() {
         // Process main function
         processFunction(program.main);
         instructions.get(1).setLabel("BEGIN");
@@ -61,19 +61,61 @@ public class AssemblyGenerator {
     }
 
     private void processFunction(TIRFunction function) {
-        var blocks = function.getBlocks();
-        var analyzer = new LivenessAnalyzer<>(blocks);
-        analyzer.analyze();
         var desc = new CaslDescription();
-        var interferenceGraph = InterferenceGraph.build(blocks, desc, VirtualRegister::tmpWithPredefined);
-        var allocator = new RegisterAllocator(interferenceGraph, desc);
-        var allocation = allocator.allocate();
+        Allocation allocation = null;
+        while(true){
+            var blocks = function.getBlocks();
+            new LivenessAnalyzer<>(blocks).analyze();
+            var interferenceGraph = InterferenceGraph.build(blocks, desc, VirtualRegister::tmpWithPredefined);
+            var allocator = new RegisterAllocator(interferenceGraph, desc);
+            allocation = allocator.allocate();
+            var spilled = allocation.getSpilled();
+            if(spilled.isEmpty()) {
+                break;
+            }
 
+        }
         System.out.println(allocation);
 
         var converter = new TIRConverter(allocation, function);
         var funcInstructions = converter.getInstructions();
         instructions.addAll(funcInstructions);
+    }
+
+    private void spillFunction(TIRFunction function, Set<AllocatableRegister> spilled) {
+        var serial = new SerialManager("spill");
+        var editor = function.getEditor();
+        for (var vreg : spilled) {
+            var slot = function.frameInfo.addSpill(1);
+            var frameSlot = new FrameSlot(slot, 0);
+            while(editor.hasNext()){
+                var ir = editor.next();
+                var uses = ir.getUse();
+                var defs = ir.getDef();
+                if(uses.contains(vreg)){
+                    var register = new VirtualRegister(serial.New());
+                    if(vreg.getPredefined().isPresent()) {
+                        // 元が事前割り当てレジスタの場合は事前割り当てを引き継ぐ
+                        register.withPredefined(vreg.getPredefined().get());
+                    }
+                    editor.insertBefore(
+                            new Ld(register, frameSlot)
+                    );
+                    ir.replaceUse(vreg, register);
+                }
+                if(defs.contains(vreg)) {
+                    var register = new VirtualRegister(serial.New());
+                    if (vreg.getPredefined().isPresent()) {
+                        // 元が事前割り当てレジスタの場合は事前割り当てを引き継ぐ
+                        register.withPredefined(vreg.getPredefined().get());
+                    }
+                    ir.replaceDef(vreg, register);
+                    editor.insertAfter(
+                            new St(register, frameSlot)
+                    );
+                }
+            }
+        }
     }
 
     private void processConstData(List<ConstData<?>> constDataList) {

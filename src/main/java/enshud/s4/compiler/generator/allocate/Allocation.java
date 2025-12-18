@@ -8,19 +8,19 @@ import java.util.Set;
 
 public class Allocation {
     private final Map<AllocatableRegister, Register> allocationMap;
-    private final Map<AllocatableRegister, Integer> spilledMap;
+    private final Set<AllocatableRegister> spilled;
 
-    public Allocation(Map<AllocatableRegister, Register> allocationMap, Map<AllocatableRegister, Integer> spilledMap) {
+    public Allocation(Map<AllocatableRegister, Register> allocationMap, Set<AllocatableRegister> spilled) {
         this.allocationMap = allocationMap;
-        this.spilledMap = spilledMap;
+        this.spilled = spilled;
     }
 
     public Map<AllocatableRegister, Register> getAllocationMap() {
         return allocationMap;
     }
 
-    public Map<AllocatableRegister, Integer> getSpilledMap() {
-        return spilledMap;
+    public Set<AllocatableRegister> getSpilled() {
+        return spilled;
     }
 
     @Override
@@ -31,8 +31,8 @@ public class Allocation {
             sb.append("  ").append(entry.getKey()).append(" -> ").append(entry.getValue()).append("\n");
         }
         sb.append("Spilled Registers:\n");
-        for (Map.Entry<AllocatableRegister, Integer> entry : spilledMap.entrySet()) {
-            sb.append("  ").append(entry.getKey()).append(" -> stack offset ").append(entry.getValue()).append("\n");
+        for (AllocatableRegister reg : spilled) {
+            sb.append("  ").append(reg).append("\n");
         }
         return sb.toString();
     }

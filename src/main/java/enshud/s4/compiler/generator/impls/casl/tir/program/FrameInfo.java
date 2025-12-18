@@ -7,14 +7,18 @@ import java.util.Optional;
 public class FrameInfo {
     public int localVarSize;
     public int paramSize;
+    public int spillSize;
 
     private Map<String, FrameSlot> slotMap = new HashMap<>();
-    private int nextSlot;
+    private int nextLocalSlot;
+    private int nextParamSlot;
 
     public FrameInfo() {
         this.localVarSize = 0;
         this.paramSize = 0;
-        this.nextSlot = 0;
+        this.spillSize = 0;
+        this.nextLocalSlot = 0;
+        this.nextParamSlot = 0;
     }
 
     public int addLocalVar(String name, int size) {
@@ -27,9 +31,30 @@ public class FrameInfo {
         return addSlot(name, size, FrameSlot.Kind.PARAM);
     }
 
+    public int addSpill(int size) {
+        spillSize += size;
+        return nextLocalSlot += size;
+    }
+
     private int addSlot(String name, int size, FrameSlot.Kind kind) {
-        slotMap.put(name, new FrameSlot(nextSlot, size, kind));
-        return nextSlot++;
+        switch (kind) {
+            case LOCAL:
+                var localSlot = new FrameSlot(nextLocalSlot, size, kind);
+                slotMap.put(name, localSlot);
+                nextLocalSlot += size;
+                return localSlot.slot;
+            case PARAM:
+                var paramSlot = new FrameSlot(nextParamSlot, size, kind);
+                slotMap.put(name, paramSlot);
+                nextParamSlot += size;
+                return paramSlot.slot;
+            default:
+                throw new IllegalArgumentException("Unknown FrameSlot.Kind: " + kind);
+        }
+    }
+
+    public int getFrameSize() {
+        return localVarSize + spillSize;
     }
 
     public Optional<FrameSlot> getSlot(String name) {

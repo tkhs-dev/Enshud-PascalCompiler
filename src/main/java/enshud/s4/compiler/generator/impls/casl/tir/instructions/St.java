@@ -33,4 +33,14 @@ public class St extends TIrInstr<St> {
     public Set<AllocatableRegister> getDef() {
         return registerSet(dest);
     }
+
+    @Override
+    public void replaceUse(AllocatableRegister oldReg, AllocatableRegister newReg) {
+        replaceAllocatable(src, oldReg, newReg);
+    }
+
+    @Override
+    public void replaceDef(AllocatableRegister oldReg, AllocatableRegister newReg) {
+        replaceAllocatable(dest, oldReg, newReg);
+    }
 }
