@@ -33,4 +33,20 @@ public class TIRFunction extends FunctionUnit<TIrInstr<?>> {
     protected void onChange() {
         calculateBasicBlocks();
     }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("Function: ").append(name).append("\n");
+        sb.append("Frame Info: ").append(frameInfo).append("\n");
+        sb.append("Const Data:\n");
+        for (ConstData<?> data : constDataList) {
+            sb.append("  ").append(data).append("\n");
+        }
+        sb.append("Instructions:\n");
+        for (TIrInstr<?> instr : getInstructions()) {
+            sb.append("  ").append(instr).append("\n");
+        }
+        return sb.toString();
+    }
 }

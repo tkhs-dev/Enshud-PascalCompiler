@@ -6,12 +6,20 @@ import enshud.s4.compiler.generator.impls.casl.tir.operand.TIROperand;
 import java.util.Set;
 
 public class St extends TIrInstr<St> {
-    public final TIROperand src;
-    public final TIROperand dest;
+    private final OperandRef src;
+    private final OperandRef dest;
 
     public St(TIROperand src, TIROperand dest) {
-        this.src = src;
-        this.dest = dest;
+        this.src = new OperandRef(src);
+        this.dest = new OperandRef(dest);
+    }
+
+    public TIROperand getDest() {
+        return dest.operand;
+    }
+
+    public TIROperand getSrc() {
+        return src.operand;
     }
 
     @Override
@@ -36,11 +44,11 @@ public class St extends TIrInstr<St> {
 
     @Override
     public void replaceUse(AllocatableRegister oldReg, AllocatableRegister newReg) {
-        replaceAllocatable(src, oldReg, newReg);
+        replaceAllocatable(oldReg, newReg, src);
     }
 
     @Override
     public void replaceDef(AllocatableRegister oldReg, AllocatableRegister newReg) {
-        replaceAllocatable(dest, oldReg, newReg);
+        replaceAllocatable(oldReg, newReg, dest);
     }
 }

@@ -6,10 +6,14 @@ import enshud.s4.compiler.generator.impls.casl.tir.operand.TIROperand;
 import java.util.Set;
 
 public class Push extends TIrInstr<Push> {
-    public final TIROperand src;
+    private final OperandRef src;
 
     public Push(TIROperand src) {
-        this.src = src;
+        this.src = new OperandRef(src);
+    }
+
+    public TIROperand getSrc() {
+        return src.operand;
     }
 
     @Override
@@ -34,7 +38,7 @@ public class Push extends TIrInstr<Push> {
 
     @Override
     public void replaceUse(AllocatableRegister oldReg, AllocatableRegister newReg) {
-        replaceAllocatable(src, oldReg, newReg);
+        replaceAllocatable(oldReg, newReg, src);
     }
 
     @Override

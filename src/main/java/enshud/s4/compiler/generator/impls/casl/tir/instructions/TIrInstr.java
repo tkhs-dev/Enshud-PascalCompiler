@@ -48,12 +48,14 @@ public abstract class TIrInstr<T extends TIrInstr<T>> extends AnalysableInstruct
         return formatInstructionWithOpCode(this.getClass().getSimpleName().toUpperCase());
     }
 
-    protected Set<AllocatableRegister> registerSet(TIROperand... ops) {
+    protected Set<AllocatableRegister> registerSet(OperandRef... ops) {
         var allocatableReg =  Arrays.stream(ops)
+                .map(opRef -> opRef.operand)
                 .filter(op -> op instanceof AllocatableRegister)
                 .map(op -> (AllocatableRegister) op)
                 .collect(java.util.stream.Collectors.toSet());
         var fromOffset = Arrays.stream(ops)
+                .map(opRef -> opRef.operand)
                 .filter(op -> op instanceof Address)
                 .map(op -> (Address) op)
                 .map(addr -> addr.offset)
@@ -64,13 +66,36 @@ public abstract class TIrInstr<T extends TIrInstr<T>> extends AnalysableInstruct
         return allocatableReg;
     }
 
-    protected void replaceAllocatable(TIROperand target, AllocatableRegister oldOp, AllocatableRegister newOp) {
-        if (target instanceof AllocatableRegister ar && ar.equals(oldOp)) {
-            ar.replaceRegister(newOp);
-        } else if (target instanceof Address addr) {
-            if (addr.offset instanceof AllocatableRegister offsetReg && offsetReg.equals(oldOp)) {
-                offsetReg.replaceRegister(newOp);
+    protected void replaceAllocatable(AllocatableRegister oldReg, AllocatableRegister newReg, OperandRef... ops) {
+        if (oldReg instanceof TIROperand oldOp && newReg instanceof TIROperand newOp) {
+            replaceOperand(oldOp, newOp, ops);
+            return;
+        }
+        throw new IllegalArgumentException("Both oldReg and newReg must be TIROperand instances.");
+    }
+
+    protected void replaceOperand(TIROperand oldOp, TIROperand newOp, OperandRef... ops) {
+        for (OperandRef opRef : ops) {
+            if (opRef.operand.equals(oldOp)) {
+                opRef.operand = newOp;
+            } else if (opRef.operand instanceof Address addr) {
+                if (addr.offset.equals(oldOp)) {
+                    opRef.operand = new Address(addr.base).setOffset(newOp);
+                }
             }
+        }
+    }
+
+    protected static class OperandRef {
+        public TIROperand operand;
+
+        public OperandRef(TIROperand operand) {
+            this.operand = operand;
+        }
+
+        @Override
+        public String toString() {
+            return operand.toString();
         }
     }
 }

@@ -6,10 +6,14 @@ import enshud.s4.compiler.generator.impls.casl.tir.operand.TIROperand;
 import java.util.Set;
 
 public class Pop extends TIrInstr<Pop> {
-    public final TIROperand target;
+    private final OperandRef target;
 
     public Pop(TIROperand target) {
-        this.target = target;
+        this.target = new OperandRef(target);
+    }
+
+    public TIROperand getTarget() {
+        return target.operand;
     }
 
     @Override
@@ -39,6 +43,6 @@ public class Pop extends TIrInstr<Pop> {
 
     @Override
     public void replaceDef(AllocatableRegister oldReg, AllocatableRegister newReg) {
-        replaceAllocatable(target, oldReg, newReg);
+        replaceAllocatable(oldReg, newReg, target);
     }
 }

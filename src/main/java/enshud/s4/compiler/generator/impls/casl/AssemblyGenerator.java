@@ -70,10 +70,13 @@ public class AssemblyGenerator {
             var allocator = new RegisterAllocator(interferenceGraph, desc);
             allocation = allocator.allocate();
             var spilled = allocation.getSpilled();
+            System.out.println("Spilling registers: " + spilled);
             if(spilled.isEmpty()) {
                 break;
             }
-
+            spillFunction(function, spilled);
+            System.out.println("After spilling:");
+            System.out.println(function);
         }
         System.out.println(allocation);
 
@@ -92,6 +95,7 @@ public class AssemblyGenerator {
                 var ir = editor.next();
                 var uses = ir.getUse();
                 var defs = ir.getDef();
+                System.out.println("Processing instruction for spilling: " + vreg);
                 if(uses.contains(vreg)){
                     var register = new VirtualRegister(serial.New());
                     if(vreg.getPredefined().isPresent()) {
@@ -101,6 +105,7 @@ public class AssemblyGenerator {
                     editor.insertBefore(
                             new Ld(register, frameSlot)
                     );
+                    System.out.println("replace use: " + editor.current());
                     ir.replaceUse(vreg, register);
                 }
                 if(defs.contains(vreg)) {
@@ -109,6 +114,7 @@ public class AssemblyGenerator {
                         // 元が事前割り当てレジスタの場合は事前割り当てを引き継ぐ
                         register.withPredefined(vreg.getPredefined().get());
                     }
+                    System.out.println("replace def: " + editor.current());
                     ir.replaceDef(vreg, register);
                     editor.insertAfter(
                             new St(register, frameSlot)
@@ -168,7 +174,7 @@ class TIRConverter implements ITIRVisitor<Void>{
     @Override
     public Void visit(Add ir) {
         addInstructions(ir,
-                new ADDA(reg(ir.left),  data(ir.right))
+                new ADDA(reg(ir.getLeft()),  data(ir.getRight()))
         );
         return null;
     }
@@ -176,7 +182,7 @@ class TIRConverter implements ITIRVisitor<Void>{
     @Override
     public Void visit(And ir) {
         addInstructions(ir,
-                new AND(reg(ir.left),  data(ir.right))
+                new AND(reg(ir.getLeft()),  data(ir.getRight()))
         );
         return null;
     }
@@ -191,9 +197,9 @@ class TIRConverter implements ITIRVisitor<Void>{
 
     @Override
     public Void visit(Cp ir) {
-        System.out.println(ir.right);
+        System.out.println(ir.getRight());
         addInstructions(ir,
-                new CPA(reg(ir.left),  data(ir.right))
+                new CPA(reg(ir.getLeft()),  data(ir.getRight()))
         );
         return null;
     }
@@ -226,7 +232,7 @@ class TIRConverter implements ITIRVisitor<Void>{
     @Override
     public Void visit(Lad ir) {
         addInstructions(ir,
-                new LAD(reg(ir.dest), mem(ir.value))
+                new LAD(reg(ir.getDest()), mem(ir.getValue()))
         );
         return null;
     }
@@ -234,7 +240,7 @@ class TIRConverter implements ITIRVisitor<Void>{
     @Override
     public Void visit(Ld ir) {
         addInstructions(ir,
-                new LD(reg(ir.dest), data(ir.src))
+                new LD(reg(ir.getDest()), data(ir.getSrc()))
         );
         return null;
     }
@@ -248,7 +254,7 @@ class TIRConverter implements ITIRVisitor<Void>{
     @Override
     public Void visit(Or ir) {
         addInstructions(ir,
-                new OR(reg(ir.left),  data(ir.right))
+                new OR(reg(ir.getLeft()),  data(ir.getRight()))
         );
         return null;
     }
@@ -256,7 +262,7 @@ class TIRConverter implements ITIRVisitor<Void>{
     @Override
     public Void visit(Pop ir) {
         addInstructions(ir,
-                new POP(reg(ir.target))
+                new POP(reg(ir.getTarget()))
         );
         return null;
     }
@@ -264,7 +270,7 @@ class TIRConverter implements ITIRVisitor<Void>{
     @Override
     public Void visit(Push ir) {
         addInstructions(ir,
-                new PUSH(mem(ir.src))
+                new PUSH(mem(ir.getSrc()))
         );
         return null;
     }
@@ -281,7 +287,7 @@ class TIRConverter implements ITIRVisitor<Void>{
     @Override
     public Void visit(Sl ir) {
         addInstructions(ir,
-                new SLA(reg(ir.left), data(ir.right))
+                new SLA(reg(ir.getLeft()), data(ir.getRight()))
         );
         return null;
     }
@@ -289,7 +295,7 @@ class TIRConverter implements ITIRVisitor<Void>{
     @Override
     public Void visit(Sr ir) {
         addInstructions(ir,
-                new SRA(reg(ir.left), data(ir.right))
+                new SRA(reg(ir.getLeft()), data(ir.getRight()))
         );
         return null;
     }
@@ -297,7 +303,7 @@ class TIRConverter implements ITIRVisitor<Void>{
     @Override
     public Void visit(St ir) {
         addInstructions(ir,
-                new ST(reg(ir.src), mem(ir.dest))
+                new ST(reg(ir.getSrc()), mem(ir.getDest()))
         );
         return null;
     }
@@ -305,7 +311,7 @@ class TIRConverter implements ITIRVisitor<Void>{
     @Override
     public Void visit(Sub ir) {
         addInstructions(ir,
-                new SUBA(reg(ir.left),  data(ir.right))
+                new SUBA(reg(ir.getLeft()),  data(ir.getRight()))
         );
         return null;
     }
@@ -313,7 +319,7 @@ class TIRConverter implements ITIRVisitor<Void>{
     @Override
     public Void visit(Xor ir) {
         addInstructions(ir,
-                new XOR(reg(ir.left),  data(ir.right))
+                new XOR(reg(ir.getLeft()),  data(ir.getRight()))
         );
         return null;
     }
