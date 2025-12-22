@@ -53,8 +53,8 @@ public class AssemblyGenerator {
                 new DC(0).setLabel("FALSE"),
                 new DC(0).setLabel("ZERO"),
                 new DC(1).setLabel("ONE"),
-                new DC(1).setLabel("WRTGR6"),
-                new DC(1).setLabel("WRTGR7"),
+                new DS(1).setLabel("WRTGR6"),
+                new DS(1).setLabel("WRTGR7"),
                 new END()
         ));
         return instructions;
@@ -95,7 +95,6 @@ public class AssemblyGenerator {
                 var ir = editor.next();
                 var uses = ir.getUse();
                 var defs = ir.getDef();
-                System.out.println("Processing instruction for spilling: " + vreg);
                 if(uses.contains(vreg)){
                     var register = new VirtualRegister(serial.New());
                     if(vreg.getPredefined().isPresent()) {
@@ -105,7 +104,6 @@ public class AssemblyGenerator {
                     editor.insertBefore(
                             new Ld(register, frameSlot)
                     );
-                    System.out.println("replace use: " + editor.current());
                     ir.replaceUse(vreg, register);
                 }
                 if(defs.contains(vreg)) {
@@ -114,7 +112,6 @@ public class AssemblyGenerator {
                         // 元が事前割り当てレジスタの場合は事前割り当てを引き継ぐ
                         register.withPredefined(vreg.getPredefined().get());
                     }
-                    System.out.println("replace def: " + editor.current());
                     ir.replaceDef(vreg, register);
                     editor.insertAfter(
                             new St(register, frameSlot)
@@ -197,7 +194,6 @@ class TIRConverter implements ITIRVisitor<Void>{
 
     @Override
     public Void visit(Cp ir) {
-        System.out.println(ir.getRight());
         addInstructions(ir,
                 new CPA(reg(ir.getLeft()),  data(ir.getRight()))
         );
@@ -383,7 +379,8 @@ class TIRConverter implements ITIRVisitor<Void>{
                         throw new IllegalArgumentException("FrameSlot offset must be NumericImmediate: " + i);
                     }
                 } else {
-                    instructions.add(new LD(new RegisterOperand(CaslRegisters.TEMP), data(f.offset)));
+                    instructions.add(new LD(new RegisterOperand(CaslRegisters.TEMP), new RegisterOperand(CaslRegisters.FP)));
+                    instructions.add(new ADDA(new RegisterOperand(CaslRegisters.TEMP), data(f.offset)));
                 }
                 yield new MemoryOperand(String.valueOf(f.slot), CaslRegisters.TEMP);
             }
