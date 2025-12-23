@@ -19,11 +19,15 @@ import enshud.s4.compiler.generator.impls.casl.tir.program.TIRProgram;
 import enshud.util.Ascii;
 import enshud.util.SerialManager;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
 
 public class AssemblyGenerator {
     private final TIRProgram program;
     private final List<AssemblyInstr<?>> instructions;
+    private SerialManager serial;
 
     public AssemblyGenerator(TIRProgram program) {
         this.program = program;
@@ -33,11 +37,7 @@ public class AssemblyGenerator {
     public List<AssemblyInstr<?>> generate() {
         instructions.addAll(List.of(
                 new START("BEGIN").setLabel("CASL"),
-                new LD(new RegisterOperand(CaslRegisters.FP), new RegisterOperand(CaslRegisters.SP)),
-                new LAD(new RegisterOperand(CaslRegisters.GR7), new MemoryOperand("BUF")),
-                new LAD(new RegisterOperand(CaslRegisters.GR6), new MemoryOperand("0")),
-                new ST(new RegisterOperand(CaslRegisters.GR6), new MemoryOperand("WRTGR6")),
-                new ST(new RegisterOperand(CaslRegisters.GR7), new MemoryOperand("WRTGR7"))
+                new LD(new RegisterOperand(CaslRegisters.FP), new RegisterOperand(CaslRegisters.SP))
         ));
         // Process main function
         processFunction(program.main);
@@ -61,6 +61,7 @@ public class AssemblyGenerator {
     }
 
     private void processFunction(TIRFunction function) {
+        serial = new SerialManager("spill");
         var desc = new CaslDescription();
         Allocation allocation = null;
         while(true){
@@ -86,7 +87,6 @@ public class AssemblyGenerator {
     }
 
     private void spillFunction(TIRFunction function, Set<AllocatableRegister> spilled) {
-        var serial = new SerialManager("spill");
         var editor = function.getEditor();
         for (var vreg : spilled) {
             var slot = function.frameInfo.addSpill(1);
@@ -96,7 +96,7 @@ public class AssemblyGenerator {
                 var uses = ir.getUse();
                 var defs = ir.getDef();
                 if(uses.contains(vreg)){
-                    var register = new VirtualRegister(serial.New());
+                    var register = new VirtualRegister(serial.New(), 2);
                     if(vreg.getPredefined().isPresent()) {
                         // 元が事前割り当てレジスタの場合は事前割り当てを引き継ぐ
                         register.withPredefined(vreg.getPredefined().get());

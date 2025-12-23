@@ -1,15 +1,17 @@
 package enshud.s4.compiler.generator.impls.casl.tir.instructions;
 
 import enshud.s4.compiler.generator.AllocatableRegister;
-import enshud.s4.compiler.generator.impls.casl.tir.operand.VirtualRegister;
+import enshud.s4.compiler.generator.impls.casl.tir.operand.TIROperand;
 
-import java.util.List;
+import java.util.Arrays;
 import java.util.Set;
 
 public class Call extends TIrInstr<Call> {
     public final String functionName;
+    private final OperandRef[] args;
 
-    public Call(String functionName) {
+    public Call(String functionName, TIROperand ... args) {
+        this.args = args == null ? new OperandRef[0] : Arrays.stream(args).map(OperandRef::new).toArray(OperandRef[]::new);
         this.functionName = functionName;
     }
 
@@ -25,7 +27,7 @@ public class Call extends TIrInstr<Call> {
 
     @Override
     public Set<AllocatableRegister> getUse() {
-        return Set.of();
+        return registerSet(args);
     }
 
     @Override
@@ -35,7 +37,7 @@ public class Call extends TIrInstr<Call> {
 
     @Override
     public void replaceUse(AllocatableRegister oldReg, AllocatableRegister newReg) {
-
+        replaceAllocatable(oldReg, newReg, args);
     }
 
     @Override

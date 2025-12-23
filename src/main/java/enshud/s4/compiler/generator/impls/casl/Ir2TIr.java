@@ -5,8 +5,8 @@ import enshud.s4.compiler.generator.impls.casl.tir.instructions.*;
 import enshud.s4.compiler.generator.impls.casl.tir.operand.*;
 import enshud.s4.compiler.generator.impls.casl.tir.program.*;
 import enshud.s4.compiler.ir.IIrVisitor;
-import enshud.s4.compiler.ir.instructions.*;
 import enshud.s4.compiler.ir.instructions.Call;
+import enshud.s4.compiler.ir.instructions.*;
 import enshud.s4.compiler.ir.operand.Const;
 import enshud.s4.compiler.ir.operand.Operand;
 import enshud.s4.compiler.ir.operand.Temp;
@@ -27,6 +27,10 @@ public class Ir2TIr {
         this.variableLevelMap = generateVariableLevelMap(irProgram);
         this.frameInfoMap = generateFrameInfoMap(irProgram);
         var main = convert(irProgram.main);
+        main.getEditor().prependAll(List.of(
+                new Lad(VirtualRegister.withPredefined("WRTGR6", CaslRegisters.GR6).withSpillCost(0), new Address("0")),
+                new Lad(VirtualRegister.withPredefined("WRTGR7", CaslRegisters.GR7).withSpillCost(0), new Address("BUF"))
+        ));
         var functions = irProgram.functions.entrySet().stream()
                 .collect(java.util.stream.Collectors.toMap(
                         Map.Entry::getKey,
@@ -193,44 +197,60 @@ class Ir2TIrConverter implements IIrVisitor<Void> {
 
     @Override
     public Void visit(Write ir) {
-        tirInstructions.addAll(List.of(
-                new Push(new Address("0").setOffset(VirtualRegister.tmpWithPredefined(CaslRegisters.GR6))),
-                new Push(new Address("0").setOffset(VirtualRegister.tmpWithPredefined(CaslRegisters.GR7))),
-                new Ld(VirtualRegister.tmpWithPredefined(CaslRegisters.GR6), new Address("WRTGR6")),
-                new Ld(VirtualRegister.tmpWithPredefined(CaslRegisters.GR7), new Address("WRTGR7"))
-        ));
+//        tirInstructions.addAll(List.of(
+//                new Push(new Address("0").setOffset(VirtualRegister.tmpWithPredefined(CaslRegisters.GR6))),
+//                new Push(new Address("0").setOffset(VirtualRegister.tmpWithPredefined(CaslRegisters.GR7))),
+//                new Ld(VirtualRegister.tmpWithPredefined(CaslRegisters.GR6), new Address("WRTGR6")),
+//                new Ld(VirtualRegister.tmpWithPredefined(CaslRegisters.GR7), new Address("WRTGR7"))
+//        ));
         List<TIrInstr<?>> instr = switch (ir.writeType){
             case INT -> {
                 yield List.of(
                         move(CaslRegisters.GR2, ir.operand),
-                        new enshud.s4.compiler.generator.impls.casl.tir.instructions.Call("WRTINT")
+                        new enshud.s4.compiler.generator.impls.casl.tir.instructions.Call(
+                                "WRTINT",
+                                new VirtualRegister("WRTGR6").withPredefined(CaslRegisters.GR6),
+                                new VirtualRegister("WRTGR7").withPredefined(CaslRegisters.GR7)
+                        )
                 );
             }
             case CHAR -> {
                 yield List.of(
                         move(CaslRegisters.GR2, ir.operand),
-                        new enshud.s4.compiler.generator.impls.casl.tir.instructions.Call("WRTCH")
+                        new enshud.s4.compiler.generator.impls.casl.tir.instructions.Call(
+                                "WRTCH",
+                                new VirtualRegister("WRTGR6").withPredefined(CaslRegisters.GR6),
+                                new VirtualRegister("WRTGR7").withPredefined(CaslRegisters.GR7)
+                        )
                 );
             }
             case STRING -> {
                 yield List.of(
                         new Ld(VirtualRegister.tmpWithPredefined(CaslRegisters.GR1), new Address("-1").setOffset(convertOperand(ir.operand))),
-                        new enshud.s4.compiler.generator.impls.casl.tir.instructions.Call("WRTSTR")
+                        new enshud.s4.compiler.generator.impls.casl.tir.instructions.Call(
+                                "WRTSTR",
+                                new VirtualRegister("WRTGR6").withPredefined(CaslRegisters.GR6),
+                                new VirtualRegister("WRTGR7").withPredefined(CaslRegisters.GR7)
+                        )
                 );
             }
             case NEWLINE -> {
                 yield List.of(
-                        new enshud.s4.compiler.generator.impls.casl.tir.instructions.Call("WRTLN")
+                        new enshud.s4.compiler.generator.impls.casl.tir.instructions.Call(
+                                "WRTLN",
+                                new VirtualRegister("WRTGR6").withPredefined(CaslRegisters.GR6),
+                                new VirtualRegister("WRTGR7").withPredefined(CaslRegisters.GR7)
+                        )
                 );
             }
         };
         tirInstructions.addAll(instr);
-        tirInstructions.addAll(List.of(
-                new St(VirtualRegister.tmpWithPredefined(CaslRegisters.GR7), new Address("WRTGR7")),
-                new St(VirtualRegister.tmpWithPredefined(CaslRegisters.GR6), new Address("WRTGR6")),
-                new Pop(VirtualRegister.tmpWithPredefined(CaslRegisters.GR7)),
-                new Pop(VirtualRegister.tmpWithPredefined(CaslRegisters.GR6))
-        ));
+//        tirInstructions.addAll(List.of(
+//                new St(VirtualRegister.tmpWithPredefined(CaslRegisters.GR7), new Address("WRTGR7")),
+//                new St(VirtualRegister.tmpWithPredefined(CaslRegisters.GR6), new Address("WRTGR6")),
+//                new Pop(VirtualRegister.tmpWithPredefined(CaslRegisters.GR7)),
+//                new Pop(VirtualRegister.tmpWithPredefined(CaslRegisters.GR6))
+//        ));
         return null;
     }
 

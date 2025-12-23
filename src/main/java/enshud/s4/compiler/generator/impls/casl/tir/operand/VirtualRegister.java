@@ -34,6 +34,11 @@ public class VirtualRegister extends TIROperand implements AllocatableRegister {
         return this;
     }
 
+    public VirtualRegister withSpillCost(double spillCost) {
+        this.spillCost = spillCost;
+        return this;
+    }
+
     @Override
     public boolean equals(Object obj) {
         if (this == obj) return true;
@@ -55,5 +60,10 @@ public class VirtualRegister extends TIROperand implements AllocatableRegister {
     @Override
     public Optional<Register> getPredefined() {
         return Optional.ofNullable(predefined);
+    }
+
+    @Override
+    public double getSpillCost() {
+        return spillCost;
     }
 }

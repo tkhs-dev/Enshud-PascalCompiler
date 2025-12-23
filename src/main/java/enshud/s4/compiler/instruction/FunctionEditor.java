@@ -65,6 +65,16 @@ public class FunctionEditor<T extends Instruction> {
         onChange.run();
     }
 
+    public void appendAll(List<T> instrs) {
+        instructions.addAll(instrs);
+        onChange.run();
+    }
+
+    public void prependAll(List<T> instrs) {
+        instructions.addAll(0, instrs);
+        onChange.run();
+    }
+
     public void remove() {
         iterator.remove();
         onChange.run();
