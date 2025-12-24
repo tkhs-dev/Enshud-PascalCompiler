@@ -391,12 +391,12 @@ class TIRConverter implements ITIRVisitor<Void>{
                 }
                 if (f.offset instanceof Immediate i) {
                     if(i instanceof NumericImmediate n){
-                        instructions.add(new LAD(new RegisterOperand(CaslRegisters.TEMP), new MemoryOperand(String.valueOf(-n.value))));
+                        instructions.add(new LAD(new RegisterOperand(CaslRegisters.TEMP), new MemoryOperand(String.valueOf(1-n.value)))); // 配列のインデックスが1始まりのため1を加算
                     } else {
                         throw new IllegalArgumentException("FrameSlot offset must be NumericImmediate: " + i);
                     }
                 } else {
-                    instructions.add(new LD(new RegisterOperand(CaslRegisters.TEMP), new RegisterOperand(CaslRegisters.FP)));
+                    instructions.add(new LAD(new RegisterOperand(CaslRegisters.TEMP), new MemoryOperand("1", CaslRegisters.FP))); // 配列のインデックスが1始まりのため1を加算
                     instructions.add(new SUBA(new RegisterOperand(CaslRegisters.TEMP), data(f.offset)));
                 }
                 yield new MemoryOperand(String.valueOf(-f.slot), CaslRegisters.TEMP);
