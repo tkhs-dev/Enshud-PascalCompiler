@@ -138,7 +138,7 @@ class IrConverterVisitor implements IAstVisitor<Optional<Temp>> {
 
     @Override
     public Optional<Temp> visit(AssignmentNode node) {
-        node.var.accept(this);
+//        node.var.accept(this);
         var exprTemp = node.expr.accept(this).get();
         switch (node.var) {
             case StandardVarNode v -> {
