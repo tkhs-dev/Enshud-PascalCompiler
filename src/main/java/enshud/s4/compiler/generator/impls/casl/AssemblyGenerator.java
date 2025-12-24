@@ -387,19 +387,19 @@ class TIRConverter implements ITIRVisitor<Void>{
             }
             case FrameSlot f -> {
                 if (f.offset == null) {
-                    yield new MemoryOperand(String.valueOf(f.slot), CaslRegisters.FP);
+                    yield new MemoryOperand(String.valueOf(-f.slot), CaslRegisters.FP);
                 }
                 if (f.offset instanceof Immediate i) {
                     if(i instanceof NumericImmediate n){
-                        instructions.add(new LAD(new RegisterOperand(CaslRegisters.TEMP), new MemoryOperand(String.valueOf(n.value))));
+                        instructions.add(new LAD(new RegisterOperand(CaslRegisters.TEMP), new MemoryOperand(String.valueOf(-n.value))));
                     } else {
                         throw new IllegalArgumentException("FrameSlot offset must be NumericImmediate: " + i);
                     }
                 } else {
                     instructions.add(new LD(new RegisterOperand(CaslRegisters.TEMP), new RegisterOperand(CaslRegisters.FP)));
-                    instructions.add(new ADDA(new RegisterOperand(CaslRegisters.TEMP), data(f.offset)));
+                    instructions.add(new SUBA(new RegisterOperand(CaslRegisters.TEMP), data(f.offset)));
                 }
-                yield new MemoryOperand(String.valueOf(f.slot), CaslRegisters.TEMP);
+                yield new MemoryOperand(String.valueOf(-f.slot), CaslRegisters.TEMP);
             }
             case Address a -> {
                 if (a.offset == null) {
