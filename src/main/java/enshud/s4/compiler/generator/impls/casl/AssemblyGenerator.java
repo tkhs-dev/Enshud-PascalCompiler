@@ -95,27 +95,44 @@ public class AssemblyGenerator {
                 var ir = editor.next();
                 var uses = ir.getUse();
                 var defs = ir.getDef();
-                if(uses.contains(vreg)){
-                    var register = new VirtualRegister(serial.New(), 2);
+                if(uses.contains(vreg) && defs.contains(vreg)){
+                    // 両方にある場合は一時レジスタを使う
+                    var loadRegister = new VirtualRegister(serial.New(), 2);
                     if(vreg.getPredefined().isPresent()) {
                         // 元が事前割り当てレジスタの場合は事前割り当てを引き継ぐ
-                        register.withPredefined(vreg.getPredefined().get());
+                        loadRegister.withPredefined(vreg.getPredefined().get());
                     }
                     editor.insertBefore(
-                            new Ld(register, frameSlot)
+                            new Ld(loadRegister, frameSlot)
                     );
-                    ir.replaceUse(vreg, register);
-                }
-                if(defs.contains(vreg)) {
-                    var register = new VirtualRegister(serial.New());
-                    if (vreg.getPredefined().isPresent()) {
-                        // 元が事前割り当てレジスタの場合は事前割り当てを引き継ぐ
-                        register.withPredefined(vreg.getPredefined().get());
-                    }
-                    ir.replaceDef(vreg, register);
+                    ir.replaceUse(vreg, loadRegister);
+                    ir.replaceDef(vreg, loadRegister);
                     editor.insertAfter(
-                            new St(register, frameSlot)
+                            new St(loadRegister, frameSlot)
                     );
+                }else{
+                    if(uses.contains(vreg)){
+                        var register = new VirtualRegister(serial.New(), 2);
+                        if(vreg.getPredefined().isPresent()) {
+                            // 元が事前割り当てレジスタの場合は事前割り当てを引き継ぐ
+                            register.withPredefined(vreg.getPredefined().get());
+                        }
+                        editor.insertBefore(
+                                new Ld(register, frameSlot)
+                        );
+                        ir.replaceUse(vreg, register);
+                    }
+                    if(defs.contains(vreg)) {
+                        var register = new VirtualRegister(serial.New());
+                        if (vreg.getPredefined().isPresent()) {
+                            // 元が事前割り当てレジスタの場合は事前割り当てを引き継ぐ
+                            register.withPredefined(vreg.getPredefined().get());
+                        }
+                        ir.replaceDef(vreg, register);
+                        editor.insertAfter(
+                                new St(register, frameSlot)
+                        );
+                    }
                 }
             }
         }
