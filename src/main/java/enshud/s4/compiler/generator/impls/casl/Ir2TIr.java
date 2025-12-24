@@ -203,14 +203,16 @@ class Ir2TIrConverter implements IIrVisitor<Void> {
 //                new Ld(VirtualRegister.tmpWithPredefined(CaslRegisters.GR6), new Address("WRTGR6")),
 //                new Ld(VirtualRegister.tmpWithPredefined(CaslRegisters.GR7), new Address("WRTGR7"))
 //        ));
+        var in1 = new VirtualRegister("WRTGR6").withPredefined(CaslRegisters.GR6);
+        var in2 = new VirtualRegister("WRTGR7").withPredefined(CaslRegisters.GR7);
         List<TIrInstr<?>> instr = switch (ir.writeType){
             case INT -> {
                 yield List.of(
                         move(CaslRegisters.GR2, ir.operand),
                         new enshud.s4.compiler.generator.impls.casl.tir.instructions.Call(
                                 "WRTINT",
-                                new VirtualRegister("WRTGR6").withPredefined(CaslRegisters.GR6),
-                                new VirtualRegister("WRTGR7").withPredefined(CaslRegisters.GR7)
+                                List.of(in1, in2),
+                                List.of(in1, in2)
                         )
                 );
             }
@@ -219,8 +221,8 @@ class Ir2TIrConverter implements IIrVisitor<Void> {
                         move(CaslRegisters.GR2, ir.operand),
                         new enshud.s4.compiler.generator.impls.casl.tir.instructions.Call(
                                 "WRTCH",
-                                new VirtualRegister("WRTGR6").withPredefined(CaslRegisters.GR6),
-                                new VirtualRegister("WRTGR7").withPredefined(CaslRegisters.GR7)
+                                List.of(in1, in2),
+                                List.of(in1, in2)
                         )
                 );
             }
@@ -229,8 +231,8 @@ class Ir2TIrConverter implements IIrVisitor<Void> {
                         new Ld(VirtualRegister.tmpWithPredefined(CaslRegisters.GR1), new Address("-1").setOffset(convertOperand(ir.operand))),
                         new enshud.s4.compiler.generator.impls.casl.tir.instructions.Call(
                                 "WRTSTR",
-                                new VirtualRegister("WRTGR6").withPredefined(CaslRegisters.GR6),
-                                new VirtualRegister("WRTGR7").withPredefined(CaslRegisters.GR7)
+                                List.of(in1, in2),
+                                List.of(in1, in2)
                         )
                 );
             }
@@ -238,8 +240,8 @@ class Ir2TIrConverter implements IIrVisitor<Void> {
                 yield List.of(
                         new enshud.s4.compiler.generator.impls.casl.tir.instructions.Call(
                                 "WRTLN",
-                                new VirtualRegister("WRTGR6").withPredefined(CaslRegisters.GR6),
-                                new VirtualRegister("WRTGR7").withPredefined(CaslRegisters.GR7)
+                                List.of(in1, in2),
+                                List.of(in1, in2)
                         )
                 );
             }
@@ -270,27 +272,45 @@ class Ir2TIrConverter implements IIrVisitor<Void> {
                 ));
             }
             case MUL -> {
+                var in1 = VirtualRegister.tmpWithPredefined(CaslRegisters.GR1);
+                var in2 = VirtualRegister.tmpWithPredefined(CaslRegisters.GR2);
+                var out = VirtualRegister.tmpWithPredefined(CaslRegisters.GR2);
                 tirInstructions.addAll(List.of(
-                        move(CaslRegisters.GR1, ir.left),
-                        move(CaslRegisters.GR2, ir.right),
-                        new enshud.s4.compiler.generator.impls.casl.tir.instructions.Call("MULT"),
-                        new Ld(convertOperand(ir.left), VirtualRegister.tmpWithPredefined(CaslRegisters.GR2))
+                        move(in1, ir.left),
+                        move(in2, ir.right),
+                        new enshud.s4.compiler.generator.impls.casl.tir.instructions.Call("MULT",
+                                List.of(in1, in2),
+                                List.of(out)
+                        ),
+                        new Ld(convertOperand(ir.left), out)
                 ));
             }
             case DIV -> {
+                var in1 = VirtualRegister.tmpWithPredefined(CaslRegisters.GR1);
+                var in2 = VirtualRegister.tmpWithPredefined(CaslRegisters.GR2);
+                var out = VirtualRegister.tmpWithPredefined(CaslRegisters.GR2);
                 tirInstructions.addAll(List.of(
-                        move(CaslRegisters.GR1, ir.left),
-                        move(CaslRegisters.GR2, ir.right),
-                        new enshud.s4.compiler.generator.impls.casl.tir.instructions.Call("DIV"),
-                        new Ld(convertOperand(ir.left), VirtualRegister.tmpWithPredefined(CaslRegisters.GR2))
+                        move(in1, ir.left),
+                        move(in2, ir.right),
+                        new enshud.s4.compiler.generator.impls.casl.tir.instructions.Call("DIV",
+                                List.of(in1, in2),
+                                List.of(out)
+                        ),
+                        new Ld(convertOperand(ir.left), out)
                 ));
             }
             case MOD -> {
+                var in1 = VirtualRegister.tmpWithPredefined(CaslRegisters.GR1);
+                var in2 = VirtualRegister.tmpWithPredefined(CaslRegisters.GR2);
+                var out = VirtualRegister.tmpWithPredefined(CaslRegisters.GR1);
                 tirInstructions.addAll(List.of(
-                        move(CaslRegisters.GR1, ir.left),
-                        move(CaslRegisters.GR2, ir.right),
-                        new enshud.s4.compiler.generator.impls.casl.tir.instructions.Call("DIV"),
-                        new Ld(convertOperand(ir.left), VirtualRegister.tmpWithPredefined(CaslRegisters.GR1))
+                        move(in1, ir.left),
+                        move(in2, ir.right),
+                        new enshud.s4.compiler.generator.impls.casl.tir.instructions.Call("DIV",
+                                List.of(in1, in2),
+                                List.of(out)
+                        ),
+                        new Ld(convertOperand(ir.left), out)
                 ));
             }
             case AND -> {
@@ -408,6 +428,16 @@ class Ir2TIrConverter implements IIrVisitor<Void> {
         };
     }
 
+    private TIrInstr<?> move(TIROperand dest, Operand src) {
+        return switch (src) {
+            case Const c -> {
+                yield new Lad(dest, convertOperand(src));
+            }
+            default -> {
+                yield new Ld(dest, convertOperand(src));
+            }
+        };
+    }
     private TIrInstr<?> move(Register dest, Operand src) {
         return switch (src) {
             case Const c -> {
