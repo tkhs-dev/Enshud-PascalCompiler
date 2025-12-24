@@ -47,8 +47,7 @@ public class RegisterAllocator extends Allocator{
         for (AllocatableRegister r : graph.getNodes()) {
 
             // 事前割当レジスタは除外（色固定なので Simplify しない）
-            if (r.getPredefined().isPresent()) return r;
-
+//            if (r.getPredefined().isPresent()) return r;
             if (graph.getAdjacents(r).size() < K) {
                 return r;
             }
@@ -126,10 +125,9 @@ public class RegisterAllocator extends Allocator{
     }
 
     private AllocatableRegister chooseSpillCandidate() {
-        for (AllocatableRegister r : graph.getNodes()) {
-            if (r.getPredefined().isEmpty()) {
-                return r;
-            }
+        var reg = graph.getNodes().stream().min(Comparator.comparingDouble(AllocatableRegister::getSpillCost));
+        if (reg.isPresent()) {
+            return reg.get();
         }
         throw new IllegalStateException("No spill candidate");
     }
