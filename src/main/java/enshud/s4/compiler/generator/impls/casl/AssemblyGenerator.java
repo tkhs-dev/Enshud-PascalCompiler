@@ -87,10 +87,10 @@ public class AssemblyGenerator {
     }
 
     private void spillFunction(TIRFunction function, Set<AllocatableRegister> spilled) {
-        var editor = function.getEditor();
         for (var vreg : spilled) {
             var slot = function.frameInfo.addSpill(1);
             var frameSlot = new FrameSlot(slot, 0);
+            var editor = function.getEditor();
             while(editor.hasNext()){
                 var ir = editor.next();
                 var uses = ir.getUse();
