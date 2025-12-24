@@ -15,7 +15,7 @@ public class NumericImmediate extends Immediate<Integer> {
                 return String.format("0x%X", value);
             case DECIMAL:
             default:
-                return String.format("%d", value);
+                return String.format("=%d", value);
         }
     }
 
