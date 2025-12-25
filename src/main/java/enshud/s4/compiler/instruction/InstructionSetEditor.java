@@ -1,17 +1,18 @@
 package enshud.s4.compiler.instruction;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.ListIterator;
 
-public class FunctionEditor<T extends Instruction> {
+public class InstructionSetEditor<T extends Instruction> {
     private final ListIterator<T> iterator;
     private final List<T> instructions;
     private T current;
     private final Runnable onChange;
 
-    FunctionEditor(FunctionUnit<T> function, Runnable onChange) {
-        this.instructions = function.getMutableInstructions();
-        this.iterator = function.getMutableInstructions().listIterator();
+    public InstructionSetEditor(List<T> instructions, Runnable onChange) {
+        this.instructions = instructions;
+        this.iterator = instructions.listIterator();
         this.current = null;
         this.onChange = onChange;
     }
@@ -65,12 +66,12 @@ public class FunctionEditor<T extends Instruction> {
         onChange.run();
     }
 
-    public void appendAll(List<T> instrs) {
+    public void appendAll(Collection<T> instrs) {
         instructions.addAll(instrs);
         onChange.run();
     }
 
-    public void prependAll(List<T> instrs) {
+    public void prependAll(Collection<T> instrs) {
         instructions.addAll(0, instrs);
         onChange.run();
     }

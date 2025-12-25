@@ -6,7 +6,7 @@ import enshud.pascal.ast.nodes.expr.*;
 import enshud.pascal.ast.nodes.stmt.*;
 import enshud.pascal.type.ArrayType;
 import enshud.pascal.type.Type;
-import enshud.s4.compiler.instruction.FunctionEditor;
+import enshud.s4.compiler.instruction.InstructionSetEditor;
 import enshud.s4.compiler.ir.instructions.*;
 import enshud.s4.compiler.ir.operand.Const;
 import enshud.s4.compiler.ir.operand.Temp;
@@ -36,7 +36,7 @@ class IrConverterVisitor implements IAstVisitor<Optional<Temp>> {
     private final SerialManager funcManager;
 
     private IrFunction currentScope;
-    private FunctionEditor<ITInstruction> currentEditor;
+    private InstructionSetEditor<ITInstruction> currentEditor;
 
     private final IrFunction main;
     private Map<String, IrFunction> functions;

@@ -6,20 +6,13 @@ import enshud.s4.compiler.generator.impls.casl.tir.operand.Address;
 import enshud.s4.compiler.generator.impls.casl.tir.operand.TIROperand;
 
 import java.util.Arrays;
-import java.util.Optional;
 import java.util.Set;
 
 public abstract class TIrInstr<T extends TIrInstr<T>> extends AnalysableInstruction {
-    private String label = null;
-
     public abstract <R> R accept(ITIRVisitor<R> visitor);
 
-    public Optional<String> getLabel() {
-        return Optional.ofNullable(label);
-    }
-
-    public T setLabel(String label) {
-        this.label = label;
+    public T withLabel(String label) {
+        setLabel(label);
         return (T) this;
     }
 

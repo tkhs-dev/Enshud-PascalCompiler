@@ -4,11 +4,12 @@ import enshud.s4.compiler.generator.BasicBlock;
 import enshud.s4.compiler.generator.impls.casl.tir.instructions.TIrInstr;
 import enshud.s4.compiler.generator.impls.casl.tir.instructions.Jmp;
 import enshud.s4.compiler.generator.impls.casl.tir.instructions.Ret;
+import enshud.s4.compiler.instruction.InstructionSet;
 
 import java.util.*;
 
 public class CFGBuilder {
-    public static List<BasicBlock<TIrInstr<?>>> build(List<TIrInstr<?>> instructions) {
+    public static List<BasicBlock<TIrInstr<?>>> build(InstructionSet<TIrInstr<?>> instructions) {
         List<BasicBlock<TIrInstr<?>>> blocks = new ArrayList<>();
         Map<String, BasicBlock<TIrInstr<?>>> labelToBlock = new HashMap<>();
 

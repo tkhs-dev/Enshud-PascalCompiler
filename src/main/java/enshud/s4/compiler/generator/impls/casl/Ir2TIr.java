@@ -4,6 +4,7 @@ import enshud.s4.compiler.generator.Register;
 import enshud.s4.compiler.generator.impls.casl.tir.instructions.*;
 import enshud.s4.compiler.generator.impls.casl.tir.operand.*;
 import enshud.s4.compiler.generator.impls.casl.tir.program.*;
+import enshud.s4.compiler.instruction.InstructionSet;
 import enshud.s4.compiler.ir.IIrVisitor;
 import enshud.s4.compiler.ir.instructions.Call;
 import enshud.s4.compiler.ir.instructions.*;
@@ -122,12 +123,12 @@ class Ir2TIrConverter implements IIrVisitor<Void> {
         this.constDataList = new ArrayList<>();
     }
 
-    public List<TIrInstr<?>> convertInstructions() {
+    public InstructionSet<TIrInstr<?>> convertInstructions() {
         for (var irInstruction : currentFunction.getInstructions()) {
             irInstruction.accept(this);
         }
         tirInstructions.add(new Ret());
-        return tirInstructions;
+        return InstructionSet.of(tirInstructions);
     }
 
     public List<ConstData<?>> getConstDataList() {
@@ -165,8 +166,8 @@ class Ir2TIrConverter implements IIrVisitor<Void> {
 
     @Override
     public Void visit(Label ir) {
-        Nop nop = new Nop().setLabel(ir.name);
-        nop.setLabel(ir.name);
+        Nop nop = new Nop().withLabel(ir.name);
+        nop.withLabel(ir.name);
         tirInstructions.add(nop);
         return null;
     }
@@ -336,8 +337,8 @@ class Ir2TIrConverter implements IIrVisitor<Void> {
                         new Jmp(labelFalse, Jmp.Type.ZERO),
                         new Ld(convertOperand(ir.left), Immediate.TRUE),
                         new Jmp(labelEnd, Jmp.Type.UNCONDITIONAL),
-                        new Ld(convertOperand(ir.left), Immediate.FALSE).setLabel(labelFalse),
-                        new Nop().setLabel(labelEnd)
+                        new Ld(convertOperand(ir.left), Immediate.FALSE).withLabel(labelFalse),
+                        new Nop().withLabel(labelEnd)
                 ));
             }
             case EQ ->  {
@@ -348,8 +349,8 @@ class Ir2TIrConverter implements IIrVisitor<Void> {
                         new Jmp(labelFalse, Jmp.Type.NONZERO),
                         new Ld(convertOperand(ir.left), Immediate.TRUE),
                         new Jmp(labelEnd, Jmp.Type.UNCONDITIONAL),
-                        new Ld(convertOperand(ir.left), Immediate.FALSE).setLabel(labelFalse),
-                        new Nop().setLabel(labelEnd)
+                        new Ld(convertOperand(ir.left), Immediate.FALSE).withLabel(labelFalse),
+                        new Nop().withLabel(labelEnd)
                 ));
             }
             case LTE ->   {
@@ -360,8 +361,8 @@ class Ir2TIrConverter implements IIrVisitor<Void> {
                         new Jmp(labelFalse, Jmp.Type.PLUS),
                         new Ld(convertOperand(ir.left), Immediate.TRUE),
                         new Jmp(labelEnd, Jmp.Type.UNCONDITIONAL),
-                        new Ld(convertOperand(ir.left), Immediate.FALSE).setLabel(labelFalse),
-                        new Nop().setLabel(labelEnd)
+                        new Ld(convertOperand(ir.left), Immediate.FALSE).withLabel(labelFalse),
+                        new Nop().withLabel(labelEnd)
                 ));
             }
             case LT ->    {
@@ -372,8 +373,8 @@ class Ir2TIrConverter implements IIrVisitor<Void> {
                         new Jmp(labelTrue, Jmp.Type.MINUS),
                         new Ld(convertOperand(ir.left), Immediate.FALSE),
                         new Jmp(labelEnd, Jmp.Type.UNCONDITIONAL),
-                        new Ld(convertOperand(ir.left), Immediate.TRUE).setLabel(labelTrue),
-                        new Nop().setLabel(labelEnd)
+                        new Ld(convertOperand(ir.left), Immediate.TRUE).withLabel(labelTrue),
+                        new Nop().withLabel(labelEnd)
                 ));
             }
             case GTE ->   {
@@ -384,8 +385,8 @@ class Ir2TIrConverter implements IIrVisitor<Void> {
                         new Jmp(labelFalse, Jmp.Type.MINUS),
                         new Ld(convertOperand(ir.left), Immediate.TRUE),
                         new Jmp(labelEnd, Jmp.Type.UNCONDITIONAL),
-                        new Ld(convertOperand(ir.left), Immediate.FALSE).setLabel(labelFalse),
-                        new Nop().setLabel(labelEnd)
+                        new Ld(convertOperand(ir.left), Immediate.FALSE).withLabel(labelFalse),
+                        new Nop().withLabel(labelEnd)
                 ));
             }
             case GT ->    {
@@ -396,8 +397,8 @@ class Ir2TIrConverter implements IIrVisitor<Void> {
                         new Jmp(labelFalse, Jmp.Type.PLUS),
                         new Ld(convertOperand(ir.left), Immediate.FALSE),
                         new Jmp(labelEnd, Jmp.Type.UNCONDITIONAL),
-                        new Ld(convertOperand(ir.left), Immediate.TRUE).setLabel(labelFalse),
-                        new Nop().setLabel(labelEnd)
+                        new Ld(convertOperand(ir.left), Immediate.TRUE).withLabel(labelFalse),
+                        new Nop().withLabel(labelEnd)
                 ));
             }
             default -> throw new UnsupportedOperationException("Unsupported binary operation: " + ir.opType);
@@ -455,6 +456,7 @@ class Ir2TIrConverter implements IIrVisitor<Void> {
             var slotOpt = frameInfoMap.get(func).getSlot(var.name);
             if(slotOpt.isPresent()){
                 var slot = slotOpt.get();
+                System.out.println("Variable " + var.name + " found in function " + func.name + " at slot " + slot.slot + " (level " + func.level + ")");
                 var levelDiff = currentFunction.level - func.level;
                 return new FrameSlot(slot.slot, levelDiff);
             }

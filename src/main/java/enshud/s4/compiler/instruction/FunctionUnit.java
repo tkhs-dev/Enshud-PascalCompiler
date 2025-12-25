@@ -1,12 +1,10 @@
 package enshud.s4.compiler.instruction;
 
-import java.util.List;
-
 public abstract class FunctionUnit<T extends Instruction > {
     private final String name;
-    private final List<T> instructions;
+    private final InstructionSet<T> instructions;
 
-    public FunctionUnit(String name, List<T> instructions) {
+    public FunctionUnit(String name, InstructionSet<T> instructions) {
         this.name = name;
         this.instructions = instructions;
     }
@@ -15,16 +13,12 @@ public abstract class FunctionUnit<T extends Instruction > {
         return name;
     }
 
-    public List<T> getInstructions() {
-        return List.copyOf(instructions);
-    }
-
-    List<T> getMutableInstructions() {
+    public InstructionSet<T> getInstructions() {
         return instructions;
     }
 
-    public FunctionEditor<T> getEditor() {
-        return new FunctionEditor<>(this, this::onChange);
+    public InstructionSetEditor<T> getEditor() {
+        return instructions.getEditor(this::onChange);
     }
 
     protected abstract void onChange();

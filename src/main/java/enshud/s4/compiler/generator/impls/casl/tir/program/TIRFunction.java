@@ -3,6 +3,7 @@ package enshud.s4.compiler.generator.impls.casl.tir.program;
 import enshud.s4.compiler.generator.BasicBlock;
 import enshud.s4.compiler.generator.impls.casl.tir.instructions.TIrInstr;
 import enshud.s4.compiler.instruction.FunctionUnit;
+import enshud.s4.compiler.instruction.InstructionSet;
 
 import java.util.List;
 
@@ -13,7 +14,7 @@ public class TIRFunction extends FunctionUnit<TIrInstr<?>> {
 
     private List<BasicBlock<TIrInstr<?>>> blocks;
 
-    public TIRFunction(String name, FrameInfo frameInfo, List<TIrInstr<?>> instructions, List<ConstData<?>> constDataList) {
+    public TIRFunction(String name, FrameInfo frameInfo, InstructionSet<TIrInstr<?>> instructions, List<ConstData<?>> constDataList) {
         super(name, instructions);
         this.name = name;
         this.frameInfo = frameInfo;
