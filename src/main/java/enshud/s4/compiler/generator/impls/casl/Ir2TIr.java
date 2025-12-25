@@ -456,7 +456,6 @@ class Ir2TIrConverter implements IIrVisitor<Void> {
             var slotOpt = frameInfoMap.get(func).getSlot(var.name);
             if(slotOpt.isPresent()){
                 var slot = slotOpt.get();
-                System.out.println("Variable " + var.name + " found in function " + func.name + " at slot " + slot.slot + " (level " + func.level + ")");
                 var levelDiff = currentFunction.level - func.level;
                 return new FrameSlot(slot.slot, levelDiff);
             }

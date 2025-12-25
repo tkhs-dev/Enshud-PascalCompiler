@@ -67,13 +67,16 @@ public class InstructionSetEditor<T extends Instruction> {
 
     @SafeVarargs
     public final void insertBefore(boolean labelTransfer, T... instr) {
+        if (labelTransfer && current != null && instr.length > 0) {
+            instr[0].setLabel(current.getLabel().orElse(null));
+            current.clearLabel();
+        }
         for (T i : instr) {
-            if (labelTransfer && current != null) {
-                i.setLabel(current.getLabel().orElse(null));
-                current.clearLabel();
-                labelTransfer = false;
-            }
+            iterator.previous();
             iterator.add(i);
+        }
+        for (int i = 0; i < instr.length; i++) {
+            iterator.next();
         }
         onChange.run();
     }
@@ -85,15 +88,12 @@ public class InstructionSetEditor<T extends Instruction> {
 
     @SafeVarargs
     public final void insertAfter(boolean labelTransfer, T... instr) {
-        for (int idx = instr.length - 1; idx >= 0; idx--) {
-            T i = instr[idx];
-            if (labelTransfer && current != null) {
-                i.setLabel(current.getLabel().orElse(null));
-                current.clearLabel();
-                labelTransfer = false;
-            }
+        if (labelTransfer && current != null && instr.length > 0) {
+            instr[instr.length - 1].setLabel(current.getLabel().orElse(null));
+            current.clearLabel();
+        }
+        for (T i : instr) {
             iterator.add(i);
-            iterator.previous();
         }
         onChange.run();
     }
