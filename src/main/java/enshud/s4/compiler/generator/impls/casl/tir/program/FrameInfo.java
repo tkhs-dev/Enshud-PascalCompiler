@@ -33,7 +33,9 @@ public class FrameInfo {
 
     public int addSpill(int size) {
         spillSize += size;
-        return nextLocalSlot += size;
+        var slot = nextLocalSlot;
+        nextLocalSlot += size;
+        return slot;
     }
 
     private int addSlot(String name, int size, FrameSlot.Kind kind) {

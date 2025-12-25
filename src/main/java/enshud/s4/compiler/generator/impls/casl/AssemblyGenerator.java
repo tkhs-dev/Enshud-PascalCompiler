@@ -393,11 +393,11 @@ class TIRConverter implements ITIRVisitor<Void>{
             }
             case FrameSlot f -> {
                 if (f.offset == null) {
-                    yield new MemoryOperand(String.valueOf(-f.slot), CaslRegisters.FP);
+                    yield new MemoryOperand(String.valueOf(-1-f.slot), CaslRegisters.FP); // スロットは0始まりのため、slot+1がメモリ位置
                 }
                 if (f.offset instanceof Immediate i) {
                     if(i instanceof NumericImmediate n){
-                        editor.append(new LAD(new RegisterOperand(CaslRegisters.TEMP), new MemoryOperand(String.valueOf(1-n.value)))); // 配列のインデックスが1始まりのため1を加算
+                        editor.append(new LAD(new RegisterOperand(CaslRegisters.TEMP), new MemoryOperand(String.valueOf(-(n.value - 1)), CaslRegisters.FP))); // 配列のインデックスが1始まりのため1をたす
                     } else {
                         throw new IllegalArgumentException("FrameSlot offset must be NumericImmediate: " + i);
                     }
@@ -405,9 +405,9 @@ class TIRConverter implements ITIRVisitor<Void>{
                     editor.append(
                         new LAD(new RegisterOperand(CaslRegisters.TEMP), new MemoryOperand("1", CaslRegisters.FP)),
                         new SUBA(new RegisterOperand(CaslRegisters.TEMP), data(f.offset))
-                    ); // 配列のインデックスが1始まりのため1を加算
+                    ); // 配列のインデックスが1始まりのため1をたす
                 }
-                yield new MemoryOperand(String.valueOf(-f.slot), CaslRegisters.TEMP);
+                yield new MemoryOperand(String.valueOf(-1-f.slot), CaslRegisters.TEMP); // スロットは0始まりのため、slot+1がメモリ位置
             }
             case Address a -> {
                 if (a.offset == null) {
