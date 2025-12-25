@@ -16,47 +16,49 @@ import enshud.s4.compiler.generator.impls.casl.tir.program.ConstData;
 import enshud.s4.compiler.generator.impls.casl.tir.program.StringData;
 import enshud.s4.compiler.generator.impls.casl.tir.program.TIRFunction;
 import enshud.s4.compiler.generator.impls.casl.tir.program.TIRProgram;
+import enshud.s4.compiler.instruction.InstructionSet;
+import enshud.s4.compiler.instruction.InstructionSetEditor;
 import enshud.util.Ascii;
 import enshud.util.SerialManager;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
 public class AssemblyGenerator {
     private final TIRProgram program;
-    private final List<AssemblyInstr<?>> instructions;
+    private final InstructionSet<AssemblyInstr<?>> instructions;
+    private final InstructionSetEditor<AssemblyInstr<?>> editor;
     private SerialManager serial;
 
     public AssemblyGenerator(TIRProgram program) {
         this.program = program;
-        this.instructions = new ArrayList<>();
+        this.instructions = new InstructionSet<>();
+        this.editor = instructions.getEditor();
     }
 
-    public List<AssemblyInstr<?>> generate() {
-        instructions.addAll(List.of(
-                new START("BEGIN").setLabel("CASL"),
+    public InstructionSet<AssemblyInstr<?>> generate() {
+        editor.append(
+                new START("BEGIN").withLabel("CASL"),
                 new LD(new RegisterOperand(CaslRegisters.FP), new RegisterOperand(CaslRegisters.SP))
-        ));
+        );
         // Process main function
         processFunction(program.main);
-        instructions.get(1).setLabel("BEGIN");
+        editor.applyAt(1, ir -> ir.setLabel("BEGIN"));
         // Process other functions
         for (var function : program.functions.values()) {
             processFunction(function);
         }
         processConstData(program.getConstDataList());
-        instructions.addAll(List.of(
-                new DS(256).setLabel("BUF"),
-                new DC(1).setLabel("TRUE"),
-                new DC(0).setLabel("FALSE"),
-                new DC(0).setLabel("ZERO"),
-                new DC(1).setLabel("ONE"),
-                new DS(1).setLabel("WRTGR6"),
-                new DS(1).setLabel("WRTGR7"),
+        editor.append(
+                new DS(256).withLabel("BUF"),
+                new DC(1).withLabel("TRUE"),
+                new DC(0).withLabel("FALSE"),
+                new DC(0).withLabel("ZERO"),
+                new DC(1).withLabel("ONE"),
+                new DS(1).withLabel("WRTGR6"),
+                new DS(1).withLabel("WRTGR7"),
                 new END()
-        ));
+        );
         return instructions;
     }
 
@@ -82,15 +84,15 @@ public class AssemblyGenerator {
         System.out.println(allocation);
 
         var converter = new TIRConverter(allocation, function);
-        var funcInstructions = converter.getInstructions();
-        instructions.addAll(funcInstructions);
+        var funcInstructions = converter.getInstruction();
+        editor.appendAll(funcInstructions);
     }
 
     private void spillFunction(TIRFunction function, Set<AllocatableRegister> spilled) {
+        var editor = function.getEditor();
         for (var vreg : spilled) {
             var slot = function.frameInfo.addSpill(1);
             var frameSlot = new FrameSlot(slot, 0);
-            var editor = function.getEditor();
             while(editor.hasNext()){
                 var ir = editor.next();
                 var uses = ir.getUse();
@@ -135,54 +137,58 @@ public class AssemblyGenerator {
                     }
                 }
             }
+            editor.resetToStart();
         }
     }
 
     private void processConstData(List<ConstData<?>> constDataList) {
         for (var constData : constDataList) {
             if (constData instanceof StringData strData) {
-                instructions.addAll(List.of(
+                editor.append(
                         new DC(strData.value.length()),
-                        new DC(strData.value).setLabel(strData.label)
-                ));
+                        new DC(strData.value).withLabel(strData.label)
+                );
             }
         }
     }
 }
 
 class TIRConverter implements ITIRVisitor<Void>{
-    private final List<AssemblyInstr<?>> instructions;
+    private final InstructionSet instructions;
+    private final InstructionSetEditor<AssemblyInstr<?>> editor;
     private final Allocation allocation;
     private final TIRFunction function;
 
     public TIRConverter(Allocation allocation, TIRFunction function) {
-        this.instructions = new ArrayList<>();
+        this.instructions = new InstructionSet();
+        this.editor = instructions.getEditor();
         this.allocation = allocation;
         this.function = function;
     }
 
-    public List<AssemblyInstr<?>> getInstructions() {
-        constructFrame();
+    public InstructionSet<AssemblyInstr<?>> getInstruction() {
         for (var ir : function.getInstructions()) {
             ir.accept(this);
         }
+        constructFrame();
         return instructions;
     }
 
     private void constructFrame(){
         var frame = function.frameInfo;
-        instructions.addAll(List.of(
+        editor.prepend(true,
                 new PUSH(new MemoryOperand("0", CaslRegisters.FP)),
                 new LD(new RegisterOperand(CaslRegisters.FP), new RegisterOperand(CaslRegisters.SP)),
                 new LAD(new RegisterOperand(CaslRegisters.TEMP), new MemoryOperand(String.valueOf(-frame.getFrameSize()))),
                 new ADDA(new RegisterOperand(CaslRegisters.SP), new RegisterOperand(CaslRegisters.TEMP))
-        ));
+        );
     }
 
     private void destructFrame(){
-        instructions.addAll(List.of(
-                new LD(new RegisterOperand(CaslRegisters.SP), new RegisterOperand(CaslRegisters.FP))
-        ));
+        editor.append(
+                new LD(new RegisterOperand(CaslRegisters.SP), new RegisterOperand(CaslRegisters.FP)),
+                new POP(new RegisterOperand(CaslRegisters.FP))
+        );
     }
 
     @Override
@@ -339,9 +345,9 @@ class TIRConverter implements ITIRVisitor<Void>{
 
     private void addInstructions(TIrInstr<?> ir, AssemblyInstr<?>... instrs) {
         if(ir.getLabel().isPresent()){
-            instrs[0].setLabel(ir.getLabel().get());
+            instrs[0].withLabel(ir.getLabel().get());
         }
-        Collections.addAll(instructions, instrs);
+        editor.append(instrs);
     }
 
     private RegisterOperand reg(TIROperand operand) {
@@ -391,13 +397,15 @@ class TIRConverter implements ITIRVisitor<Void>{
                 }
                 if (f.offset instanceof Immediate i) {
                     if(i instanceof NumericImmediate n){
-                        instructions.add(new LAD(new RegisterOperand(CaslRegisters.TEMP), new MemoryOperand(String.valueOf(1-n.value)))); // 配列のインデックスが1始まりのため1を加算
+                        editor.append(new LAD(new RegisterOperand(CaslRegisters.TEMP), new MemoryOperand(String.valueOf(1-n.value)))); // 配列のインデックスが1始まりのため1を加算
                     } else {
                         throw new IllegalArgumentException("FrameSlot offset must be NumericImmediate: " + i);
                     }
                 } else {
-                    instructions.add(new LAD(new RegisterOperand(CaslRegisters.TEMP), new MemoryOperand("1", CaslRegisters.FP))); // 配列のインデックスが1始まりのため1を加算
-                    instructions.add(new SUBA(new RegisterOperand(CaslRegisters.TEMP), data(f.offset)));
+                    editor.append(
+                        new LAD(new RegisterOperand(CaslRegisters.TEMP), new MemoryOperand("1", CaslRegisters.FP)),
+                        new SUBA(new RegisterOperand(CaslRegisters.TEMP), data(f.offset))
+                    ); // 配列のインデックスが1始まりのため1を加算
                 }
                 yield new MemoryOperand(String.valueOf(-f.slot), CaslRegisters.TEMP);
             }
@@ -407,12 +415,12 @@ class TIRConverter implements ITIRVisitor<Void>{
                 } else {
                     if (a.offset instanceof Immediate i) {
                         if(i instanceof NumericImmediate n){
-                            instructions.add(new LAD(new RegisterOperand(CaslRegisters.TEMP), new MemoryOperand(String.valueOf(n.value))));
+                            editor.append(new LAD(new RegisterOperand(CaslRegisters.TEMP), new MemoryOperand(String.valueOf(n.value))));
                         } else {
                             throw new IllegalArgumentException("Address offset must be NumericImmediate: " + i);
                         }
                     } else {
-                        instructions.add(new LD(new RegisterOperand(CaslRegisters.TEMP), data(a.offset)));
+                        editor.append(new LD(new RegisterOperand(CaslRegisters.TEMP), data(a.offset)));
                     }
                     yield new MemoryOperand(a.base, CaslRegisters.TEMP);
                 }

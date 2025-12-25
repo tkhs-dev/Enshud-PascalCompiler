@@ -28,7 +28,7 @@ public class Ir2TIr {
         this.variableLevelMap = generateVariableLevelMap(irProgram);
         this.frameInfoMap = generateFrameInfoMap(irProgram);
         var main = convert(irProgram.main);
-        main.getEditor().prependAll(List.of(
+        main.getEditor().prependAll(true, List.of(
                 new Lad(VirtualRegister.withPredefined("WRTGR6", CaslRegisters.GR6).withSpillCost(0), new Address("0")),
                 new Lad(VirtualRegister.withPredefined("WRTGR7", CaslRegisters.GR7).withSpillCost(0), new Address("BUF"))
         ));
