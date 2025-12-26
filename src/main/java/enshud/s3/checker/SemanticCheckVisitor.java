@@ -115,6 +115,7 @@ public class SemanticCheckVisitor implements IAstVisitor<Object> {
             newNames.add(paramName+"@"+ vinfo.scopeId());
         }
         node.params = newNames;
+        node.setType(type);
         return type;
     }
 
