@@ -392,8 +392,9 @@ class TIRConverter implements ITIRVisitor<Void>{
                 };
             }
             case FrameSlot f -> {
+                var slotPtr = f.slot >= 0 ? -f.slot : -f.slot + 1; // 負の場合は仮引数なのでフレームより前
                 if (f.offset == null) {
-                    yield new MemoryOperand(String.valueOf(-1-f.slot), CaslRegisters.FP); // スロットは0始まりのため、slot+1がメモリ位置
+                    yield new MemoryOperand(String.valueOf(slotPtr), CaslRegisters.FP);
                 }
                 if (f.offset instanceof Immediate i) {
                     if(i instanceof NumericImmediate n){
@@ -407,7 +408,7 @@ class TIRConverter implements ITIRVisitor<Void>{
                         new SUBA(new RegisterOperand(CaslRegisters.TEMP), data(f.offset))
                     ); // 配列のインデックスが1始まりのため1をたす
                 }
-                yield new MemoryOperand(String.valueOf(-1-f.slot), CaslRegisters.TEMP); // スロットは0始まりのため、slot+1がメモリ位置
+                yield new MemoryOperand(String.valueOf(slotPtr), CaslRegisters.TEMP);
             }
             case Address a -> {
                 if (a.offset == null) {

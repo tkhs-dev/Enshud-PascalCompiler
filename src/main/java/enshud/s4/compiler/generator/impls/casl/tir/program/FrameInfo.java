@@ -17,8 +17,8 @@ public class FrameInfo {
         this.localVarSize = 0;
         this.paramSize = 0;
         this.spillSize = 0;
-        this.nextLocalSlot = 0;
-        this.nextParamSlot = 0;
+        this.nextLocalSlot = 1;
+        this.nextParamSlot = 1;
     }
 
     public int addLocalVar(String name, int size) {

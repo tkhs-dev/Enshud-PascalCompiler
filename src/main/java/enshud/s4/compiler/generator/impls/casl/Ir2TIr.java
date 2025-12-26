@@ -138,10 +138,10 @@ class Ir2TIrConverter implements IIrVisitor<Void> {
     @Override
     public Void visit(Call ir) {
         ir.args.forEach(arg -> {
-            tirInstructions.add(new Push(
-                    convertOperand(arg)
-            ));
-        });
+                    tirInstructions.add(
+                            new Push(new Address("0").setOffset(convertOperand(arg)))
+                    );
+                });
         tirInstructions.add(new enshud.s4.compiler.generator.impls.casl.tir.instructions.Call(ir.functionLabel));
         return null;
     }
@@ -456,8 +456,15 @@ class Ir2TIrConverter implements IIrVisitor<Void> {
             var slotOpt = frameInfoMap.get(func).getSlot(var.name);
             if(slotOpt.isPresent()){
                 var slot = slotOpt.get();
-                var levelDiff = currentFunction.level - func.level;
-                return new FrameSlot(slot.slot, levelDiff);
+                if (slot.kind == FrameInfo.FrameSlot.Kind.LOCAL) {
+                    // Local variable
+                    var levelDiff = currentFunction.level - func.level;
+                    return new FrameSlot(slot.slot, levelDiff);
+                } else {
+                    // Parameter
+                    var levelDiff = currentFunction.level - func.level;
+                    return new FrameSlot(-slot.slot, levelDiff); // パラメタは負のオフセットに格納
+                }
             }
             func = func.parent;
         }
