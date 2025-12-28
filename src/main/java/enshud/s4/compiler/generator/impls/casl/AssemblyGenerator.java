@@ -179,6 +179,7 @@ class TIRConverter implements ITIRVisitor<Void>{
         editor.prepend(true,
                 new PUSH(new MemoryOperand("0", CaslRegisters.FP)),
                 new LD(new RegisterOperand(CaslRegisters.FP), new RegisterOperand(CaslRegisters.SP)),
+                new PUSH(new MemoryOperand("0")), // 静的リンク
                 new LAD(new RegisterOperand(CaslRegisters.TEMP), new MemoryOperand(String.valueOf(-frame.getFrameSize()))),
                 new ADDA(new RegisterOperand(CaslRegisters.SP), new RegisterOperand(CaslRegisters.TEMP))
         );
@@ -392,19 +393,32 @@ class TIRConverter implements ITIRVisitor<Void>{
                 };
             }
             case FrameSlot f -> {
-                var slotPtr = f.slot >= 0 ? -f.slot : -f.slot + 1; // 負の場合は仮引数なのでフレームより前
+                var slotPtr = f.slot >= 0 ? -f.slot - 1 : -f.slot + 1; // 負の場合は仮引数なのでフレームより前
+                var baseFrameReg = CaslRegisters.FP;
+                if(f.levelDiff > 0){
+                    // 静的リンクをたどる
+                    editor.append(
+                        new LD(new RegisterOperand(CaslRegisters.TEMP), new MemoryOperand("-1", CaslRegisters.FP))
+                    );
+                    for(int i = 1; i < f.levelDiff; i++){
+                        editor.append(
+                            new LD(new RegisterOperand(CaslRegisters.TEMP), new MemoryOperand("-1", CaslRegisters.TEMP))
+                        );
+                    }
+                    baseFrameReg = CaslRegisters.TEMP;
+                }
                 if (f.offset == null) {
-                    yield new MemoryOperand(String.valueOf(slotPtr), CaslRegisters.FP);
+                    yield new MemoryOperand(String.valueOf(slotPtr), baseFrameReg);
                 }
                 if (f.offset instanceof Immediate i) {
                     if(i instanceof NumericImmediate n){
-                        editor.append(new LAD(new RegisterOperand(CaslRegisters.TEMP), new MemoryOperand(String.valueOf(-(n.value - 1)), CaslRegisters.FP))); // 配列のインデックスが1始まりのため1をたす
+                        editor.append(new LAD(new RegisterOperand(CaslRegisters.TEMP), new MemoryOperand(String.valueOf(-(n.value - 1)), baseFrameReg))); // 配列のインデックスが1始まりのため1をたす
                     } else {
                         throw new IllegalArgumentException("FrameSlot offset must be NumericImmediate: " + i);
                     }
                 } else {
                     editor.append(
-                        new LAD(new RegisterOperand(CaslRegisters.TEMP), new MemoryOperand("1", CaslRegisters.FP)),
+                        new LAD(new RegisterOperand(CaslRegisters.TEMP), new MemoryOperand("1", baseFrameReg)),
                         new SUBA(new RegisterOperand(CaslRegisters.TEMP), data(f.offset))
                     ); // 配列のインデックスが1始まりのため1をたす
                 }
