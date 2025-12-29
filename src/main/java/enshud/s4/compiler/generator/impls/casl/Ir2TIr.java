@@ -101,6 +101,9 @@ class Ir2TIrConverter implements IIrVisitor<Void> {
     private static final SerialManager serialManager = new SerialManager("L");
     private static final SerialManager constDataSerialManager = new SerialManager("CD");
 
+    private static final VirtualRegister WRTGR6 = VirtualRegister.withPredefined("WRTGR6", CaslRegisters.GR6).withSpillCost(2);
+    private static final VirtualRegister WRTGR7 = VirtualRegister.withPredefined("WRTGR7", CaslRegisters.GR7).withSpillCost(2);
+
     public Ir2TIrConverter(Map<IrFunction, FrameInfo> frameInfoMap, Map<String, Integer> funcLevelMap, IrFunction currentFunction) {
         this.tirInstructions = new ArrayList<>();
         this.frameInfoMap = frameInfoMap;
@@ -114,6 +117,8 @@ class Ir2TIrConverter implements IIrVisitor<Void> {
         for (var irInstruction : currentFunction.getInstructions()) {
             irInstruction.accept(this);
         }
+        tirInstructions.add(new Ld(WRTGR6, WRTGR6));
+        tirInstructions.add(new Ld(WRTGR7, WRTGR7));
         tirInstructions.add(new Ret());
         return InstructionSet.of(tirInstructions);
     }
@@ -124,6 +129,7 @@ class Ir2TIrConverter implements IIrVisitor<Void> {
 
     @Override
     public Void visit(Call ir) {
+        // push arguments
         ir.args.forEach(arg -> {
                     tirInstructions.add(
                             new Push(new Address("0").setOffset(convertOperand(arg)))
@@ -134,7 +140,25 @@ class Ir2TIrConverter implements IIrVisitor<Void> {
         tirInstructions.add(
                 new Push(staticLink)
         );
-        tirInstructions.add(new enshud.s4.compiler.generator.impls.casl.tir.instructions.Call(ir.functionLabel));
+        tirInstructions.add(new enshud.s4.compiler.generator.impls.casl.tir.instructions.Call(ir.functionLabel,
+                true,
+                List.of(WRTGR6, WRTGR7),
+                List.of(WRTGR6, WRTGR7)
+        ));
+        // pop static link
+        tirInstructions.add(
+                new Pop(VirtualRegister.tmpWithPredefined(CaslRegisters.GR2))
+        );
+        // pop arguments
+        if (ir.args.size() > 0) {
+            tirInstructions.add(
+                    new Lad(
+                            VirtualRegister.tmpWithPredefined(CaslRegisters.SP),
+                            new Address(String.valueOf(ir.args.size())).setOffset(VirtualRegister.tmpWithPredefined(CaslRegisters.SP))
+                    )
+            );
+        }
+
         return null;
     }
 
@@ -196,8 +220,6 @@ class Ir2TIrConverter implements IIrVisitor<Void> {
 //                new Ld(VirtualRegister.tmpWithPredefined(CaslRegisters.GR6), new Address("WRTGR6")),
 //                new Ld(VirtualRegister.tmpWithPredefined(CaslRegisters.GR7), new Address("WRTGR7"))
 //        ));
-        var in1 = new VirtualRegister("WRTGR6").withPredefined(CaslRegisters.GR6);
-        var in2 = new VirtualRegister("WRTGR7").withPredefined(CaslRegisters.GR7);
         List<TIrInstr<?>> instr = switch (ir.writeType){
             case INT -> {
                 yield List.of(
@@ -205,8 +227,8 @@ class Ir2TIrConverter implements IIrVisitor<Void> {
                         new enshud.s4.compiler.generator.impls.casl.tir.instructions.Call(
                                 "WRTINT",
                                 false,
-                                List.of(in1, in2),
-                                List.of(in1, in2)
+                                List.of(WRTGR6, WRTGR7),
+                                List.of(WRTGR6, WRTGR7)
                         )
                 );
             }
@@ -216,8 +238,8 @@ class Ir2TIrConverter implements IIrVisitor<Void> {
                         new enshud.s4.compiler.generator.impls.casl.tir.instructions.Call(
                                 "WRTCH",
                                 false,
-                                List.of(in1, in2),
-                                List.of(in1, in2)
+                                List.of(WRTGR6, WRTGR7),
+                                List.of(WRTGR6, WRTGR7)
                         )
                 );
             }
@@ -227,8 +249,8 @@ class Ir2TIrConverter implements IIrVisitor<Void> {
                         new enshud.s4.compiler.generator.impls.casl.tir.instructions.Call(
                                 "WRTSTR",
                                 false,
-                                List.of(in1, in2),
-                                List.of(in1, in2)
+                                List.of(WRTGR6, WRTGR7),
+                                List.of(WRTGR6, WRTGR7)
                         )
                 );
             }
@@ -237,8 +259,8 @@ class Ir2TIrConverter implements IIrVisitor<Void> {
                         new enshud.s4.compiler.generator.impls.casl.tir.instructions.Call(
                                 "WRTLN",
                                 false,
-                                List.of(in1, in2),
-                                List.of(in1, in2)
+                                List.of(WRTGR6, WRTGR7),
+                                List.of(WRTGR6, WRTGR7)
                         )
                 );
             }
