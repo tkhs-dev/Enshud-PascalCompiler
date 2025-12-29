@@ -11,6 +11,7 @@ public class IrFunction extends FunctionUnit<ITInstruction> {
     public final Map<String, Type> variables;
     public final Map<String, Type> parameters;
     public final String name;
+    public String label = null;
     public final int level;
     public final IrFunction parent;
 

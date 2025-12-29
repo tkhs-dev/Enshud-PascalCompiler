@@ -9,17 +9,20 @@ import java.util.Set;
 
 public class Call extends TIrInstr<Call> {
     public final String functionName;
+    public final boolean funcCall;
     private final OperandRef[] uses;
     private final OperandRef[] defs;
 
-    public Call(String functionName, List<TIROperand> uses, List<TIROperand> defs) {
+    public Call(String functionName, boolean funcCall, List<TIROperand> uses, List<TIROperand> defs) {
         this.functionName = functionName;
+        this.funcCall = funcCall;
         this.uses = uses.stream().map(OperandRef::new).toArray(OperandRef[]::new);
         this.defs = defs.stream().map(OperandRef::new).toArray(OperandRef[]::new);
     }
 
     public Call(String functionName){
         this.functionName = functionName;
+        this.funcCall = true;
         this.uses = new OperandRef[0];
         this.defs = new OperandRef[0];
     }

@@ -21,11 +21,15 @@ import java.util.List;
 import java.util.Map;
 
 public class Ir2TIr {
-    private Map<String, Integer> variableLevelMap;
+    private Map<String, Integer> funcLevelMap;
     private Map<IrFunction, FrameInfo> frameInfoMap;
 
     public TIRProgram convert(IrProgram irProgram) {
-        this.variableLevelMap = generateVariableLevelMap(irProgram);
+        this.funcLevelMap = irProgram.functions.entrySet().stream()
+                .collect(java.util.stream.Collectors.toMap(
+                        e -> e.getValue().label,
+                        e -> e.getValue().level
+                ));
         this.frameInfoMap = generateFrameInfoMap(irProgram);
         var main = convert(irProgram.main);
         main.getEditor().prependAll(true, List.of(
@@ -42,7 +46,7 @@ public class Ir2TIr {
 
     private TIRFunction convert(IrFunction irFunction) {
         var frameInfo = frameInfoMap.get(irFunction);
-        Ir2TIrConverter visitor = new Ir2TIrConverter(frameInfoMap, irFunction);
+        Ir2TIrConverter visitor = new Ir2TIrConverter(frameInfoMap, funcLevelMap, irFunction);
         var instructions = visitor.convertInstructions();
         var constDataList = visitor.getConstDataList();
 
@@ -52,26 +56,6 @@ public class Ir2TIr {
                 instructions,
                 constDataList
         );
-    }
-
-    private Map<String, Integer> generateVariableLevelMap(IrProgram irProgram) {
-        Map<String, Integer> variableLevelMap = new java.util.HashMap<>();
-        for (var entry : irProgram.functions.entrySet()) {
-            var function = entry.getValue();
-            for (var varEntry : function.variables.entrySet()) {
-                variableLevelMap.put(varEntry.getKey(), function.level);
-            }
-            for (var paramEntry : function.parameters.entrySet()) {
-                variableLevelMap.put(paramEntry.getKey(), function.level);
-            }
-        }
-        for (var varEntry : irProgram.main.variables.entrySet()) {
-            variableLevelMap.put(varEntry.getKey(), irProgram.main.level);
-        }
-        for (var paramEntry : irProgram.main.parameters.entrySet()) {
-            variableLevelMap.put(paramEntry.getKey(), irProgram.main.level);
-        }
-        return variableLevelMap;
     }
 
     private static Map<IrFunction, FrameInfo> generateFrameInfoMap(IrProgram irProgram) {
@@ -110,6 +94,7 @@ class Ir2TIrConverter implements IIrVisitor<Void> {
     private final List<TIrInstr<?>> tirInstructions;
     private final SerialManager serialManager;
     private final Map<IrFunction, FrameInfo> frameInfoMap;
+    private final Map<String, Integer> funcLevelMap;
     private final IrFunction currentFunction;
     private final List<ConstData<?>> constDataList;
     private final SerialManager constDataSerialManager;
@@ -142,6 +127,11 @@ class Ir2TIrConverter implements IIrVisitor<Void> {
                             new Push(new Address("0").setOffset(convertOperand(arg)))
                     );
                 });
+        // push static link
+        var staticLink = new FrameSlot(0, currentFunction.level - funcLevelMap.get(ir.functionLabel));
+        tirInstructions.add(
+                new Push(staticLink)
+        );
         tirInstructions.add(new enshud.s4.compiler.generator.impls.casl.tir.instructions.Call(ir.functionLabel));
         return null;
     }
@@ -212,6 +202,7 @@ class Ir2TIrConverter implements IIrVisitor<Void> {
                         move(CaslRegisters.GR2, ir.operand),
                         new enshud.s4.compiler.generator.impls.casl.tir.instructions.Call(
                                 "WRTINT",
+                                false,
                                 List.of(in1, in2),
                                 List.of(in1, in2)
                         )
@@ -222,6 +213,7 @@ class Ir2TIrConverter implements IIrVisitor<Void> {
                         move(CaslRegisters.GR2, ir.operand),
                         new enshud.s4.compiler.generator.impls.casl.tir.instructions.Call(
                                 "WRTCH",
+                                false,
                                 List.of(in1, in2),
                                 List.of(in1, in2)
                         )
@@ -232,6 +224,7 @@ class Ir2TIrConverter implements IIrVisitor<Void> {
                         new Ld(VirtualRegister.tmpWithPredefined(CaslRegisters.GR1), new Address("-1").setOffset(convertOperand(ir.operand))),
                         new enshud.s4.compiler.generator.impls.casl.tir.instructions.Call(
                                 "WRTSTR",
+                                false,
                                 List.of(in1, in2),
                                 List.of(in1, in2)
                         )
@@ -241,6 +234,7 @@ class Ir2TIrConverter implements IIrVisitor<Void> {
                 yield List.of(
                         new enshud.s4.compiler.generator.impls.casl.tir.instructions.Call(
                                 "WRTLN",
+                                false,
                                 List.of(in1, in2),
                                 List.of(in1, in2)
                         )
@@ -280,6 +274,7 @@ class Ir2TIrConverter implements IIrVisitor<Void> {
                         move(in1, ir.left),
                         move(in2, ir.right),
                         new enshud.s4.compiler.generator.impls.casl.tir.instructions.Call("MULT",
+                                false,
                                 List.of(in1, in2),
                                 List.of(out)
                         ),
@@ -294,6 +289,7 @@ class Ir2TIrConverter implements IIrVisitor<Void> {
                         move(in1, ir.left),
                         move(in2, ir.right),
                         new enshud.s4.compiler.generator.impls.casl.tir.instructions.Call("DIV",
+                                false,
                                 List.of(in1, in2),
                                 List.of(out)
                         ),
@@ -308,6 +304,7 @@ class Ir2TIrConverter implements IIrVisitor<Void> {
                         move(in1, ir.left),
                         move(in2, ir.right),
                         new enshud.s4.compiler.generator.impls.casl.tir.instructions.Call("DIV",
+                                false,
                                 List.of(in1, in2),
                                 List.of(out)
                         ),

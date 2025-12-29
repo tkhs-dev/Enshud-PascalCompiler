@@ -104,6 +104,7 @@ class IrConverterVisitor implements IAstVisitor<Optional<Temp>> {
         var label = funcManager.New();
         funcLabelMap.put(node.name, label);
         currentEditor.append(Label.of(label));
+        currentScope.label = label;
         visitAll(node);
         return Optional.empty();
     }

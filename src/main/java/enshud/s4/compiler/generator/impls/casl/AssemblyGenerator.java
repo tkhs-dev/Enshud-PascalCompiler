@@ -39,7 +39,9 @@ public class AssemblyGenerator {
     public InstructionSet<AssemblyInstr<?>> generate() {
         editor.append(
                 new START("BEGIN").withLabel("CASL"),
-                new LD(new RegisterOperand(CaslRegisters.FP), new RegisterOperand(CaslRegisters.SP))
+                new LD(new RegisterOperand(CaslRegisters.FP), new RegisterOperand(CaslRegisters.SP)),
+                new PUSH(new MemoryOperand("0", CaslRegisters.FP)), // 静的リンクの初期値0をプッシュ
+                new PUSH(new MemoryOperand("0"))  // 戻りアドレスの初期値0をプッシュ
         );
         // Process main function
         processFunction(program.main);
@@ -179,7 +181,6 @@ class TIRConverter implements ITIRVisitor<Void>{
         editor.prepend(true,
                 new PUSH(new MemoryOperand("0", CaslRegisters.FP)),
                 new LD(new RegisterOperand(CaslRegisters.FP), new RegisterOperand(CaslRegisters.SP)),
-                new PUSH(new MemoryOperand("0")), // 静的リンク
                 new LAD(new RegisterOperand(CaslRegisters.TEMP), new MemoryOperand(String.valueOf(-frame.getFrameSize()))),
                 new ADDA(new RegisterOperand(CaslRegisters.SP), new RegisterOperand(CaslRegisters.TEMP))
         );
@@ -393,16 +394,16 @@ class TIRConverter implements ITIRVisitor<Void>{
                 };
             }
             case FrameSlot f -> {
-                var slotPtr = f.slot >= 0 ? -f.slot - 1 : -f.slot + 1; // 負の場合は仮引数なのでフレームより前
+                var slotPtr = f.slot >= 0 ? -f.slot : -f.slot + 2; // 負の場合は仮引数なのでフレームより前
                 var baseFrameReg = CaslRegisters.FP;
                 if(f.levelDiff > 0){
                     // 静的リンクをたどる
                     editor.append(
-                        new LD(new RegisterOperand(CaslRegisters.TEMP), new MemoryOperand("-1", CaslRegisters.FP))
+                        new LD(new RegisterOperand(CaslRegisters.TEMP), new MemoryOperand("2", CaslRegisters.FP))
                     );
                     for(int i = 1; i < f.levelDiff; i++){
                         editor.append(
-                            new LD(new RegisterOperand(CaslRegisters.TEMP), new MemoryOperand("-1", CaslRegisters.TEMP))
+                            new LD(new RegisterOperand(CaslRegisters.TEMP), new MemoryOperand("2", CaslRegisters.TEMP))
                         );
                     }
                     baseFrameReg = CaslRegisters.TEMP;
