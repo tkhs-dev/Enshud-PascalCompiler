@@ -92,20 +92,22 @@ public class Ir2TIr {
 
 class Ir2TIrConverter implements IIrVisitor<Void> {
     private final List<TIrInstr<?>> tirInstructions;
-    private final SerialManager serialManager;
     private final Map<IrFunction, FrameInfo> frameInfoMap;
     private final Map<String, Integer> funcLevelMap;
     private final IrFunction currentFunction;
     private final List<ConstData<?>> constDataList;
-    private final SerialManager constDataSerialManager;
+    private final Map<String, String> labelMap;
 
-    public Ir2TIrConverter(Map<IrFunction, FrameInfo> frameInfoMap, IrFunction currentFunction) {
+    private static final SerialManager serialManager = new SerialManager("L");
+    private static final SerialManager constDataSerialManager = new SerialManager("CD");
+
+    public Ir2TIrConverter(Map<IrFunction, FrameInfo> frameInfoMap, Map<String, Integer> funcLevelMap, IrFunction currentFunction) {
         this.tirInstructions = new ArrayList<>();
-        this.serialManager = new SerialManager("LL");
-        this.constDataSerialManager = new SerialManager("CD");
         this.frameInfoMap = frameInfoMap;
+        this.funcLevelMap = funcLevelMap;
         this.currentFunction = currentFunction;
         this.constDataList = new ArrayList<>();
+        this.labelMap = new java.util.HashMap<>();
     }
 
     public InstructionSet<TIrInstr<?>> convertInstructions() {
@@ -138,17 +140,18 @@ class Ir2TIrConverter implements IIrVisitor<Void> {
 
     @Override
     public Void visit(Jump ir) {
+        var targetLabel = mapLabel(ir.target);
         switch (ir.type) {
             case UNCONDITIONAL -> {
-                tirInstructions.add(new Jmp(ir.target, Jmp.Type.UNCONDITIONAL));
+                tirInstructions.add(new Jmp(targetLabel, Jmp.Type.UNCONDITIONAL));
             }
             case TRUE ->  {
                 tirInstructions.add(new Cp(convertOperand(ir.condition), Immediate.FALSE));
-                tirInstructions.add(new Jmp(ir.target, Jmp.Type.NONZERO));
+                tirInstructions.add(new Jmp(targetLabel, Jmp.Type.NONZERO));
             }
             case FALSE -> {
                 tirInstructions.add(new Cp(convertOperand(ir.condition), Immediate.FALSE));
-                tirInstructions.add(new Jmp(ir.target, Jmp.Type.ZERO));
+                tirInstructions.add(new Jmp(targetLabel, Jmp.Type.ZERO));
             }
         }
         return null;
@@ -156,9 +159,8 @@ class Ir2TIrConverter implements IIrVisitor<Void> {
 
     @Override
     public Void visit(Label ir) {
-        Nop nop = new Nop().withLabel(ir.name);
-        nop.withLabel(ir.name);
-        tirInstructions.add(nop);
+        var label = ir.name.startsWith("F") ? ir.name : mapLabel(ir.name); // 関数のラベルはそのまま使う
+        tirInstructions.add(new Nop().withLabel(label));
         return null;
     }
 
@@ -413,6 +415,10 @@ class Ir2TIrConverter implements IIrVisitor<Void> {
     public Void visit(Store ir) {
         tirInstructions.add(new St(convertOperand(ir.value), convertOperand(ir.target)));
         return null;
+    }
+
+    private String mapLabel(String originalLabel) {
+        return labelMap.computeIfAbsent(originalLabel, k -> serialManager.New());
     }
 
     private TIrInstr<?> move(Operand dest, Operand src) {
