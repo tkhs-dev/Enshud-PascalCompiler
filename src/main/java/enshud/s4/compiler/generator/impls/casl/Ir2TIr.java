@@ -168,7 +168,7 @@ class Ir2TIrConverter implements IIrVisitor<Void> {
     public Void visit(LoadIndexed ir) {
         var slotOpt = lookupVariableSlot(ir.arrayVar);
         tirInstructions.addAll(List.of(
-            new Ld(convertOperand(ir.targetVar), new FrameSlot(slotOpt.slot, 0).setOffset(convertOperand(ir.indexVar)))
+            new Ld(convertOperand(ir.targetVar), new FrameSlot(slotOpt.slot, slotOpt.levelDiff).setOffset(convertOperand(ir.indexVar)))
         ));
         return null;
     }
@@ -183,7 +183,7 @@ class Ir2TIrConverter implements IIrVisitor<Void> {
     public Void visit(StoreIndexed ir) {
         var slotOpt = lookupVariableSlot(ir.target);
         tirInstructions.addAll(List.of(
-            new St(convertOperand(ir.value), new FrameSlot(slotOpt.slot, 0).setOffset(convertOperand(ir.index)))
+            new St(convertOperand(ir.value), new FrameSlot(slotOpt.slot, slotOpt.levelDiff).setOffset(convertOperand(ir.index)))
         ));
         return null;
     }
