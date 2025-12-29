@@ -46,8 +46,13 @@ public class RegisterAllocator extends Allocator{
 
         for (AllocatableRegister r : graph.getNodes()) {
 
-            // 事前割当レジスタは除外（色固定なので Simplify しない）
-//            if (r.getPredefined().isPresent()) return r;
+            // 事前割当レジスタかつ専用レジスタの場合除外（色固定なので Simplify しない）
+            if (r.getPredefined().isPresent()){
+                var preReg = r.getPredefined().get();
+                if(target.getReservedRegisters().contains(preReg)) {
+                    return r;
+                }
+            }
             if (graph.getAdjacents(r).size() < K) {
                 return r;
             }
