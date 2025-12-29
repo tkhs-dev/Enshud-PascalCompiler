@@ -3,6 +3,7 @@ package enshud.s4.compiler.generator.impls.casl.tir.instructions;
 import enshud.s4.compiler.generator.AllocatableRegister;
 import enshud.s4.compiler.generator.AnalysableInstruction;
 import enshud.s4.compiler.generator.impls.casl.tir.operand.Address;
+import enshud.s4.compiler.generator.impls.casl.tir.operand.FrameSlot;
 import enshud.s4.compiler.generator.impls.casl.tir.operand.TIROperand;
 
 import java.util.Arrays;
@@ -47,7 +48,7 @@ public abstract class TIrInstr<T extends TIrInstr<T>> extends AnalysableInstruct
                 .filter(op -> op instanceof AllocatableRegister)
                 .map(op -> (AllocatableRegister) op)
                 .collect(java.util.stream.Collectors.toSet());
-        var fromOffset = Arrays.stream(ops)
+        var fromAddressOffset = Arrays.stream(ops)
                 .map(opRef -> opRef.operand)
                 .filter(op -> op instanceof Address)
                 .map(op -> (Address) op)
@@ -55,7 +56,16 @@ public abstract class TIrInstr<T extends TIrInstr<T>> extends AnalysableInstruct
                 .filter(offset -> offset instanceof AllocatableRegister)
                 .map(offset -> (AllocatableRegister) offset)
                 .collect(java.util.stream.Collectors.toSet());
-        allocatableReg.addAll(fromOffset);
+        var fromFrameSlotOffset = Arrays.stream(ops)
+                .map(opRef -> opRef.operand)
+                .filter(op -> op instanceof FrameSlot)
+                .map(op -> (FrameSlot) op)
+                .map(slot -> slot.offset)
+                .filter(offset -> offset instanceof AllocatableRegister)
+                .map(offset -> (AllocatableRegister) offset)
+                .collect(java.util.stream.Collectors.toSet());
+        allocatableReg.addAll(fromAddressOffset);
+        allocatableReg.addAll(fromFrameSlotOffset);
         return allocatableReg;
     }
 
@@ -74,6 +84,12 @@ public abstract class TIrInstr<T extends TIrInstr<T>> extends AnalysableInstruct
             } else if (opRef.operand instanceof Address addr) {
                 if (addr.offset.equals(oldOp)) {
                     opRef.operand = new Address(addr.base).setOffset(newOp);
+                }
+            } else if(opRef.operand instanceof FrameSlot slot) {
+                if (slot.offset.equals(oldOp)) {
+                    FrameSlot newSlot = new FrameSlot(slot.slot, slot.levelDiff);
+                    newSlot.setOffset(newOp);
+                    opRef.operand = newSlot;
                 }
             }
         }
