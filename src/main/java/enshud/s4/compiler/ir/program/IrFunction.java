@@ -17,8 +17,8 @@ public class IrFunction extends FunctionUnit<ITInstruction> {
 
     public IrFunction(String name, InstructionSet<ITInstruction> instructions, int level, IrFunction parent) {
         super(name, instructions);
-        this.variables = new java.util.HashMap<>();
-        this.parameters = new java.util.HashMap<>();
+        this.variables = new java.util.LinkedHashMap<>();
+        this.parameters = new java.util.LinkedHashMap<>();
         this.name = name;
         this.level = level;
         this.parent = parent;
