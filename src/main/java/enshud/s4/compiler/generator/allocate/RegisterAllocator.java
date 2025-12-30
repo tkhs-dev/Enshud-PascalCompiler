@@ -45,14 +45,16 @@ public class RegisterAllocator extends Allocator{
         int K = allocatableRegisters.size();
 
         for (AllocatableRegister r : graph.getNodes()) {
-
-            // 事前割当レジスタかつ専用レジスタの場合除外（色固定なので Simplify しない）
+            // 事前割当レジスタかつ専用レジスタの場合除外
             if (r.getPredefined().isPresent()){
                 var preReg = r.getPredefined().get();
                 if(target.getReservedRegisters().contains(preReg)) {
                     return r;
                 }
             }
+        }
+
+        for (AllocatableRegister r : graph.getNodes()) {
             if (graph.getAdjacents(r).size() < K) {
                 return r;
             }
@@ -64,10 +66,9 @@ public class RegisterAllocator extends Allocator{
     // 3. Select (stack から取り出して色を割り当てる)
     //-------------------------------------------------------------
     private void selectPhase() {
-
+        graph.restoreAll();
         while (!stack.isEmpty()) {
             AllocatableRegister r = stack.pop();
-            graph.restoreNode(r);
 
             // 事前割り当てレジスタは固定
             if (r.getPredefined().isPresent()) {

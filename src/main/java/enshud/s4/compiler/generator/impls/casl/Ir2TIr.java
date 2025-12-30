@@ -101,8 +101,8 @@ class Ir2TIrConverter implements IIrVisitor<Void> {
     private static final SerialManager serialManager = new SerialManager("L");
     private static final SerialManager constDataSerialManager = new SerialManager("CD");
 
-    private static final VirtualRegister WRTGR6 = VirtualRegister.withPredefined("WRTGR6", CaslRegisters.GR6).withSpillCost(2);
-    private static final VirtualRegister WRTGR7 = VirtualRegister.withPredefined("WRTGR7", CaslRegisters.GR7).withSpillCost(2);
+    private static final VirtualRegister WRTGR6 = VirtualRegister.withPredefined("WRTGR6", CaslRegisters.GR6).withSpillCost(0);
+    private static final VirtualRegister WRTGR7 = VirtualRegister.withPredefined("WRTGR7", CaslRegisters.GR7).withSpillCost(0);
 
     public Ir2TIrConverter(Map<IrFunction, FrameInfo> frameInfoMap, Map<String, Integer> funcLevelMap, IrFunction currentFunction) {
         this.tirInstructions = new ArrayList<>();
@@ -137,16 +137,17 @@ class Ir2TIrConverter implements IIrVisitor<Void> {
                 });
         // push static link
         var levelDiff = currentFunction.level - funcLevelMap.get(ir.functionLabel);
-        TIROperand staticLink;
         if (levelDiff ==  -1) {
-            staticLink = VirtualRegister.tmpWithPredefined(CaslRegisters.FP);
+            tirInstructions.add(
+                    new Push(new Address("0").setOffset(VirtualRegister.tmpWithPredefined(CaslRegisters.FP)))
+            );
         }else{
-            staticLink = new FrameSlot(0, levelDiff);
+            var staticLink = VirtualRegister.tmpWithPredefined(CaslRegisters.GR2);
+            tirInstructions.addAll(List.of(
+                    new Ld(staticLink, new FrameSlot(0, levelDiff)),
+                    new Push(new Address("0").setOffset(staticLink))
+            ));
         }
-        tirInstructions.addAll(List.of(
-                new Ld(VirtualRegister.tmpWithPredefined(CaslRegisters.GR2), staticLink),
-                new Push(new Address("0").setOffset(VirtualRegister.tmpWithPredefined(CaslRegisters.GR2)))
-        ));
         tirInstructions.add(new enshud.s4.compiler.generator.impls.casl.tir.instructions.Call(ir.functionLabel,
                 true,
                 List.of(WRTGR6, WRTGR7),
@@ -157,7 +158,7 @@ class Ir2TIrConverter implements IIrVisitor<Void> {
                 new Pop(VirtualRegister.tmpWithPredefined(CaslRegisters.GR2))
         );
         // pop arguments
-        if (ir.args.size() > 0) {
+        if (!ir.args.isEmpty()) {
             tirInstructions.add(
                     new Lad(
                             VirtualRegister.tmpWithPredefined(CaslRegisters.SP),

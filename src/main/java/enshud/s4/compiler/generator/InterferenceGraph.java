@@ -75,6 +75,13 @@ public class InterferenceGraph {
         }
     }
 
+    public void restoreAll() {
+        currentAdj.clear();
+        for (var entry : originalAdj.entrySet()) {
+            currentAdj.put(entry.getKey(), new HashSet<>(entry.getValue()));
+        }
+    }
+
     //---------------------------------------------------------
     // 現在のグラフ（Simplify 途中）の隣接取得
     //---------------------------------------------------------
