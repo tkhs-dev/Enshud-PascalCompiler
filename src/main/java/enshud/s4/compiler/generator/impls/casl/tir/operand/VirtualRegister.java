@@ -2,6 +2,7 @@ package enshud.s4.compiler.generator.impls.casl.tir.operand;
 
 import enshud.s4.compiler.generator.AllocatableRegister;
 import enshud.s4.compiler.generator.Register;
+import enshud.util.SerialManager;
 
 import java.util.Optional;
 
@@ -20,9 +21,9 @@ public class VirtualRegister extends TIROperand implements AllocatableRegister {
         this(id, 1.0);
     }
 
-    private static int tmpCounter = 0;
+    private static final SerialManager tmpCounter = new SerialManager("");
     public static VirtualRegister tmpWithPredefined(Register predefined) {
-        return new VirtualRegister(String.valueOf(tmpCounter++)).withPredefined(predefined);
+        return new VirtualRegister(tmpCounter.New()).withPredefined(predefined);
     }
 
     public static VirtualRegister withPredefined(String id, Register predefined) {

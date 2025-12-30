@@ -13,4 +13,8 @@ public class SerialManager {
         counter++;
         return prefix + counter;
     }
+
+    public void reset() {
+        counter = 0;
+    }
 }
