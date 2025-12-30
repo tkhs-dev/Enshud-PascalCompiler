@@ -130,7 +130,7 @@ class Ir2TIrConverter implements IIrVisitor<Void> {
     @Override
     public Void visit(Call ir) {
         // push arguments
-        ir.args.forEach(arg -> {
+        ir.args.reversed().forEach(arg -> {
                     tirInstructions.add(
                             new Push(new Address("0").setOffset(convertOperand(arg)))
                     );
