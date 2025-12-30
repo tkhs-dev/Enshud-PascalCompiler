@@ -136,10 +136,17 @@ class Ir2TIrConverter implements IIrVisitor<Void> {
                     );
                 });
         // push static link
-        var staticLink = new FrameSlot(0, currentFunction.level - funcLevelMap.get(ir.functionLabel));
-        tirInstructions.add(
-                new Push(staticLink)
-        );
+        var levelDiff = currentFunction.level - funcLevelMap.get(ir.functionLabel);
+        TIROperand staticLink;
+        if (levelDiff ==  -1) {
+            staticLink = VirtualRegister.tmpWithPredefined(CaslRegisters.FP);
+        }else{
+            staticLink = new FrameSlot(0, levelDiff);
+        }
+        tirInstructions.addAll(List.of(
+                new Ld(VirtualRegister.tmpWithPredefined(CaslRegisters.GR2), staticLink),
+                new Push(new Address("0").setOffset(VirtualRegister.tmpWithPredefined(CaslRegisters.GR2)))
+        ));
         tirInstructions.add(new enshud.s4.compiler.generator.impls.casl.tir.instructions.Call(ir.functionLabel,
                 true,
                 List.of(WRTGR6, WRTGR7),
