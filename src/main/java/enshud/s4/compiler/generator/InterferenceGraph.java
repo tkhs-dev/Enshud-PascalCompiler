@@ -98,12 +98,12 @@ public class InterferenceGraph {
         for (var block : blocks) {
             for (var inst : block.getInstructions()) {
 
-                // def された変数（多くても1つと仮定）
+                // def された変数
                 var defs = inst.getDef();
 
-                for (var d : defs) {
-                    graph.addNode(d);
+                defs.forEach(graph::addNode);
 
+                for (var d : defs) {
                     // def(d) は liveOut のすべてと干渉する
                     for (var live : inst.liveOut) {
                         graph.addEdge(d, live);

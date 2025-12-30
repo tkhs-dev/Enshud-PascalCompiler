@@ -114,11 +114,11 @@ class Ir2TIrConverter implements IIrVisitor<Void> {
     }
 
     public InstructionSet<TIrInstr<?>> convertInstructions() {
+        tirInstructions.add(new Prologue());
         for (var irInstruction : currentFunction.getInstructions()) {
             irInstruction.accept(this);
         }
-        tirInstructions.add(new Ld(WRTGR6, WRTGR6));
-        tirInstructions.add(new Ld(WRTGR7, WRTGR7));
+        tirInstructions.add(new Epilogue());
         tirInstructions.add(new Ret());
         return InstructionSet.of(tirInstructions);
     }
@@ -190,8 +190,12 @@ class Ir2TIrConverter implements IIrVisitor<Void> {
 
     @Override
     public Void visit(Label ir) {
-        var label = ir.name.startsWith("F") ? ir.name : mapLabel(ir.name); // 関数のラベルはそのまま使う
-        tirInstructions.add(new Nop().withLabel(label));
+        if (ir.name.startsWith("F")){
+            // 関数の先頭ラベルの場合、Prologue命令の後ろにラベルをつける
+            tirInstructions.getFirst().setLabel(ir.name);
+        }else{
+            tirInstructions.add(new Nop().withLabel(mapLabel(ir.name)));
+        }
         return null;
     }
 

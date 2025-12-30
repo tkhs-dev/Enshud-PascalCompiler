@@ -172,25 +172,7 @@ class TIRConverter implements ITIRVisitor<Void>{
         for (var ir : function.getInstructions()) {
             ir.accept(this);
         }
-        constructFrame();
         return instructions;
-    }
-
-    private void constructFrame(){
-        var frame = function.frameInfo;
-        editor.prepend(true,
-                new PUSH(new MemoryOperand("0", CaslRegisters.FP)),
-                new LD(new RegisterOperand(CaslRegisters.FP), new RegisterOperand(CaslRegisters.SP)),
-                new LAD(new RegisterOperand(CaslRegisters.TEMP), new MemoryOperand(String.valueOf(-frame.getFrameSize()))),
-                new ADDA(new RegisterOperand(CaslRegisters.SP), new RegisterOperand(CaslRegisters.TEMP))
-        );
-    }
-
-    private void destructFrame(){
-        editor.append(
-                new LD(new RegisterOperand(CaslRegisters.SP), new RegisterOperand(CaslRegisters.FP)),
-                new POP(new RegisterOperand(CaslRegisters.FP))
-        );
     }
 
     @Override
@@ -298,7 +280,6 @@ class TIRConverter implements ITIRVisitor<Void>{
 
     @Override
     public Void visit(Ret ir) {
-        destructFrame();
         addInstructions(ir,
                 new RET()
         );
@@ -341,6 +322,27 @@ class TIRConverter implements ITIRVisitor<Void>{
     public Void visit(Xor ir) {
         addInstructions(ir,
                 new XOR(reg(ir.getLeft()),  data(ir.getRight()))
+        );
+        return null;
+    }
+
+    @Override
+    public Void visit(Prologue ir) {
+        var frame = function.frameInfo;
+        addInstructions(ir,
+                new PUSH(new MemoryOperand("0", CaslRegisters.FP)),
+                new LD(new RegisterOperand(CaslRegisters.FP), new RegisterOperand(CaslRegisters.SP)),
+                new LAD(new RegisterOperand(CaslRegisters.TEMP), new MemoryOperand(String.valueOf(-frame.getFrameSize()))),
+                new ADDA(new RegisterOperand(CaslRegisters.SP), new RegisterOperand(CaslRegisters.TEMP))
+        );
+        return null;
+    }
+
+    @Override
+    public Void visit(Epilogue ir) {
+        addInstructions(ir,
+                new LD(new RegisterOperand(CaslRegisters.SP), new RegisterOperand(CaslRegisters.FP)),
+                new POP(new RegisterOperand(CaslRegisters.FP))
         );
         return null;
     }

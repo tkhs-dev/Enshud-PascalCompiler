@@ -4,9 +4,13 @@ public class SerialManager {
     private int counter;
     private final String prefix;
 
-    public SerialManager(String prefix) {
-        this.counter = 0;
+    public SerialManager(String prefix, int initialValue) {
+        this.counter = initialValue;
         this.prefix = prefix;
+    }
+
+    public SerialManager(String prefix) {
+        this(prefix, 0);
     }
 
     public String New() {
@@ -16,5 +20,9 @@ public class SerialManager {
 
     public void reset() {
         counter = 0;
+    }
+
+    public void setCounter(int value) {
+        this.counter = value;
     }
 }

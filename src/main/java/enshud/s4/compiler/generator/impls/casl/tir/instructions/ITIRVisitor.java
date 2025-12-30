@@ -18,4 +18,6 @@ public interface ITIRVisitor<T> {
     T visit(St ir);
     T visit(Sub ir);
     T visit(Xor ir);
+    T visit(Prologue ir);
+    T visit(Epilogue ir);
 }
