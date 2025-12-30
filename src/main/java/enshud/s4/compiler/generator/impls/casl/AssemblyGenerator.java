@@ -394,7 +394,7 @@ class TIRConverter implements ITIRVisitor<Void>{
                 };
             }
             case FrameSlot f -> {
-                var slotPtr = f.slot >= 0 ? -f.slot : -f.slot + 2; // 負の場合は仮引数なのでフレームより前
+                var slotPtr = f.slot > 0 ? -f.slot : -f.slot + 2; // 負の場合は仮引数なのでフレームより前
                 var baseFrameReg = CaslRegisters.FP;
                 if(f.levelDiff > 0){
                     // 静的リンクをたどる
