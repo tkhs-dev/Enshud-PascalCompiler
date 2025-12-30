@@ -55,6 +55,6 @@ public class ExCompilerTest {
     @Test
     public void testSemerr01() {
         final String out = new Compiler().run("data-ex/ts/semerr01.ts", TMP_CAS);
-        assertThat(out).isEqualTo("Semantic error: line 8");
+        assertThat(out).isEqualTo("Semantic error: line 9");
     }
 }
