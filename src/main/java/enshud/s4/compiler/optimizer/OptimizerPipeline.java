@@ -1,24 +1,26 @@
 package enshud.s4.compiler.optimizer;
 
+import enshud.s4.compiler.instruction.FunctionUnit;
+import enshud.s4.compiler.instruction.Instruction;
 import enshud.s4.compiler.ir.program.IrFunction;
-import enshud.s4.compiler.optimizer.pass.IrPass;
+import enshud.s4.compiler.optimizer.pass.OptimizePass;
 
 import java.util.List;
 
-public class OptimizerPipeline {
-    private List<IrPass> passes;
+public class OptimizerPipeline<T extends Instruction> {
+    private List<OptimizePass<T>> passes;
 
     public OptimizerPipeline() {
         passes = new java.util.ArrayList<>();
     }
 
-    void addPass(IrPass pass) {
+    public void addPass(OptimizePass<T> pass) {
         passes.add(pass);
     }
 
-    private boolean runOnce(IrFunction program) {
+    private boolean runOnce(FunctionUnit<T> program) {
         boolean optimized = false;
-        for (IrPass pass : passes) {
+        for (OptimizePass<T> pass : passes) {
             boolean passOptimized = pass.apply(program);
             if (passOptimized) {
                 optimized = true;
@@ -27,7 +29,7 @@ public class OptimizerPipeline {
         return optimized;
     }
 
-    public void run(IrFunction program, boolean repeatUntilNoChange) {
+    public void run(FunctionUnit<T> program, boolean repeatUntilNoChange) {
         if (repeatUntilNoChange) {
             boolean optimized;
             do {
