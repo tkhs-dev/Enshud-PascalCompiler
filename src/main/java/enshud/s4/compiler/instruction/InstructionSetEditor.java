@@ -109,7 +109,7 @@ public class InstructionSetEditor<T extends Instruction> {
             instr[0].setLabel(current.getLabel().orElse(null));
             current.clearLabel();
         }
-        iterator.remove();
+        this.remove();
         for (T i : instr) {
             iterator.add(i);
         }
@@ -201,14 +201,14 @@ public class InstructionSetEditor<T extends Instruction> {
 
     public void remove(boolean labelTransfer) {
         if (labelTransfer && current != null) {
-            if (iterator.hasNext()) {
-                T next = iterator.next();
+            if (this.hasNext()) {
+                T next = this.next();
                 next.setLabel(current.getLabel().orElse(null));
-                iterator.previous();
-            } else if (iterator.hasPrevious()) {
-                T prev = iterator.previous();
+                this.prev();
+            } else if (this.hasPrev()) {
+                T prev = this.prev();
                 prev.setLabel(current.getLabel().orElse(null));
-                iterator.next();
+                this.next();
             }
         }
         iterator.remove();
@@ -220,16 +220,24 @@ public class InstructionSetEditor<T extends Instruction> {
     }
 
     public void resetToStart() {
-        while (iterator.hasPrevious()) {
-            iterator.previous();
+        while (this.hasPrev()) {
+            this.prev();
         }
         current = null;
     }
 
     public void resetToEnd() {
-        while (iterator.hasNext()) {
-            iterator.next();
+        while (this.hasNext()) {
+            this.next();
         }
         current = null;
+    }
+
+    public InstructionSet<T> getSubsequentInstructions() {
+        if (current == null) {
+            return InstructionSet.empty();
+        }
+        int currentIndex = iterator.previousIndex();
+        return new InstructionSet<>(instructions.subList(currentIndex + 1, instructions.size()));
     }
 }
