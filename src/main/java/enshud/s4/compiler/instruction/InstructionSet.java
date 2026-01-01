@@ -32,6 +32,10 @@ public class InstructionSet<T extends Instruction> implements Iterable<T> {
         return new InstructionSet<>(instructions);
     }
 
+    public static <T extends Instruction> InstructionSet<T> empty() {
+        return new InstructionSet<>(new java.util.ArrayList<>());
+    }
+
     @Override
     public Iterator<T> iterator() {
         return instructions.iterator();

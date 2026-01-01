@@ -1,5 +1,7 @@
 package enshud.s4.compiler.generator.impls.casl.tir.operand;
 
+import java.util.Objects;
+
 public class FrameSlot extends TIROperand {
     public final int slot;
     public TIROperand offset = null;
@@ -13,6 +15,18 @@ public class FrameSlot extends TIROperand {
     public FrameSlot setOffset(TIROperand offset) {
         this.offset = offset;
         return this;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        FrameSlot frameSlot = (FrameSlot) o;
+
+        if (slot != frameSlot.slot) return false;
+        if (levelDiff != frameSlot.levelDiff) return false;
+        return Objects.equals(offset, frameSlot.offset);
     }
 
     @Override

@@ -77,6 +77,14 @@ public abstract class TIrInstr<T extends TIrInstr<T>> extends AnalysableInstruct
         throw new IllegalArgumentException("Both oldReg and newReg must be TIROperand instances.");
     }
 
+    public boolean isRegisterUsed(AllocatableRegister reg) {
+        return this.getUse().contains(reg);
+    }
+
+    public boolean isRegisterDefined(AllocatableRegister reg) {
+        return this.getDef().contains(reg);
+    }
+
     protected void replaceOperand(TIROperand oldOp, TIROperand newOp, OperandRef... ops) {
         for (OperandRef opRef : ops) {
             if (opRef.operand.equals(oldOp)) {
