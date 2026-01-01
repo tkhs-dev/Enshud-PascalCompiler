@@ -57,8 +57,6 @@ public class AssemblyGenerator {
                 new DC(0).withLabel("FALSE"),
                 new DC(0).withLabel("ZERO"),
                 new DC(1).withLabel("ONE"),
-                new DS(1).withLabel("WRTGR6"),
-                new DS(1).withLabel("WRTGR7"),
                 new END()
         );
         return instructions;
@@ -332,8 +330,8 @@ class TIRConverter implements ITIRVisitor<Void>{
         addInstructions(ir,
                 new PUSH(new MemoryOperand("0", CaslRegisters.FP)),
                 new LD(new RegisterOperand(CaslRegisters.FP), new RegisterOperand(CaslRegisters.SP)),
-                new LAD(new RegisterOperand(CaslRegisters.TEMP), new MemoryOperand(String.valueOf(-frame.getFrameSize()))),
-                new ADDA(new RegisterOperand(CaslRegisters.SP), new RegisterOperand(CaslRegisters.TEMP))
+                new LAD(new RegisterOperand(CaslRegisters.SP), new MemoryOperand(String.valueOf(-frame.getFrameSize()), CaslRegisters.FP))
+
         );
         return null;
     }
