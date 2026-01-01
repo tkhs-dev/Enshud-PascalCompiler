@@ -90,7 +90,7 @@ public abstract class TIrInstr<T extends TIrInstr<T>> extends AnalysableInstruct
             if (opRef.operand.equals(oldOp)) {
                 opRef.operand = newOp;
             } else if (opRef.operand instanceof Address addr) {
-                if (addr.offset.equals(oldOp)) {
+                if (addr.offset != null && addr.offset.equals(oldOp)) {
                     opRef.operand = new Address(addr.base).setOffset(newOp);
                 }
             } else if(opRef.operand instanceof FrameSlot slot) {
