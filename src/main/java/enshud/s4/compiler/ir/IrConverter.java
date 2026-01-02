@@ -228,6 +228,7 @@ class IrConverterVisitor implements IAstVisitor<Optional<Temp>> {
     @Override
     public Optional<Temp> visit(BinaryOpNode node) {
         visitAll(node);
+        var resultTemp = Temp.of(tempManager.New());
         var leftTemp = node.left.accept(this).get();
         var rightTemp = node.right.accept(this).get();
         var op = switch (node.op) {
@@ -245,8 +246,8 @@ class IrConverterVisitor implements IAstVisitor<Optional<Temp>> {
             case NEQ ->  BinaryOp.OpType.NEQ;
             case SUB ->  BinaryOp.OpType.SUB;
         };
-        currentEditor.append(new BinaryOp(op, leftTemp, rightTemp));
-        return Optional.of(leftTemp);
+        currentEditor.append(new BinaryOp(op, resultTemp, leftTemp, rightTemp));
+        return Optional.of(resultTemp);
     }
 
     @Override
@@ -282,14 +283,12 @@ class IrConverterVisitor implements IAstVisitor<Optional<Temp>> {
             }
             case MINUS -> {
                 Temp temp = Temp.of(tempManager.New());
-                currentEditor.append(new Move(temp, Const.ZERO));
-                currentEditor.append(new BinaryOp(BinaryOp.OpType.SUB, temp, operandTemp));
+                currentEditor.append(new BinaryOp(BinaryOp.OpType.SUB, temp, Const.ZERO, operandTemp));
                 return Optional.of(temp);
             }
             case NOT ->  {
                 Temp temp = Temp.of(tempManager.New());
-                currentEditor.append(new Move(temp, Const.MASK_16));
-                currentEditor.append(new BinaryOp(BinaryOp.OpType.XOR, temp, operandTemp));
+                currentEditor.append(new BinaryOp(BinaryOp.OpType.XOR, temp, Const.MASK_16, operandTemp));
                 return Optional.of(temp);
             }
             default -> throw new IllegalStateException("Unexpected value: " + node.op);

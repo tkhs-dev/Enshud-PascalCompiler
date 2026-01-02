@@ -15,11 +15,13 @@ public class BinaryOp extends ITInstruction {
     }
 
     public final OpType opType;
-    public final Temp left;
+    public final Temp result;
+    public final Operand left;
     public final Operand right;
 
-    public BinaryOp(OpType opType, Temp left, Operand right) {
+    public BinaryOp(OpType opType, Temp result, Operand left, Operand right) {
         this.opType = opType;
+        this.result = result;
         this.left = left;
         this.right = right;
     }
@@ -31,6 +33,6 @@ public class BinaryOp extends ITInstruction {
 
     @Override
     public String toString() {
-        return String.format("BinaryOp: %s, %s, %s", opType, left, right);
+        return String.format("BinaryOp: %s, %s, %s, %s", opType, result, left, right);
     }
 }
