@@ -1,16 +1,16 @@
 package enshud.s4.compiler.ir.instructions;
 
 import enshud.s4.compiler.ir.IIrVisitor;
-import enshud.s4.compiler.ir.operand.Temp;
+import enshud.s4.compiler.ir.operand.Operand;
 
 import java.util.List;
 
 public class Call extends ITInstruction {
 
     public final String functionLabel;
-    public final List<Temp> args;
+    public final List<Operand> args;
 
-    public Call(String functionLabel, List<Temp> args) {
+    public Call(String functionLabel, List<Operand> args) {
         this.functionLabel = functionLabel;
         this.args = args;
     }
