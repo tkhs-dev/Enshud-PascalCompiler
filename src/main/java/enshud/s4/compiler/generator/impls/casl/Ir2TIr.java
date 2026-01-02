@@ -411,7 +411,7 @@ class Ir2TIrConverter implements IIrVisitor<Void> {
                 var labelFalse = serialManager.New();
                 var labelEnd = serialManager.New();
                 tirInstructions.addAll(List.of(
-                        new Sub(leftOperand, convertOperand(ir.right)),
+                        new Cp(leftOperand, convertOperand(ir.right)),
                         new Jmp(labelFalse, Jmp.Type.PLUS),
                         new Ld(convertOperand(ir.result), Immediate.TRUE),
                         new Jmp(labelEnd, Jmp.Type.UNCONDITIONAL),
@@ -423,7 +423,7 @@ class Ir2TIrConverter implements IIrVisitor<Void> {
                 var labelTrue = serialManager.New();
                 var labelEnd = serialManager.New();
                 tirInstructions.addAll(List.of(
-                        new Sub(leftOperand, convertOperand(ir.right)),
+                        new Cp(leftOperand, convertOperand(ir.right)),
                         new Jmp(labelTrue, Jmp.Type.MINUS),
                         new Ld(convertOperand(ir.result), Immediate.FALSE),
                         new Jmp(labelEnd, Jmp.Type.UNCONDITIONAL),
@@ -435,7 +435,7 @@ class Ir2TIrConverter implements IIrVisitor<Void> {
                 var labelFalse = serialManager.New();
                 var labelEnd = serialManager.New();
                 tirInstructions.addAll(List.of(
-                        new Sub(leftOperand, convertOperand(ir.right)),
+                        new Cp(leftOperand, convertOperand(ir.right)),
                         new Jmp(labelFalse, Jmp.Type.MINUS),
                         new Ld(convertOperand(ir.result), Immediate.TRUE),
                         new Jmp(labelEnd, Jmp.Type.UNCONDITIONAL),
@@ -447,7 +447,7 @@ class Ir2TIrConverter implements IIrVisitor<Void> {
                 var labelFalse = serialManager.New();
                 var labelEnd = serialManager.New();
                 tirInstructions.addAll(List.of(
-                        new Sub(leftOperand, convertOperand(ir.right)),
+                        new Cp(leftOperand, convertOperand(ir.right)),
                         new Jmp(labelFalse, Jmp.Type.PLUS),
                         new Ld(convertOperand(ir.result), Immediate.FALSE),
                         new Jmp(labelEnd, Jmp.Type.UNCONDITIONAL),
