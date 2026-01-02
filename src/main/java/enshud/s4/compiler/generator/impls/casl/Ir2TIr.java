@@ -383,15 +383,6 @@ class Ir2TIrConverter implements IIrVisitor<Void> {
                         new Ld(convertOperand(ir.result), leftOperand)
                 ));
             }
-            case XOR -> {
-                tirInstructions.addAll(List.of(
-                        new Xor(
-                                leftOperand,
-                                convertOperand(ir.right)
-                        ),
-                        new Ld(convertOperand(ir.result), leftOperand)
-                ));
-            }
             case NEQ -> {
                 var labelFalse = serialManager.New();
                 var labelEnd = serialManager.New();
@@ -465,6 +456,38 @@ class Ir2TIrConverter implements IIrVisitor<Void> {
                 ));
             }
             default -> throw new UnsupportedOperationException("Unsupported binary operation: " + ir.opType);
+        }
+        return null;
+    }
+
+    @Override
+    public Void visit(UnaryOp ir) {
+        switch (ir.opType) {
+            case NEG -> {
+                tirInstructions.addAll(List.of(
+                        new Lad(
+                                convertOperand(ir.result),
+                                Immediate.ZERO
+                        ),
+                        new Sub(
+                                convertOperand(ir.result),
+                                convertOperand(ir.operand)
+                        )
+                ));
+            }
+            case NOT -> {
+                tirInstructions.addAll(List.of(
+                        new Xor(
+                                convertOperand(ir.operand),
+                                new Address("TRUE")
+                        ),
+                        new Ld(
+                                convertOperand(ir.result),
+                                convertOperand(ir.operand)
+                        )
+                ));
+            }
+            default -> throw new UnsupportedOperationException("Unsupported unary operation: " + ir.opType);
         }
         return null;
     }

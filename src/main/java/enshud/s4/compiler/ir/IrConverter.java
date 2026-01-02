@@ -284,12 +284,12 @@ class IrConverterVisitor implements IAstVisitor<Optional<Operand>> {
             }
             case MINUS -> {
                 Temp temp = Temp.of(tempManager.New());
-                currentEditor.append(new BinaryOp(BinaryOp.OpType.SUB, temp, Const.ZERO, operandTemp));
+                currentEditor.append(new UnaryOp(UnaryOp.OpType.NEG, temp, operandTemp));
                 return Optional.of(temp);
             }
             case NOT ->  {
                 Temp temp = Temp.of(tempManager.New());
-                currentEditor.append(new BinaryOp(BinaryOp.OpType.XOR, temp, Const.MASK_16, operandTemp));
+                currentEditor.append(new UnaryOp(UnaryOp.OpType.NOT, temp, operandTemp));
                 return Optional.of(temp);
             }
             default -> throw new IllegalStateException("Unexpected value: " + node.op);

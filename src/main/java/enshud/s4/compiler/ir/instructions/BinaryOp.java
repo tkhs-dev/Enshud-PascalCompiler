@@ -10,7 +10,7 @@ import java.util.List;
 public class BinaryOp extends ITInstruction {
     public enum OpType {
         ADD, SUB, MUL, DIV, MOD,
-        AND, OR, XOR,
+        AND, OR,
         EQ, NEQ, LT, LTE, GT, GTE
     }
 
