@@ -270,6 +270,19 @@ public class SemanticCheckVisitor implements IAstVisitor<Object> {
     @Override
     public Type visit(UnaryOpNode node) {
         var type =  (Type) node.operand.accept(this);
+        switch(node.op) {
+            case PLUS:
+            case MINUS:
+                if (!type.equals(Type.INTEGER)) {
+                    throw new SemanticException("Type mismatch in unary negation", node.getPosition().startLine);
+                }
+                break;
+            case NOT:
+                if (!type.equals(Type.BOOLEAN)) {
+                    throw new SemanticException("Type mismatch in unary NOT", node.getPosition().startLine);
+                }
+                break;
+        }
         node.setType(type);
         return type;
     }
