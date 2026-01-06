@@ -3,7 +3,6 @@ package enshud.s4.compiler.generator;
 import enshud.s4.compiler.generator.allocate.TargetDescription;
 
 import java.util.*;
-import java.util.function.Function;
 
 public class InterferenceGraph {
 
@@ -93,7 +92,7 @@ public class InterferenceGraph {
         return currentAdj.keySet();
     }
 
-    public static InterferenceGraph build(List<? extends BasicBlock<? extends AnalysableInstruction>> blocks, TargetDescription desc, Function<Register, AllocatableRegister> mapper) {
+    public static InterferenceGraph build(List<? extends BasicBlock<? extends AnalysableInstruction>> blocks, TargetDescription desc) {
         var graph = new InterferenceGraph();
 
         // 最初のブロックで　liveIn されている変数を擬似的にdef しているとみなす
@@ -114,19 +113,6 @@ public class InterferenceGraph {
                     // def(d) は liveOut のすべてと干渉する
                     for (var live : inst.liveOut) {
                         graph.addEdge(d, live);
-                    }
-
-                    // CALL 命令の場合：caller-save レジスタも追加
-                    if (inst.isCall()) {
-                        var callerSaved = desc.getCallerSaved().stream().map(mapper).toList();
-
-                        for (var csr : callerSaved) {
-                            graph.addNode(csr);
-                            graph.addEdge(d, csr);
-                            for (var live : inst.liveOut) {
-                                graph.addEdge(csr, live);
-                            }
-                        }
                     }
                 }
 

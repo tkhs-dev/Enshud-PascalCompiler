@@ -69,7 +69,7 @@ public class AssemblyGenerator {
         while(true){
             var blocks = function.getBlocks();
             new LivenessAnalyzer<>(blocks).analyze();
-            var interferenceGraph = InterferenceGraph.build(blocks, desc, VirtualRegister::tmpWithPredefined);
+            var interferenceGraph = InterferenceGraph.build(blocks, desc);
             var allocator = new RegisterAllocator(interferenceGraph, desc);
             allocation = allocator.allocate();
             var spilled = allocation.getSpilled();
