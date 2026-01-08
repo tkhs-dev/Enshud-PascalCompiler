@@ -4,6 +4,7 @@ import enshud.s4.compiler.generator.AllocatableRegister;
 import enshud.s4.compiler.generator.impls.casl.CaslRegisters;
 import enshud.s4.compiler.generator.impls.casl.tir.operand.VirtualRegister;
 
+import java.util.Optional;
 import java.util.Set;
 
 public class Prologue extends TIrInstr<Prologue> {
@@ -38,5 +39,25 @@ public class Prologue extends TIrInstr<Prologue> {
     @Override
     public void replaceDef(AllocatableRegister oldReg, AllocatableRegister newReg) {
         replaceAllocatable(oldReg, newReg, dummyGR6, dummyGR7);
+    }
+
+    @Override
+    public boolean isBranch() {
+        return false;
+    }
+
+    @Override
+    public boolean isConditionalBranch() {
+        return false;
+    }
+
+    @Override
+    public Optional<String> getBranchTarget() {
+        return Optional.empty();
+    }
+
+    @Override
+    public boolean isTerminal() {
+        return false;
     }
 }

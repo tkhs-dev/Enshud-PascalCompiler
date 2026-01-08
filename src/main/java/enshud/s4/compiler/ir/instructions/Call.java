@@ -4,6 +4,7 @@ import enshud.s4.compiler.ir.IIrVisitor;
 import enshud.s4.compiler.ir.operand.Operand;
 
 import java.util.List;
+import java.util.Optional;
 
 public class Call extends ITInstruction {
 
@@ -34,5 +35,25 @@ public class Call extends ITInstruction {
             }
         }
         return sb.toString();
+    }
+
+    @Override
+    public boolean isBranch() {
+        return false;
+    }
+
+    @Override
+    public boolean isConditionalBranch() {
+        return false;
+    }
+
+    @Override
+    public Optional<String> getBranchTarget() {
+        return Optional.empty();
+    }
+
+    @Override
+    public boolean isTerminal() {
+        return false;
     }
 }

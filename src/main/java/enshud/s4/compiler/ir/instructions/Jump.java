@@ -5,6 +5,7 @@ import enshud.s4.compiler.ir.operand.Operand;
 import enshud.s4.compiler.ir.operand.Temp;
 
 import java.util.List;
+import java.util.Optional;
 
 public class Jump extends ITInstruction {
     public final String target;
@@ -29,6 +30,26 @@ public class Jump extends ITInstruction {
     @Override
     public String toString() {
         return String.format("Goto: %s", target);
+    }
+
+    @Override
+    public boolean isBranch() {
+        return true;
+    }
+
+    @Override
+    public boolean isConditionalBranch() {
+        return type != Type.UNCONDITIONAL;
+    }
+
+    @Override
+    public Optional<String> getBranchTarget() {
+        return Optional.of(target);
+    }
+
+    @Override
+    public boolean isTerminal() {
+        return false;
     }
 
     public enum Type {

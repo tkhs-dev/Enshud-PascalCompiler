@@ -5,6 +5,7 @@ import enshud.s4.compiler.generator.impls.casl.tir.operand.TIROperand;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 public class Call extends TIrInstr<Call> {
@@ -60,5 +61,25 @@ public class Call extends TIrInstr<Call> {
     @Override
     public boolean isCall() {
         return true;
+    }
+
+    @Override
+    public boolean isBranch() {
+        return false;
+    }
+
+    @Override
+    public boolean isConditionalBranch() {
+        return false;
+    }
+
+    @Override
+    public Optional<String> getBranchTarget() {
+        return Optional.empty();
+    }
+
+    @Override
+    public boolean isTerminal() {
+        return false;
     }
 }

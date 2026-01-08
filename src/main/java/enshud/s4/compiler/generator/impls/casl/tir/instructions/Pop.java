@@ -3,6 +3,7 @@ package enshud.s4.compiler.generator.impls.casl.tir.instructions;
 import enshud.s4.compiler.generator.AllocatableRegister;
 import enshud.s4.compiler.generator.impls.casl.tir.operand.TIROperand;
 
+import java.util.Optional;
 import java.util.Set;
 
 public class Pop extends TIrInstr<Pop> {
@@ -44,5 +45,25 @@ public class Pop extends TIrInstr<Pop> {
     @Override
     public void replaceDef(AllocatableRegister oldReg, AllocatableRegister newReg) {
         replaceAllocatable(oldReg, newReg, target);
+    }
+
+    @Override
+    public boolean isBranch() {
+        return false;
+    }
+
+    @Override
+    public boolean isConditionalBranch() {
+        return false;
+    }
+
+    @Override
+    public Optional<String> getBranchTarget() {
+        return Optional.empty();
+    }
+
+    @Override
+    public boolean isTerminal() {
+        return false;
     }
 }

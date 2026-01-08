@@ -2,6 +2,7 @@ package enshud.s4.compiler.generator.impls.casl.tir.instructions;
 
 import enshud.s4.compiler.generator.AllocatableRegister;
 
+import java.util.Optional;
 import java.util.Set;
 
 public class Jmp extends TIrInstr<Jmp> {
@@ -41,6 +42,26 @@ public class Jmp extends TIrInstr<Jmp> {
     @Override
     public void replaceDef(AllocatableRegister oldReg, AllocatableRegister newReg) {
 
+    }
+
+    @Override
+    public boolean isBranch() {
+        return true;
+    }
+
+    @Override
+    public boolean isConditionalBranch() {
+        return type != Type.UNCONDITIONAL;
+    }
+
+    @Override
+    public Optional<String> getBranchTarget() {
+        return Optional.of(addressLabel);
+    }
+
+    @Override
+    public boolean isTerminal() {
+        return false;
     }
 
 

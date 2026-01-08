@@ -6,6 +6,7 @@ import enshud.s4.compiler.ir.operand.Temp;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 public class Move extends ITInstruction {
     public final Temp dest;
@@ -24,5 +25,25 @@ public class Move extends ITInstruction {
     @Override
     public String toString() {
         return String.format("Move: %s <- %s", dest, src);
+    }
+
+    @Override
+    public boolean isBranch() {
+        return false;
+    }
+
+    @Override
+    public boolean isConditionalBranch() {
+        return false;
+    }
+
+    @Override
+    public Optional<String> getBranchTarget() {
+        return Optional.empty();
+    }
+
+    @Override
+    public boolean isTerminal() {
+        return false;
     }
 }

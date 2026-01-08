@@ -3,6 +3,7 @@ package enshud.s4.compiler.generator.impls.casl.tir.instructions;
 import enshud.s4.compiler.generator.AllocatableRegister;
 import enshud.s4.compiler.generator.impls.casl.tir.operand.TIROperand;
 
+import java.util.Optional;
 import java.util.Set;
 
 public class Lad extends TIrInstr<Lad> {
@@ -50,5 +51,25 @@ public class Lad extends TIrInstr<Lad> {
     @Override
     public void replaceDef(AllocatableRegister oldReg, AllocatableRegister newReg) {
         replaceAllocatable(oldReg, newReg, dest);
+    }
+
+    @Override
+    public boolean isBranch() {
+        return false;
+    }
+
+    @Override
+    public boolean isConditionalBranch() {
+        return false;
+    }
+
+    @Override
+    public Optional<String> getBranchTarget() {
+        return Optional.empty();
+    }
+
+    @Override
+    public boolean isTerminal() {
+        return false;
     }
 }

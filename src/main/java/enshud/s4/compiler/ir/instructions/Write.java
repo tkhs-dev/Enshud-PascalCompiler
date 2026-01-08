@@ -5,6 +5,7 @@ import enshud.s4.compiler.ir.operand.Operand;
 import enshud.s4.compiler.ir.operand.Temp;
 
 import java.util.List;
+import java.util.Optional;
 
 public class Write extends ITInstruction {
     public final Operand operand;
@@ -32,6 +33,26 @@ public class Write extends ITInstruction {
         } else {
             return String.format("Write: %s (%s)", operand, writeType);
         }
+    }
+
+    @Override
+    public boolean isBranch() {
+        return false;
+    }
+
+    @Override
+    public boolean isConditionalBranch() {
+        return false;
+    }
+
+    @Override
+    public Optional<String> getBranchTarget() {
+        return Optional.empty();
+    }
+
+    @Override
+    public boolean isTerminal() {
+        return false;
     }
 
     public enum WriteType {

@@ -16,4 +16,13 @@ public abstract class Instruction {
     public void clearLabel() {
         this.label = null;
     }
+
+    // Methods for generating control flow graphs
+    public abstract boolean isBranch();
+
+    public abstract boolean isConditionalBranch();
+
+    public abstract Optional<String> getBranchTarget();
+
+    public abstract boolean isTerminal();
 }

@@ -7,6 +7,7 @@ import enshud.s4.compiler.ir.operand.Variable;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 public class LoadIndexed extends ITInstruction {
     public final Temp targetVar;
@@ -27,5 +28,25 @@ public class LoadIndexed extends ITInstruction {
     @Override
     public String toString() {
         return String.format("Load: %s <- %s[%s]", targetVar, arrayVar.name, indexVar);
+    }
+
+    @Override
+    public boolean isBranch() {
+        return false;
+    }
+
+    @Override
+    public boolean isConditionalBranch() {
+        return false;
+    }
+
+    @Override
+    public Optional<String> getBranchTarget() {
+        return Optional.empty();
+    }
+
+    @Override
+    public boolean isTerminal() {
+        return false;
     }
 }

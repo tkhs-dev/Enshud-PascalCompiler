@@ -31,8 +31,8 @@ public class TIrOptimizer {
 
     private void initializePasses(OptimizerPipeline<TIrInstr<?>> pipeline) {
         // 最適化パスの追加はここで行う
-        pipeline.addPass(new RemoveUnnecessaryLoadStorePass());
-        pipeline.addPass(new RemoveUnnecessaryVirtualRegister());
+//        pipeline.addPass(new RemoveUnnecessaryLoadStorePass());
+//        pipeline.addPass(new RemoveUnnecessaryVirtualRegister());
     }
 }
 

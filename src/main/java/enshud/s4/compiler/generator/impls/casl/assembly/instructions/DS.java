@@ -1,5 +1,7 @@
 package enshud.s4.compiler.generator.impls.casl.assembly.instructions;
 
+import java.util.Optional;
+
 public class DS extends AssemblyInstr<DS> {
     public final int size;
 
@@ -10,5 +12,25 @@ public class DS extends AssemblyInstr<DS> {
     @Override
     public String toString(){
         return String.format("%s %d", super.toString(), size);
+    }
+
+    @Override
+    public boolean isBranch() {
+        return false;
+    }
+
+    @Override
+    public boolean isConditionalBranch() {
+        return false;
+    }
+
+    @Override
+    public Optional<String> getBranchTarget() {
+        return Optional.empty();
+    }
+
+    @Override
+    public boolean isTerminal() {
+        return false;
     }
 }

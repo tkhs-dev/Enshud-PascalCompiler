@@ -24,6 +24,22 @@ public class InstructionSet<T extends Instruction> implements Iterable<T> {
         return new InstructionSetEditor<>(instructions, () -> {});
     }
 
+    public T get(int index) {
+        return instructions.get(index);
+    }
+
+    public int size() {
+        return instructions.size();
+    }
+
+    public T getFirst() {
+        return instructions.getFirst();
+    }
+
+    public T getLast() {
+        return instructions.getLast();
+    }
+
     public List<T> toList() {
         return new java.util.ArrayList<>(instructions);
     }
@@ -34,6 +50,10 @@ public class InstructionSet<T extends Instruction> implements Iterable<T> {
 
     public static <T extends Instruction> InstructionSet<T> empty() {
         return new InstructionSet<>(new java.util.ArrayList<>());
+    }
+
+    public boolean isEmpty() {
+        return instructions.isEmpty();
     }
 
     @Override
