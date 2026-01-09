@@ -44,7 +44,7 @@ public class CFGBuilder {
         for (BasicBlock<T> block : blocks) {
             var lastInstr = block.getInstructions().getLast();
             if (lastInstr.isBranch()) {
-                String targetLabel = lastInstr.label;
+                String targetLabel = lastInstr.getBranchTarget().orElse(null);
                 var targetBlock = labelToBlock.get(targetLabel);
                 if (targetBlock != null) {
                     block.addSuccessor(targetBlock);
