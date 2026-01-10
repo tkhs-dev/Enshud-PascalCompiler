@@ -13,4 +13,12 @@ public class RegisterOperand implements DataOperand {
     public String toString() {
         return register.toString();
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null || getClass() != obj.getClass()) return false;
+        RegisterOperand that = (RegisterOperand) obj;
+        return register == that.register;
+    }
 }

@@ -1,6 +1,7 @@
 package enshud.s4.compiler.generator.impls.casl;
 
 import enshud.s4.compiler.generator.GeneratorBase;
+import enshud.s4.compiler.generator.impls.casl.assembly.AssemblyOptimizer;
 import enshud.s4.compiler.generator.impls.casl.tir.TIrOptimizer;
 import enshud.s4.compiler.ir.program.IrProgram;
 
@@ -17,6 +18,7 @@ public class CaslGenerator extends GeneratorBase<String> {
 
         var assemblyGenerator = new AssemblyGenerator(program);
         var instructions = assemblyGenerator.generate();
+        new AssemblyOptimizer().optimize(instructions);
         StringBuilder sb = new StringBuilder();
         for (var instr : instructions) {
             sb.append(instr.toString()).append("\n");

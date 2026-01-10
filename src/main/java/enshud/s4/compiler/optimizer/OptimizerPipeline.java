@@ -7,7 +7,7 @@ import enshud.s4.compiler.optimizer.pass.OptimizePass;
 
 import java.util.List;
 
-public class OptimizerPipeline<T extends Instruction> {
+public class OptimizerPipeline<T> {
     private List<OptimizePass<T>> passes;
 
     public OptimizerPipeline() {
@@ -18,7 +18,7 @@ public class OptimizerPipeline<T extends Instruction> {
         passes.add(pass);
     }
 
-    private boolean runOnce(FunctionUnit<T> program) {
+    private boolean runOnce(T program) {
         boolean optimized = false;
         for (OptimizePass<T> pass : passes) {
             boolean passOptimized = pass.apply(program);
@@ -29,7 +29,7 @@ public class OptimizerPipeline<T extends Instruction> {
         return optimized;
     }
 
-    public void run(FunctionUnit<T> program, boolean repeatUntilNoChange) {
+    public void run(T program, boolean repeatUntilNoChange) {
         if (repeatUntilNoChange) {
             boolean optimized;
             do {

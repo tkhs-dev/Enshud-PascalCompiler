@@ -3,8 +3,8 @@ package enshud.s4.compiler.generator.impls.casl.assembly.instructions;
 import enshud.s4.compiler.generator.impls.casl.assembly.operand.AssemblyOperand;
 
 public abstract class Instr2Op<Op1 extends AssemblyOperand,Op2 extends AssemblyOperand> extends AssemblyInstr<Instr2Op<Op1, Op2>> {
-    protected Op1 op1;
-    protected Op2 op2;
+    public Op1 op1;
+    public Op2 op2;
 
     public Instr2Op(Op1 op1, Op2 op2) {
         this.op1 = op1;

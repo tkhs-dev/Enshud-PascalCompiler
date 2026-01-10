@@ -4,6 +4,7 @@ import enshud.s4.compiler.generator.impls.casl.tir.instructions.Ld;
 import enshud.s4.compiler.generator.impls.casl.tir.instructions.St;
 import enshud.s4.compiler.generator.impls.casl.tir.instructions.TIrInstr;
 import enshud.s4.compiler.generator.impls.casl.tir.operand.VirtualRegister;
+import enshud.s4.compiler.generator.impls.casl.tir.program.TIRFunction;
 import enshud.s4.compiler.generator.impls.casl.tir.program.TIRProgram;
 import enshud.s4.compiler.instruction.FunctionUnit;
 import enshud.s4.compiler.optimizer.OptimizerPipeline;
@@ -13,7 +14,7 @@ import java.util.ArrayList;
 
 public class TIrOptimizer {
     public void optimize(TIRProgram program) {
-        OptimizerPipeline<TIrInstr<?>> pipeline = new OptimizerPipeline<>();
+        OptimizerPipeline<TIRFunction> pipeline = new OptimizerPipeline<>();
         initializePasses(pipeline);
 
         var functions = new ArrayList<>(program.functions.values());
@@ -29,7 +30,7 @@ public class TIrOptimizer {
         }
     }
 
-    private void initializePasses(OptimizerPipeline<TIrInstr<?>> pipeline) {
+    private void initializePasses(OptimizerPipeline<TIRFunction> pipeline) {
         // 最適化パスの追加はここで行う
 //        pipeline.addPass(new RemoveUnnecessaryLoadStorePass());
 //        pipeline.addPass(new RemoveUnnecessaryVirtualRegister());
@@ -37,7 +38,7 @@ public class TIrOptimizer {
 }
 
 // 連続する不要なロード・ストア命令をメモリへのストアと仮想レジスタの移動に置き換えるパス
-class RemoveUnnecessaryLoadStorePass implements OptimizePass<TIrInstr<?>> {
+class RemoveUnnecessaryLoadStorePass implements OptimizePass<FunctionUnit<TIrInstr<?>>> {
     @Override
     public boolean apply(FunctionUnit<TIrInstr<?>> program) {
         boolean optimized = false;
@@ -61,7 +62,7 @@ class RemoveUnnecessaryLoadStorePass implements OptimizePass<TIrInstr<?>> {
     }
 }
 
-class RemoveUnnecessaryVirtualRegister implements OptimizePass<TIrInstr<?>> {
+class RemoveUnnecessaryVirtualRegister implements OptimizePass<FunctionUnit<TIrInstr<?>>> {
     @Override
     public boolean apply(FunctionUnit<TIrInstr<?>> program) {
         boolean optimized = false;
