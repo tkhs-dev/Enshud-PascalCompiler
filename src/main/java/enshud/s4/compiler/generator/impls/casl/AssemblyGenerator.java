@@ -67,10 +67,7 @@ public class AssemblyGenerator {
         var desc = new CaslDescription();
         Allocation allocation = null;
         while(true){
-            var blocks = function.getBlocks();
-            var liveness = new LivenessAnalyzer<>(blocks).analyze();
-            var interferenceGraph = InterferenceGraph.build(blocks, liveness, desc);
-            var allocator = new RegisterAllocator(interferenceGraph, desc);
+            var allocator = new RegisterAllocator(function, desc);
             allocation = allocator.allocate();
             var spilled = allocation.getSpilled();
             System.out.println("Spilling registers: " + spilled);

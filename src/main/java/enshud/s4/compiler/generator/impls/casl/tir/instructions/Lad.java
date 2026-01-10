@@ -72,4 +72,9 @@ public class Lad extends TIrInstr<Lad> {
     public boolean isTerminal() {
         return false;
     }
+
+    @Override
+    public Set<AllocatableRegister> getCopiedRegisters() {
+        return Set.of();
+    }
 }

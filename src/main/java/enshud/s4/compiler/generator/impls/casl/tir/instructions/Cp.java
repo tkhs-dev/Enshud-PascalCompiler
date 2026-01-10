@@ -71,4 +71,9 @@ public class Cp extends TIrInstr<Cp> {
     public boolean isTerminal() {
         return false;
     }
+
+    @Override
+    public Set<AllocatableRegister> getCopiedRegisters() {
+        return Set.of();
+    }
 }

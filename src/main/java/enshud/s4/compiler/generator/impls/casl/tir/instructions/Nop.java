@@ -50,4 +50,9 @@ public class Nop extends TIrInstr<Nop> {
     public boolean isTerminal() {
         return false;
     }
+
+    @Override
+    public Set<AllocatableRegister> getCopiedRegisters() {
+        return Set.of();
+    }
 }

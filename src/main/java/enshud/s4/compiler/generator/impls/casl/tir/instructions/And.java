@@ -72,4 +72,9 @@ public class And extends TIrInstr<And> {
     public boolean isTerminal() {
         return false;
     }
+
+    @Override
+    public Set<AllocatableRegister> getCopiedRegisters() {
+        return Set.of();
+    }
 }

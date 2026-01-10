@@ -64,6 +64,11 @@ public class Call extends TIrInstr<Call> {
     }
 
     @Override
+    public Set<AllocatableRegister> getCopiedRegisters() {
+        return Set.of();
+    }
+
+    @Override
     public boolean isBranch() {
         return false;
     }

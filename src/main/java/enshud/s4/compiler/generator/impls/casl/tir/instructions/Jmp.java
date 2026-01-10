@@ -64,6 +64,11 @@ public class Jmp extends TIrInstr<Jmp> {
         return false;
     }
 
+    @Override
+    public Set<AllocatableRegister> getCopiedRegisters() {
+        return Set.of();
+    }
+
 
     public enum Type {
         PLUS,

@@ -66,4 +66,9 @@ public class Pop extends TIrInstr<Pop> {
     public boolean isTerminal() {
         return false;
     }
+
+    @Override
+    public Set<AllocatableRegister> getCopiedRegisters() {
+        return Set.of();
+    }
 }

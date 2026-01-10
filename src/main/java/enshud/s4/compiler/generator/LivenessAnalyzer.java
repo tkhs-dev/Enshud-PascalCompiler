@@ -1,6 +1,7 @@
 package enshud.s4.compiler.generator;
 
 import enshud.s4.compiler.instruction.BasicBlock;
+import enshud.s4.compiler.instruction.FunctionUnit;
 
 import java.util.HashSet;
 import java.util.List;
@@ -17,8 +18,8 @@ public class LivenessAnalyzer<R extends AnalysableInstruction> {
     private Map<R, Set<AllocatableRegister>> instrLiveIn;
     private Map<R, Set<AllocatableRegister>> instrLiveOut;
 
-    public LivenessAnalyzer(List<BasicBlock<R>> blocks) {
-        this.blocks = blocks;
+    public LivenessAnalyzer(FunctionUnit<R> function) {
+        this.blocks = function.getBlocks();
 
         this.blockLiveIn  = new java.util.HashMap<>();
         this.blockLiveOut = new java.util.HashMap<>();
@@ -131,16 +132,16 @@ public class LivenessAnalyzer<R extends AnalysableInstruction> {
 //            }
 //            System.out.println("  use: " + block.getUse());
 //            System.out.println("  def: " + block.getDef());
-//            System.out.println("  liveIn: " + block.liveIn);
-//            System.out.println("  liveOut: " + block.liveOut);
+//            System.out.println("  liveIn: " + blockLiveIn.get(block));
+//            System.out.println("  liveOut: " + blockLiveOut.get(block));
 //        }
         computeInstrLiveness();
         // show instruction liveness for debug
 //        for (BasicBlock<R> block : blocks) {
 //            for (AnalysableInstruction instr : block.getInstructions()) {
 //                System.out.println(instr);
-//                System.out.println("  liveIn: " + instr.liveIn);
-//                System.out.println("  liveOut: " + instr.liveOut);
+//                System.out.println("  liveIn: " + instrLiveIn.get(instr));
+//                System.out.println("  liveOut: " + instrLiveOut.get(instr));
 //            }
 //        }
         return new Liveness<>(instrLiveIn, instrLiveOut, blockLiveIn, blockLiveOut);

@@ -2,6 +2,8 @@ package enshud.s4.compiler.generator;
 
 import enshud.s4.compiler.generator.allocate.TargetDescription;
 import enshud.s4.compiler.instruction.BasicBlock;
+import enshud.s4.compiler.instruction.FunctionUnit;
+import enshud.s4.compiler.instruction.Instruction;
 
 import java.util.*;
 
@@ -93,7 +95,9 @@ public class InterferenceGraph {
         return currentAdj.keySet();
     }
 
-    public static InterferenceGraph build(List<? extends BasicBlock<? extends AnalysableInstruction>> blocks, Liveness<? extends AnalysableInstruction> liveness, TargetDescription desc) {
+    public static InterferenceGraph build(FunctionUnit<? extends AnalysableInstruction> function, Liveness<? extends AnalysableInstruction> liveness, TargetDescription desc) {
+        var blocks = function.getBlocks();
+
         var graph = new InterferenceGraph();
 
         // 最初のブロックで　liveIn されている変数を擬似的にdef しているとみなす

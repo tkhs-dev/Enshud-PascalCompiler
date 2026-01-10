@@ -3,6 +3,7 @@ package enshud.s4.compiler.generator.impls.casl.tir.instructions;
 import enshud.s4.compiler.generator.AllocatableRegister;
 import enshud.s4.compiler.generator.impls.casl.tir.operand.TIROperand;
 
+import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 
@@ -71,5 +72,16 @@ public class Ld extends TIrInstr<Ld> {
     @Override
     public boolean isTerminal() {
         return false;
+    }
+
+    @Override
+    public Set<AllocatableRegister> getCopiedRegisters() {
+        var set = new HashSet<AllocatableRegister>();
+        if (dest.operand instanceof AllocatableRegister destReg &&
+                src.operand instanceof AllocatableRegister srcReg) {
+            set.add(destReg);
+            set.add(srcReg);
+        }
+        return set;
     }
 }

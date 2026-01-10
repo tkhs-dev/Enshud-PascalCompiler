@@ -8,4 +8,5 @@ public abstract class AnalysableInstruction extends Instruction implements UseDe
     public boolean isCall(){
         return false;
     }
+    public abstract Set<AllocatableRegister> getCopiedRegisters();
 }

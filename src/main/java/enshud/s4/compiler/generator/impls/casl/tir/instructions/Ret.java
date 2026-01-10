@@ -50,4 +50,9 @@ public class Ret extends TIrInstr<Ret> {
     public boolean isTerminal() {
         return true;
     }
+
+    @Override
+    public Set<AllocatableRegister> getCopiedRegisters() {
+        return Set.of();
+    }
 }
