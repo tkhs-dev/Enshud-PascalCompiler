@@ -1,7 +1,7 @@
 package enshud.s4.compiler.ir.program;
 
 import enshud.s4.compiler.instruction.InstructionSet;
-import enshud.s4.compiler.ir.instructions.ITInstruction;
+import enshud.s4.compiler.ir.instructions.IRInstruction;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,8 +17,8 @@ public class IrProgram {
         this.functions = functions;
     }
 
-    public InstructionSet<ITInstruction> getInstructions() {
-        List<ITInstruction> instructions = new ArrayList<>();
+    public InstructionSet<IRInstruction> getInstructions() {
+        List<IRInstruction> instructions = new ArrayList<>();
         instructions.addAll(main.getInstructions().toList());
         for(IrFunction f : functions.values()) {
             instructions.addAll(f.getInstructions().toList());

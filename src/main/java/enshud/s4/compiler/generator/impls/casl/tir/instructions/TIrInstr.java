@@ -44,12 +44,12 @@ public abstract class TIrInstr<T extends TIrInstr<T>> extends AnalysableInstruct
 
     protected Set<AllocatableRegister> registerSet(OperandRef... ops) {
         var allocatableReg =  Arrays.stream(ops)
-                .map(opRef -> opRef.operand)
+                .map(opRef -> opRef.get())
                 .filter(op -> op instanceof AllocatableRegister)
                 .map(op -> (AllocatableRegister) op)
                 .collect(java.util.stream.Collectors.toSet());
         var fromAddressOffset = Arrays.stream(ops)
-                .map(opRef -> opRef.operand)
+                .map(opRef -> opRef.get())
                 .filter(op -> op instanceof Address)
                 .map(op -> (Address) op)
                 .map(addr -> addr.offset)
@@ -57,7 +57,7 @@ public abstract class TIrInstr<T extends TIrInstr<T>> extends AnalysableInstruct
                 .map(offset -> (AllocatableRegister) offset)
                 .collect(java.util.stream.Collectors.toSet());
         var fromFrameSlotOffset = Arrays.stream(ops)
-                .map(opRef -> opRef.operand)
+                .map(opRef -> opRef.get())
                 .filter(op -> op instanceof FrameSlot)
                 .map(op -> (FrameSlot) op)
                 .map(slot -> slot.offset)
@@ -87,32 +87,25 @@ public abstract class TIrInstr<T extends TIrInstr<T>> extends AnalysableInstruct
 
     protected void replaceOperand(TIROperand oldOp, TIROperand newOp, OperandRef... ops) {
         for (OperandRef opRef : ops) {
-            if (opRef.operand.equals(oldOp)) {
-                opRef.operand = newOp;
-            } else if (opRef.operand instanceof Address addr) {
+            if (opRef.get().equals(oldOp)) {
+                opRef.set(newOp);
+            } else if (opRef.get() instanceof Address addr) {
                 if (addr.offset != null && addr.offset.equals(oldOp)) {
-                    opRef.operand = new Address(addr.base).setOffset(newOp);
+                    opRef.set(new Address(addr.base).setOffset(newOp));
                 }
-            } else if(opRef.operand instanceof FrameSlot slot) {
+            } else if(opRef.get() instanceof FrameSlot slot) {
                 if (slot.offset.equals(oldOp)) {
                     FrameSlot newSlot = new FrameSlot(slot.slot, slot.levelDiff);
                     newSlot.setOffset(newOp);
-                    opRef.operand = newSlot;
+                    opRef.set(newSlot);
                 }
             }
         }
     }
 
-    protected static class OperandRef {
-        public TIROperand operand;
-
+    protected static class OperandRef extends enshud.s4.compiler.instruction.OperandRef<TIROperand> {
         public OperandRef(TIROperand operand) {
-            this.operand = operand;
-        }
-
-        @Override
-        public String toString() {
-            return operand.toString();
+            super(operand);
         }
     }
 }

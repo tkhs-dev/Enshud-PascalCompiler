@@ -1,19 +1,20 @@
 package enshud.s4.compiler.ir.instructions;
 
+import enshud.s4.compiler.instruction.OperandRef;
 import enshud.s4.compiler.ir.IIrVisitor;
-import enshud.s4.compiler.ir.operand.Operand;
+import enshud.s4.compiler.ir.operand.IROperand;
 
 import java.util.List;
 import java.util.Optional;
 
-public class Call extends ITInstruction {
+public class Call extends IRInstruction {
 
     public final String functionLabel;
-    public final List<Operand> args;
+    public final List<OperandRef<IROperand>> args;
 
-    public Call(String functionLabel, List<Operand> args) {
+    public Call(String functionLabel, List<IROperand> args) {
         this.functionLabel = functionLabel;
-        this.args = args;
+        this.args = args.stream().map(OperandRef<IROperand>::new).toList();
     }
 
     @Override

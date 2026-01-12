@@ -3,11 +3,11 @@ package enshud.s4.compiler.ir.program;
 import enshud.pascal.type.Type;
 import enshud.s4.compiler.instruction.FunctionUnit;
 import enshud.s4.compiler.instruction.InstructionSet;
-import enshud.s4.compiler.ir.instructions.ITInstruction;
+import enshud.s4.compiler.ir.instructions.IRInstruction;
 
 import java.util.Map;
 
-public class IrFunction extends FunctionUnit<ITInstruction> {
+public class IrFunction extends FunctionUnit<IRInstruction> {
     public final Map<String, Type> variables;
     public final Map<String, Type> parameters;
     public final String name;
@@ -15,7 +15,7 @@ public class IrFunction extends FunctionUnit<ITInstruction> {
     public final int level;
     public final IrFunction parent;
 
-    public IrFunction(String name, InstructionSet<ITInstruction> instructions, int level, IrFunction parent) {
+    public IrFunction(String name, InstructionSet<IRInstruction> instructions, int level, IrFunction parent) {
         super(name, instructions);
         this.variables = new java.util.LinkedHashMap<>();
         this.parameters = new java.util.LinkedHashMap<>();

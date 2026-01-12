@@ -14,7 +14,7 @@ public class Push extends TIrInstr<Push> {
     }
 
     public TIROperand getSrc() {
-        return src.operand;
+        return src.get();
     }
 
     @Override

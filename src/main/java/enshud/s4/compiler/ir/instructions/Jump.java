@@ -1,20 +1,19 @@
 package enshud.s4.compiler.ir.instructions;
 
+import enshud.s4.compiler.instruction.OperandRef;
 import enshud.s4.compiler.ir.IIrVisitor;
-import enshud.s4.compiler.ir.operand.Operand;
-import enshud.s4.compiler.ir.operand.Temp;
+import enshud.s4.compiler.ir.operand.IROperand;
 
-import java.util.List;
 import java.util.Optional;
 
-public class Jump extends ITInstruction {
+public class Jump extends IRInstruction {
     public final String target;
-    public final Operand condition; // 条件付きジャンプの場合の条件オペランド
+    public final OperandRef<IROperand> condition; // 条件付きジャンプの場合の条件オペランド
     public final Type type;
 
-    public Jump(String target, Operand condition, Type type) {
+    public Jump(String target, IROperand condition, Type type) {
         this.target = target;
-        this.condition = condition;
+        this.condition = new OperandRef<>(condition);
         this.type = type;
     }
 
@@ -25,11 +24,6 @@ public class Jump extends ITInstruction {
     @Override
     public <T> T accept(IIrVisitor<T> visitor) {
         return visitor.visit(this);
-    }
-
-    @Override
-    public String toString() {
-        return String.format("Goto: %s", target);
     }
 
     @Override
@@ -50,6 +44,11 @@ public class Jump extends ITInstruction {
     @Override
     public boolean isTerminal() {
         return false;
+    }
+
+    @Override
+    public String toString() {
+        return String.format("Goto: %s", target);
     }
 
     public enum Type {

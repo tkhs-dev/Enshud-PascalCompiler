@@ -16,11 +16,11 @@ public class Or extends TIrInstr<Or> {
     }
 
     public TIROperand getLeft() {
-        return left.operand;
+        return left.get();
     }
 
     public TIROperand getRight() {
-        return right.operand;
+        return right.get();
     }
 
     @Override

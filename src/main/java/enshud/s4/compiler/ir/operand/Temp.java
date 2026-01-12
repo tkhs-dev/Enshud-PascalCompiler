@@ -1,6 +1,6 @@
 package enshud.s4.compiler.ir.operand;
 
-public class Temp extends Operand {
+public class Temp extends IROperand {
     public final String id;
 
     public Temp(String id) {

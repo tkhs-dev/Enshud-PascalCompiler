@@ -16,11 +16,11 @@ public class Add extends TIrInstr<Add> {
     }
 
     public TIROperand getLeft() {
-        return left.operand;
+        return left.get();
     }
 
     public TIROperand getRight() {
-        return right.operand;
+        return right.get();
     }
 
     @Override

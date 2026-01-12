@@ -17,11 +17,11 @@ public class Ld extends TIrInstr<Ld> {
     }
 
     public TIROperand getDest() {
-        return dest.operand;
+        return dest.get();
     }
 
     public TIROperand getSrc() {
-        return src.operand;
+        return src.get();
     }
 
     @Override
@@ -77,8 +77,8 @@ public class Ld extends TIrInstr<Ld> {
     @Override
     public Set<AllocatableRegister> getCopiedRegisters() {
         var set = new HashSet<AllocatableRegister>();
-        if (dest.operand instanceof AllocatableRegister destReg &&
-                src.operand instanceof AllocatableRegister srcReg) {
+        if (dest.get() instanceof AllocatableRegister destReg &&
+                src.get() instanceof AllocatableRegister srcReg) {
             set.add(destReg);
             set.add(srcReg);
         }

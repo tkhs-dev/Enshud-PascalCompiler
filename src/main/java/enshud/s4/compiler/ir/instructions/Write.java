@@ -1,38 +1,27 @@
 package enshud.s4.compiler.ir.instructions;
 
+import enshud.s4.compiler.instruction.OperandRef;
 import enshud.s4.compiler.ir.IIrVisitor;
-import enshud.s4.compiler.ir.operand.Operand;
-import enshud.s4.compiler.ir.operand.Temp;
+import enshud.s4.compiler.ir.operand.IROperand;
 
-import java.util.List;
 import java.util.Optional;
 
-public class Write extends ITInstruction {
-    public final Operand operand;
+public class Write extends IRInstruction {
+    public final OperandRef<IROperand> operand;
     public final WriteType writeType;
 
-    public Write(Operand operand, WriteType writeType) {
-        this.operand = operand;
+    public Write(IROperand operand, WriteType writeType) {
+        this.operand = new OperandRef<>(operand);
         this.writeType = writeType;
     }
 
     public Write(){
-        this.operand = null;
-        this.writeType = WriteType.NEWLINE;
+        this(null, WriteType.NEWLINE);
     }
 
     @Override
     public <T> T accept(IIrVisitor<T> visitor) {
         return visitor.visit(this);
-    }
-
-    @Override
-    public String toString() {
-        if (writeType == WriteType.NEWLINE) {
-            return "Write: NEWLINE";
-        } else {
-            return String.format("Write: %s (%s)", operand, writeType);
-        }
     }
 
     @Override
@@ -53,6 +42,15 @@ public class Write extends ITInstruction {
     @Override
     public boolean isTerminal() {
         return false;
+    }
+
+    @Override
+    public String toString() {
+        if (writeType == WriteType.NEWLINE) {
+            return "Write: NEWLINE";
+        } else {
+            return String.format("Write: %s (%s)", operand, writeType);
+        }
     }
 
     public enum WriteType {

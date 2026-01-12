@@ -1,21 +1,23 @@
 package enshud.s4.compiler.generator;
 
 import enshud.s4.compiler.instruction.BasicBlock;
+import enshud.s4.compiler.instruction.Instruction;
+import enshud.s4.compiler.instruction.UseDef;
 
 import java.util.Map;
 import java.util.Set;
 
-public class Liveness<R extends AnalysableInstruction> {
-    private final Map<R, Set<AllocatableRegister>> liveIn;
-    private final Map<R, Set<AllocatableRegister>> liveOut;
-    private final Map<BasicBlock<R>, Set<AllocatableRegister>> blockLiveIn;
-    private final Map<BasicBlock<R>, Set<AllocatableRegister>> blockLiveOut;
+public class Liveness<R, T extends Instruction & UseDef<R>> {
+    private final Map<T, Set<R>> liveIn;
+    private final Map<T, Set<R>> liveOut;
+    private final Map<BasicBlock<T>, Set<R>> blockLiveIn;
+    private final Map<BasicBlock<T>, Set<R>> blockLiveOut;
 
     public Liveness(
-            Map<R, Set<AllocatableRegister>> liveIn,
-            Map<R, Set<AllocatableRegister>> liveOut,
-            Map<BasicBlock<R>, Set<AllocatableRegister>> blockLiveIn,
-            Map<BasicBlock<R>, Set<AllocatableRegister>> blockLiveOut
+            Map<T, Set<R>> liveIn,
+            Map<T, Set<R>> liveOut,
+            Map<BasicBlock<T>, Set<R>> blockLiveIn,
+            Map<BasicBlock<T>, Set<R>> blockLiveOut
     ) {
         this.liveIn = liveIn;
         this.liveOut = liveOut;
@@ -23,19 +25,19 @@ public class Liveness<R extends AnalysableInstruction> {
         this.blockLiveOut = blockLiveOut;
     }
 
-    public Set<AllocatableRegister> getLiveIn(AnalysableInstruction instr) {
+    public Set<R> getLiveIn(AnalysableInstruction instr) {
         return liveIn.get(instr);
     }
 
-    public Set<AllocatableRegister> getLiveOut(AnalysableInstruction instr) {
+    public Set<R> getLiveOut(AnalysableInstruction instr) {
         return liveOut.get(instr);
     }
 
-    public Set<AllocatableRegister> getLiveIn(BasicBlock<? extends AnalysableInstruction> block) {
+    public Set<R> getLiveIn(BasicBlock<? extends AnalysableInstruction> block) {
         return blockLiveIn.get(block);
     }
 
-    public Set<AllocatableRegister> getLiveOut(BasicBlock<? extends AnalysableInstruction> block) {
+    public Set<R> getLiveOut(BasicBlock<? extends AnalysableInstruction> block) {
         return blockLiveOut.get(block);
     }
 }

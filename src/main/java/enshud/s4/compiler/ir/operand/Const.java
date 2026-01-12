@@ -1,6 +1,6 @@
 package enshud.s4.compiler.ir.operand;
 
-public class Const extends Operand {
+public class Const extends IROperand {
     public final Object value;
 
     public static Const ZERO = new Const(0);

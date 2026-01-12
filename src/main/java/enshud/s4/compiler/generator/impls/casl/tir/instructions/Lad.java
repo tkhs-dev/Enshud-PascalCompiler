@@ -16,11 +16,11 @@ public class Lad extends TIrInstr<Lad> {
     }
 
     public TIROperand getDest() {
-        return dest.operand;
+        return dest.get();
     }
 
     public TIROperand getValue() {
-        return value.operand;
+        return value.get();
     }
 
     @Override

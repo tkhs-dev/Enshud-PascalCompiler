@@ -1,17 +1,13 @@
 program testBasic;
-var i,j,k: integer;
+var a,b,c,d,e: integer;
+bl: boolean;
 
 begin
-    i := 10;
-    j := 20;
-    k := i + j;
-    if k > 100 then
-    begin
-        k := k - 100;
-    end
-    else
-    begin
-        k := k + 100;
-    end;
-    writeln(k,'AAA');
+    a := 10;
+    b := 20;
+    c := a + b;
+    d := a * b;
+    e := (a + b) * (a - b);
+    bl := true;
+    writeln(c, d);
 end.

@@ -1,12 +1,10 @@
 package enshud.s4.compiler.ir.instructions;
 
 import enshud.s4.compiler.ir.IIrVisitor;
-import enshud.s4.compiler.ir.operand.Temp;
 
-import java.util.List;
 import java.util.Optional;
 
-public class Label extends ITInstruction {
+public class Label extends IRInstruction {
     public final String name;
 
     public Label(String name) {
@@ -21,11 +19,6 @@ public class Label extends ITInstruction {
     @Override
     public <T> T accept(IIrVisitor<T> visitor) {
         return visitor.visit(this);
-    }
-
-    @Override
-    public String toString() {
-        return String.format("%s:", name);
     }
 
     @Override
@@ -46,5 +39,10 @@ public class Label extends ITInstruction {
     @Override
     public boolean isTerminal() {
         return false;
+    }
+
+    @Override
+    public String toString() {
+        return String.format("%s:", name);
     }
 }

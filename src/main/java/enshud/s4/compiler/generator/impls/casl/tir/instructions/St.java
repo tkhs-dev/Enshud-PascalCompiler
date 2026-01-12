@@ -16,11 +16,11 @@ public class St extends TIrInstr<St> {
     }
 
     public TIROperand getDest() {
-        return dest.operand;
+        return dest.get();
     }
 
     public TIROperand getSrc() {
-        return src.operand;
+        return src.get();
     }
 
     @Override

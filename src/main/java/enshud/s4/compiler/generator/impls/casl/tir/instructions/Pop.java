@@ -14,7 +14,7 @@ public class Pop extends TIrInstr<Pop> {
     }
 
     public TIROperand getTarget() {
-        return target.operand;
+        return target.get();
     }
 
     @Override

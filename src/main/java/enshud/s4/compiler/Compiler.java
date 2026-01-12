@@ -9,6 +9,7 @@ import enshud.s3.checker.SemanticCheckVisitor;
 import enshud.s3.checker.SemanticException;
 import enshud.s4.compiler.generator.impls.casl.CaslGenerator;
 import enshud.s4.compiler.ir.IrConverter;
+import enshud.s4.compiler.ir.IrOptimizer;
 import enshud.token.FileFormatException;
 import enshud.token.Token;
 import enshud.token.TokenFile;
@@ -57,6 +58,7 @@ public class Compiler {
             SemanticCheckVisitor visitor = new SemanticCheckVisitor();
             ast.accept(visitor);
             var prog = IrConverter.convert(ast);
+			new IrOptimizer().optimize(prog);
             System.out.println("---- IR Code ----");
             prog.getInstructions().forEach(System.out::println);
             System.out.println("---- CASL II Code ----");

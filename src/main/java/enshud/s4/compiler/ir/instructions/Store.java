@@ -1,30 +1,24 @@
 package enshud.s4.compiler.ir.instructions;
 
+import enshud.s4.compiler.instruction.OperandRef;
 import enshud.s4.compiler.ir.IIrVisitor;
-import enshud.s4.compiler.ir.operand.Operand;
-import enshud.s4.compiler.ir.operand.Temp;
+import enshud.s4.compiler.ir.operand.IROperand;
 import enshud.s4.compiler.ir.operand.Variable;
 
-import java.util.List;
 import java.util.Optional;
 
-public class Store extends ITInstruction {
-    public final Variable target;
-    public final Operand value;
+public class Store extends IRInstruction {
+    public final OperandRef<Variable> target;
+    public final OperandRef<IROperand> value;
 
-    public Store(Variable target, Operand value) {
-        this.target = target;
-        this.value = value;
+    public Store(Variable target, IROperand value) {
+        this.target = new OperandRef<>(target);
+        this.value = new OperandRef<>(value);
     }
 
     @Override
     public <T> T accept(IIrVisitor<T> visitor) {
         return visitor.visit(this);
-    }
-
-    @Override
-    public String toString() {
-        return String.format("Store: %s <- %s", target.name, value);
     }
 
     @Override
@@ -45,5 +39,10 @@ public class Store extends ITInstruction {
     @Override
     public boolean isTerminal() {
         return false;
+    }
+
+    @Override
+    public String toString() {
+        return String.format("Store: %s <- %s", target.get().name, value);
     }
 }

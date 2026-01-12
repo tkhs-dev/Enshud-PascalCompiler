@@ -5,11 +5,12 @@ import enshud.s4.compiler.generator.impls.casl.tir.instructions.*;
 import enshud.s4.compiler.generator.impls.casl.tir.operand.*;
 import enshud.s4.compiler.generator.impls.casl.tir.program.*;
 import enshud.s4.compiler.instruction.InstructionSet;
+import enshud.s4.compiler.instruction.OperandRef;
 import enshud.s4.compiler.ir.IIrVisitor;
 import enshud.s4.compiler.ir.instructions.Call;
 import enshud.s4.compiler.ir.instructions.*;
 import enshud.s4.compiler.ir.operand.Const;
-import enshud.s4.compiler.ir.operand.Operand;
+import enshud.s4.compiler.ir.operand.IROperand;
 import enshud.s4.compiler.ir.operand.Temp;
 import enshud.s4.compiler.ir.operand.Variable;
 import enshud.s4.compiler.ir.program.IrFunction;
@@ -205,7 +206,7 @@ class Ir2TIrConverter implements IIrVisitor<Void> {
 
     @Override
     public Void visit(LoadIndexed ir) {
-        var slotOpt = lookupVariableSlot(ir.arrayVar);
+        var slotOpt = lookupVariableSlot(ir.arrayVar.get());
         tirInstructions.addAll(List.of(
             new Ld(convertOperand(ir.targetVar), new FrameSlot(slotOpt.slot, slotOpt.levelDiff).setOffset(convertOperand(ir.indexVar)))
         ));
@@ -220,7 +221,7 @@ class Ir2TIrConverter implements IIrVisitor<Void> {
 
     @Override
     public Void visit(StoreIndexed ir) {
-        var slotOpt = lookupVariableSlot(ir.target);
+        var slotOpt = lookupVariableSlot(ir.target.get());
         tirInstructions.addAll(List.of(
             new St(convertOperand(ir.value), new FrameSlot(slotOpt.slot, slotOpt.levelDiff).setOffset(convertOperand(ir.index)))
         ));
@@ -293,7 +294,7 @@ class Ir2TIrConverter implements IIrVisitor<Void> {
     @Override
     public Void visit(BinaryOp ir) {
         TIROperand leftOperand;
-        if(ir.left instanceof Temp){
+        if(ir.left.get() instanceof Temp){
             leftOperand = convertOperand(ir.left);
         }else{
             leftOperand = new VirtualRegister(tempRegisterSerialManager.New());
@@ -508,7 +509,8 @@ class Ir2TIrConverter implements IIrVisitor<Void> {
         return labelMap.computeIfAbsent(originalLabel, k -> serialManager.New());
     }
 
-    private TIrInstr<?> move(Operand dest, Operand src) {
+    private TIrInstr<?> move(OperandRef<? extends IROperand> dest, OperandRef<? extends IROperand> srcRef) {
+        var src = srcRef.get();
         return switch (src) {
             case Const c -> {
                 yield new Lad(convertOperand(dest), convertOperand(src));
@@ -519,7 +521,7 @@ class Ir2TIrConverter implements IIrVisitor<Void> {
         };
     }
 
-    private TIrInstr<?> move(TIROperand dest, Operand src) {
+    private TIrInstr<?> move(TIROperand dest, IROperand src) {
         return switch (src) {
             case Const c -> {
                 yield new Lad(dest, convertOperand(src));
@@ -529,7 +531,7 @@ class Ir2TIrConverter implements IIrVisitor<Void> {
             }
         };
     }
-    private TIrInstr<?> move(Register dest, Operand src) {
+    private TIrInstr<?> move(Register dest, IROperand src) {
         return switch (src) {
             case Const c -> {
                 yield new Lad(VirtualRegister.tmpWithPredefined(dest), convertOperand(src));
@@ -539,8 +541,14 @@ class Ir2TIrConverter implements IIrVisitor<Void> {
             }
         };
     }
+    private TIrInstr<?> move(Register dest, OperandRef<? extends IROperand> src) {
+        return move(dest, src.get());
+    }
     private TIrInstr<?> move(TIROperand dest, TIROperand src) {
         return new Ld(dest, src);
+    }
+    private TIrInstr<?> move(TIROperand dest, OperandRef<? extends IROperand> src) {
+        return move(dest, src.get());
     }
 
     private FrameSlot lookupVariableSlot(Variable var) {
@@ -564,7 +572,7 @@ class Ir2TIrConverter implements IIrVisitor<Void> {
         throw new RuntimeException("Variable not found in any frame: " + var.name);
     }
 
-    private TIROperand convertOperand(Operand irOperand) {
+    private TIROperand convertOperand(IROperand irOperand) {
         return switch(irOperand){
             case Const c ->{
                 if (c.value instanceof Integer i){
@@ -593,5 +601,9 @@ class Ir2TIrConverter implements IIrVisitor<Void> {
             }
             default -> throw new IllegalStateException("Unexpected value: " + irOperand);
         };
+    }
+
+    private TIROperand convertOperand(OperandRef<? extends IROperand> irOperandRef) {
+        return convertOperand(irOperandRef.get());
     }
 }

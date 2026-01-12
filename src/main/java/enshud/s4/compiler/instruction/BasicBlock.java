@@ -1,8 +1,5 @@
 package enshud.s4.compiler.instruction;
 
-import enshud.s4.compiler.generator.AllocatableRegister;
-import enshud.s4.compiler.generator.UseDef;
-
 import java.util.List;
 
 public class BasicBlock<R extends Instruction> {

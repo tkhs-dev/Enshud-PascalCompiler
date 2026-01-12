@@ -1,33 +1,27 @@
 package enshud.s4.compiler.ir.instructions;
 
+import enshud.s4.compiler.instruction.OperandRef;
 import enshud.s4.compiler.ir.IIrVisitor;
-import enshud.s4.compiler.ir.operand.Operand;
+import enshud.s4.compiler.ir.operand.IROperand;
 import enshud.s4.compiler.ir.operand.Temp;
 import enshud.s4.compiler.ir.operand.Variable;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 
-public class LoadIndexed extends ITInstruction {
-    public final Temp targetVar;
-    public final Variable arrayVar;
-    public final Operand indexVar;
+public class LoadIndexed extends IRInstruction {
+    public final OperandRef<Temp> targetVar;
+    public final OperandRef<Variable> arrayVar;
+    public final OperandRef<IROperand> indexVar;
 
-    public LoadIndexed(Temp targetVar, Variable arrayVar, Operand indexVar) {
-        this.targetVar = targetVar;
-        this.arrayVar = arrayVar;
-        this.indexVar = indexVar;
+    public LoadIndexed(Temp targetVar, Variable arrayVar, IROperand indexVar) {
+        this.targetVar = new OperandRef<>(targetVar);
+        this.arrayVar = new OperandRef<>(arrayVar);
+        this.indexVar = new OperandRef<>(indexVar);
     }
 
     @Override
     public <T> T accept(IIrVisitor<T> visitor) {
         return visitor.visit(this);
-    }
-
-    @Override
-    public String toString() {
-        return String.format("Load: %s <- %s[%s]", targetVar, arrayVar.name, indexVar);
     }
 
     @Override
@@ -48,5 +42,10 @@ public class LoadIndexed extends ITInstruction {
     @Override
     public boolean isTerminal() {
         return false;
+    }
+
+    @Override
+    public String toString() {
+        return String.format("Load: %s <- %s[%s]", targetVar, arrayVar.get().name, indexVar);
     }
 }

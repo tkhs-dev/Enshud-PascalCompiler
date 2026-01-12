@@ -1,12 +1,32 @@
 package enshud.s4.compiler.ir.instructions;
 
+import enshud.s4.compiler.instruction.OperandRef;
 import enshud.s4.compiler.ir.IIrVisitor;
-import enshud.s4.compiler.ir.operand.Operand;
+import enshud.s4.compiler.ir.operand.IROperand;
 import enshud.s4.compiler.ir.operand.Temp;
 
 import java.util.Optional;
 
-public class UnaryOp extends ITInstruction {
+public class UnaryOp extends IRInstruction {
+    public enum OpType {
+        NEG, NOT
+    }
+
+    public final OpType opType;
+    public final OperandRef<IROperand> operand;
+    public final OperandRef<Temp> result;
+
+    public UnaryOp(OpType opType, Temp result, IROperand operand) {
+        this.opType = opType;
+        this.result = new OperandRef<>(result);
+        this.operand = new OperandRef<>(operand);
+    }
+
+    @Override
+    public <T> T accept(IIrVisitor<T> visitor) {
+        return visitor.visit(this);
+    }
+
     @Override
     public boolean isBranch() {
         return false;
@@ -25,25 +45,6 @@ public class UnaryOp extends ITInstruction {
     @Override
     public boolean isTerminal() {
         return false;
-    }
-
-    public enum OpType {
-        NEG, NOT
-    }
-
-    public final OpType opType;
-    public final Operand operand;
-    public final Temp result;
-
-    public UnaryOp(OpType opType, Temp result, Operand operand) {
-        this.opType = opType;
-        this.result = result;
-        this.operand = operand;
-    }
-
-    @Override
-    public <T> T accept(IIrVisitor<T> visitor) {
-        return visitor.visit(this);
     }
 
     @Override

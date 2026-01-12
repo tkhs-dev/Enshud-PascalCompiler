@@ -2,23 +2,25 @@ package enshud.s4.compiler.generator;
 
 import enshud.s4.compiler.instruction.BasicBlock;
 import enshud.s4.compiler.instruction.FunctionUnit;
+import enshud.s4.compiler.instruction.Instruction;
+import enshud.s4.compiler.instruction.UseDef;
 
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public class LivenessAnalyzer<R extends AnalysableInstruction> {
+public class LivenessAnalyzer<R, T extends Instruction & UseDef<R>> {
 
-    private final List<BasicBlock<R>> blocks;
+    private final List<BasicBlock<T>> blocks;
 
-    private Map<BasicBlock<R>, Set<AllocatableRegister>> blockLiveIn;
-    private Map<BasicBlock<R>, Set<AllocatableRegister>> blockLiveOut;
+    private Map<BasicBlock<T>, Set<R>> blockLiveIn;
+    private Map<BasicBlock<T>, Set<R>> blockLiveOut;
 
-    private Map<R, Set<AllocatableRegister>> instrLiveIn;
-    private Map<R, Set<AllocatableRegister>> instrLiveOut;
+    private Map<T, Set<R>> instrLiveIn;
+    private Map<T, Set<R>> instrLiveOut;
 
-    public LivenessAnalyzer(FunctionUnit<R> function) {
+    public LivenessAnalyzer(FunctionUnit<T> function) {
         this.blocks = function.getBlocks();
 
         this.blockLiveIn  = new java.util.HashMap<>();
@@ -32,20 +34,20 @@ public class LivenessAnalyzer<R extends AnalysableInstruction> {
     // -------------------------
     private void computeBlockLiveness() {
         // 初期化
-        for (BasicBlock<R> b : blocks) {
+        for (BasicBlock<T> b : blocks) {
             blockLiveIn.put(b, new HashSet<>());
             blockLiveOut.put(b, new HashSet<>());
         }
 
         // ブロックの use / def を計算
-        Map<BasicBlock<R>, Set<AllocatableRegister>> blockUse = new java.util.HashMap<>();
-        Map<BasicBlock<R>, Set<AllocatableRegister>> blockDef = new java.util.HashMap<>();
-        for (BasicBlock<R> b : blocks) {
-            Set<AllocatableRegister> useSet = new HashSet<>();
-            Set<AllocatableRegister> defSet = new HashSet<>();
-            for (R instr : b.getInstructions()) {
+        Map<BasicBlock<T>, Set<R>> blockUse = new java.util.HashMap<>();
+        Map<BasicBlock<T>, Set<R>> blockDef = new java.util.HashMap<>();
+        for (BasicBlock<T> b : blocks) {
+            Set<R> useSet = new HashSet<>();
+            Set<R> defSet = new HashSet<>();
+            for (T instr : b.getInstructions()) {
                 // def に含まれないものを use に追加
-                for (AllocatableRegister reg : instr.getUse()) {
+                for (R reg : instr.getUse()) {
                     if (!defSet.contains(reg)) {
                         useSet.add(reg);
                     }
@@ -64,14 +66,14 @@ public class LivenessAnalyzer<R extends AnalysableInstruction> {
 
             // 逆順（後方分析なので基本は後ろから）
             for (int i = blocks.size() - 1; i >= 0; i--) {
-                BasicBlock<R> b = blocks.get(i);
+                BasicBlock<T> b = blocks.get(i);
 
                 var oldIn  = blockLiveIn.get(b);
                 var oldOut = blockLiveOut.get(b);
 
                 // liveOut[B] = ∪ liveIn[succ]
-                Set<AllocatableRegister> newOut = new HashSet<>();
-                for (BasicBlock<R> succ : b.getSuccessors()) {
+                Set<R> newOut = new HashSet<>();
+                for (BasicBlock<T> succ : b.getSuccessors()) {
                     newOut.addAll(blockLiveIn.get(succ));
                 }
                 blockLiveOut.put(b, newOut);
@@ -95,7 +97,7 @@ public class LivenessAnalyzer<R extends AnalysableInstruction> {
     // 2. 命令単位の LiveIn / LiveOut を計算
     // -------------------------
     private void computeInstrLiveness() {
-        for (BasicBlock<R> block : blocks) {
+        for (BasicBlock<T> block : blocks) {
 
             // ブロックの末尾は block.liveOut
             var live = new HashSet<>(blockLiveOut.get(block));
@@ -122,10 +124,10 @@ public class LivenessAnalyzer<R extends AnalysableInstruction> {
     // -------------------------
     // 3. 全体の Liveness を計算する
     // -------------------------
-    public Liveness<R> analyze() {
+    public Liveness<R, T> analyze() {
         computeBlockLiveness();
         // show block liveness for debug
-//        for (BasicBlock<R> block : blocks) {
+//        for (BasicBlock<T> block : blocks) {
 //            System.out.println("Block:");
 //            for (AnalysableInstruction instr : block.getInstructions()) {
 //                System.out.println("  " + instr);
@@ -137,7 +139,7 @@ public class LivenessAnalyzer<R extends AnalysableInstruction> {
 //        }
         computeInstrLiveness();
         // show instruction liveness for debug
-//        for (BasicBlock<R> block : blocks) {
+//        for (BasicBlock<T> block : blocks) {
 //            for (AnalysableInstruction instr : block.getInstructions()) {
 //                System.out.println(instr);
 //                System.out.println("  liveIn: " + instrLiveIn.get(instr));

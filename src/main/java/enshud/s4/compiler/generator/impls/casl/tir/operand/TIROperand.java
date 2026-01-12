@@ -1,5 +1,7 @@
 package enshud.s4.compiler.generator.impls.casl.tir.operand;
 
-public abstract class TIROperand {
+import enshud.s4.compiler.instruction.Operand;
+
+public abstract class TIROperand extends Operand {
 
 }

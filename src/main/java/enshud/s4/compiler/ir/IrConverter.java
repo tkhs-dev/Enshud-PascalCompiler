@@ -9,7 +9,7 @@ import enshud.pascal.type.Type;
 import enshud.s4.compiler.instruction.InstructionSetEditor;
 import enshud.s4.compiler.ir.instructions.*;
 import enshud.s4.compiler.ir.operand.Const;
-import enshud.s4.compiler.ir.operand.Operand;
+import enshud.s4.compiler.ir.operand.IROperand;
 import enshud.s4.compiler.ir.operand.Temp;
 import enshud.s4.compiler.ir.operand.Variable;
 import enshud.s4.compiler.ir.program.IrFunction;
@@ -31,13 +31,13 @@ public class IrConverter {
     }
 }
 
-class IrConverterVisitor implements IAstVisitor<Optional<Operand>> {
+class IrConverterVisitor implements IAstVisitor<Optional<IROperand>> {
     private final SerialManager tempManager;
     private final SerialManager labelManager;
     private final SerialManager funcManager;
 
     private IrFunction currentScope;
-    private InstructionSetEditor<ITInstruction> currentEditor;
+    private InstructionSetEditor<IRInstruction> currentEditor;
 
     private final IrFunction main;
     private Map<String, IrFunction> functions;
@@ -66,20 +66,20 @@ class IrConverterVisitor implements IAstVisitor<Optional<Operand>> {
     }
 
     @Override
-    public Optional<Operand> visit(ProgramNode node) {
+    public Optional<IROperand> visit(ProgramNode node) {
         setCurrent(main);
         visitAll(node);
         return Optional.empty();
     }
 
     @Override
-    public Optional<Operand> visit(BlockNode node) {
+    public Optional<IROperand> visit(BlockNode node) {
         visitAll(node);
         return Optional.empty();
     }
 
     @Override
-    public Optional<Operand> visit(VarDeclNode node) {
+    public Optional<IROperand> visit(VarDeclNode node) {
         var type = node.getType();
         if (type.isEmpty()) {
             throw new IllegalStateException("Type is not set for VarDeclNode");
@@ -91,7 +91,7 @@ class IrConverterVisitor implements IAstVisitor<Optional<Operand>> {
     }
 
     @Override
-    public Optional<Operand> visit(SubProgDeclNode node) {
+    public Optional<IROperand> visit(SubProgDeclNode node) {
         IrFunction func = IrFunction.empty(node.header.name, 1, main);
         functions.put(node.header.name, func);
         setCurrent(func);
@@ -101,7 +101,7 @@ class IrConverterVisitor implements IAstVisitor<Optional<Operand>> {
     }
 
     @Override
-    public Optional<Operand> visit(SubProgHeaderNode node) {
+    public Optional<IROperand> visit(SubProgHeaderNode node) {
         var label = funcManager.New();
         funcLabelMap.put(node.name, label);
         currentEditor.append(Label.of(label));
@@ -111,7 +111,7 @@ class IrConverterVisitor implements IAstVisitor<Optional<Operand>> {
     }
 
     @Override
-    public Optional<Operand> visit(FormalParamNode node) {
+    public Optional<IROperand> visit(FormalParamNode node) {
         var type = node.getType();
         if (type.isEmpty()) {
             throw new IllegalStateException("Type is not set for FormalParamNode");
@@ -123,23 +123,23 @@ class IrConverterVisitor implements IAstVisitor<Optional<Operand>> {
     }
 
     @Override
-    public Optional<Operand> visit(ArrayTypeNode node) {
+    public Optional<IROperand> visit(ArrayTypeNode node) {
         return Optional.empty();
     }
 
     @Override
-    public Optional<Operand> visit(StandardTypeNode node) {
+    public Optional<IROperand> visit(StandardTypeNode node) {
         return Optional.empty();
     }
 
     @Override
-    public Optional<Operand> visit(CompoundStmtNode node) {
+    public Optional<IROperand> visit(CompoundStmtNode node) {
         visitAll(node);
         return Optional.empty();
     }
 
     @Override
-    public Optional<Operand> visit(AssignmentNode node) {
+    public Optional<IROperand> visit(AssignmentNode node) {
 //        node.var.accept(this);
         var exprTemp = node.expr.accept(this).get();
         switch (node.var) {
@@ -156,7 +156,7 @@ class IrConverterVisitor implements IAstVisitor<Optional<Operand>> {
     }
 
     @Override
-    public Optional<Operand> visit(CallNode node) {
+    public Optional<IROperand> visit(CallNode node) {
         var args = node.args.stream().map(arg -> arg.accept(this).get()).toList();
         var label = funcLabelMap.get(node.name);
         if (label == null) {
@@ -167,7 +167,7 @@ class IrConverterVisitor implements IAstVisitor<Optional<Operand>> {
     }
 
     @Override
-    public Optional<Operand> visit(WriteNode node) {
+    public Optional<IROperand> visit(WriteNode node) {
         for(var expr : node.exprs) {
             var exprTemp = expr.accept(this).get();
             Type type = expr.getType().get();
@@ -186,13 +186,13 @@ class IrConverterVisitor implements IAstVisitor<Optional<Operand>> {
     }
 
     @Override
-    public Optional<Operand> visit(ReadNode node) {
+    public Optional<IROperand> visit(ReadNode node) {
         visitAll(node);
         return Optional.empty();
     }
 
     @Override
-    public Optional<Operand> visit(IfNode node) {
+    public Optional<IROperand> visit(IfNode node) {
         var thenLabel = labelManager.New();
         var endLabel = labelManager.New();
 
@@ -213,7 +213,7 @@ class IrConverterVisitor implements IAstVisitor<Optional<Operand>> {
     }
 
     @Override
-    public Optional<Operand> visit(WhileNode node) {
+    public Optional<IROperand> visit(WhileNode node) {
         var startLabel = labelManager.New();
         var endLabel = labelManager.New();
 
@@ -227,7 +227,7 @@ class IrConverterVisitor implements IAstVisitor<Optional<Operand>> {
     }
 
     @Override
-    public Optional<Operand> visit(BinaryOpNode node) {
+    public Optional<IROperand> visit(BinaryOpNode node) {
         visitAll(node);
         var resultTemp = Temp.of(tempManager.New());
         var leftTemp = node.left.accept(this).get();
@@ -252,7 +252,7 @@ class IrConverterVisitor implements IAstVisitor<Optional<Operand>> {
     }
 
     @Override
-    public Optional<Operand> visit(ConstNode node) {
+    public Optional<IROperand> visit(ConstNode node) {
         visitAll(node);
         Temp temp = Temp.of(tempManager.New());
         Const constValue;
@@ -274,7 +274,7 @@ class IrConverterVisitor implements IAstVisitor<Optional<Operand>> {
     }
 
     @Override
-    public Optional<Operand> visit(UnaryOpNode node) {
+    public Optional<IROperand> visit(UnaryOpNode node) {
         var operandTemp = node.operand.accept(this).get();
         switch(node.op) {
             case PLUS -> {
@@ -297,7 +297,7 @@ class IrConverterVisitor implements IAstVisitor<Optional<Operand>> {
     }
 
     @Override
-    public Optional<Operand> visit(StandardVarNode node) {
+    public Optional<IROperand> visit(StandardVarNode node) {
         visitAll(node);
         Temp temp = Temp.of(tempManager.New());
         currentEditor.append(new Load(temp, Variable.of(node.name)));
@@ -305,7 +305,7 @@ class IrConverterVisitor implements IAstVisitor<Optional<Operand>> {
     }
 
     @Override
-    public Optional<Operand> visit(IndexedVarNode node) {
+    public Optional<IROperand> visit(IndexedVarNode node) {
         var index = node.index.accept(this).get();
         Temp temp = Temp.of(tempManager.New());
         currentEditor.append(new LoadIndexed(temp, Variable.of(node.name), index));
