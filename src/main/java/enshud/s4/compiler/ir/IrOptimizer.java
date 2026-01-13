@@ -35,8 +35,8 @@ public class IrOptimizer {
 
     private void initializePasses(OptimizerPipeline<IrFunction> pipeline) {
         // 最適化パスの追加はここで行う
-        pipeline.addPass(new ConstantFoldingPass());
-        pipeline.addPass(new ConstantPropagationPass());
+//        pipeline.addPass(new ConstantFoldingPass());
+//        pipeline.addPass(new ConstantPropagationPass());
     }
 }
 
@@ -102,11 +102,9 @@ class ConstantFoldingPass implements OptimizePass<IrFunction> {
 
             var used = getUsedOperand(instr);
             for (var ref : Objects.requireNonNull(used)) {
-                if (ref.get() instanceof Temp temp) {
-                    if (constantValues.containsKey(temp)) {
-                        Object constValue = constantValues.get(temp);
-                        ref.set(new Const(constValue));
-                    }
+                if (ref.get() instanceof Temp temp && constantValues.containsKey(temp)) {
+                    Object constValue = constantValues.get(temp);
+                    ref.set(new Const(constValue));
                 }
             }
         }
@@ -186,6 +184,6 @@ class ConstantPropagationPass implements OptimizePass<IrFunction> {
     }
 
     private boolean isBreakableInstruction(IRInstruction instr) {
-        return instr.isBranch() || instr.isTerminal() || instr instanceof Call;
+        return instr.isBranch() || instr.isTerminal() || instr instanceof Call || instr.getLabel().isPresent();
     }
 }
