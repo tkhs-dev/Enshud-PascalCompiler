@@ -376,7 +376,7 @@ class Ir2TIrConverter implements IIrVisitor<Void> {
                 tirInstructions.addAll(List.of(
                         new And(
                                 register(leftOperand),
-                                convertOperand(ir.right)
+                                data(convertOperand(ir.right))
                         ),
                         new Ld(convertOperand(ir.result), leftOperand)
                 ));
@@ -385,7 +385,7 @@ class Ir2TIrConverter implements IIrVisitor<Void> {
                 tirInstructions.addAll(List.of(
                         new Or(
                                 register(leftOperand),
-                                convertOperand(ir.right)
+                                data(convertOperand(ir.right))
                         ),
                         new Ld(convertOperand(ir.result), leftOperand)
                 ));
@@ -394,7 +394,7 @@ class Ir2TIrConverter implements IIrVisitor<Void> {
                 var labelFalse = serialManager.New();
                 var labelEnd = serialManager.New();
                 tirInstructions.addAll(List.of(
-                        new Cp(register(leftOperand), convertOperand(ir.right)),
+                        new Cp(register(leftOperand), data(convertOperand(ir.right))),
                         new Jmp(labelFalse, Jmp.Type.ZERO),
                         new Ld(convertOperand(ir.result), Immediate.TRUE),
                         new Jmp(labelEnd, Jmp.Type.UNCONDITIONAL),
@@ -406,7 +406,7 @@ class Ir2TIrConverter implements IIrVisitor<Void> {
                 var labelFalse = serialManager.New();
                 var labelEnd = serialManager.New();
                 tirInstructions.addAll(List.of(
-                        new Cp(register(leftOperand), convertOperand(ir.right)),
+                        new Cp(register(leftOperand), data(convertOperand(ir.right))),
                         new Jmp(labelFalse, Jmp.Type.NONZERO),
                         new Ld(convertOperand(ir.result), Immediate.TRUE),
                         new Jmp(labelEnd, Jmp.Type.UNCONDITIONAL),
@@ -418,7 +418,7 @@ class Ir2TIrConverter implements IIrVisitor<Void> {
                 var labelFalse = serialManager.New();
                 var labelEnd = serialManager.New();
                 tirInstructions.addAll(List.of(
-                        new Cp(register(leftOperand), convertOperand(ir.right)),
+                        new Cp(register(leftOperand), data(convertOperand(ir.right))),
                         new Jmp(labelFalse, Jmp.Type.PLUS),
                         new Ld(convertOperand(ir.result), Immediate.TRUE),
                         new Jmp(labelEnd, Jmp.Type.UNCONDITIONAL),
@@ -430,7 +430,7 @@ class Ir2TIrConverter implements IIrVisitor<Void> {
                 var labelTrue = serialManager.New();
                 var labelEnd = serialManager.New();
                 tirInstructions.addAll(List.of(
-                        new Cp(register(leftOperand), convertOperand(ir.right)),
+                        new Cp(register(leftOperand), data(convertOperand(ir.right))),
                         new Jmp(labelTrue, Jmp.Type.MINUS),
                         new Ld(convertOperand(ir.result), Immediate.FALSE),
                         new Jmp(labelEnd, Jmp.Type.UNCONDITIONAL),
@@ -442,7 +442,7 @@ class Ir2TIrConverter implements IIrVisitor<Void> {
                 var labelFalse = serialManager.New();
                 var labelEnd = serialManager.New();
                 tirInstructions.addAll(List.of(
-                        new Cp(register(leftOperand), convertOperand(ir.right)),
+                        new Cp(register(leftOperand), data(convertOperand(ir.right))),
                         new Jmp(labelFalse, Jmp.Type.MINUS),
                         new Ld(convertOperand(ir.result), Immediate.TRUE),
                         new Jmp(labelEnd, Jmp.Type.UNCONDITIONAL),
@@ -454,7 +454,7 @@ class Ir2TIrConverter implements IIrVisitor<Void> {
                 var labelFalse = serialManager.New();
                 var labelEnd = serialManager.New();
                 tirInstructions.addAll(List.of(
-                        new Cp(register(leftOperand), convertOperand(ir.right)),
+                        new Cp(register(leftOperand), data(convertOperand(ir.right))),
                         new Jmp(labelFalse, Jmp.Type.PLUS),
                         new Ld(convertOperand(ir.result), Immediate.FALSE),
                         new Jmp(labelEnd, Jmp.Type.UNCONDITIONAL),
@@ -560,6 +560,9 @@ class Ir2TIrConverter implements IIrVisitor<Void> {
         return move(dest, src.get());
     }
     private TIrInstr<?> move(TIROperand dest, TIROperand src) {
+        if (src instanceof NumericImmediate || src instanceof CharImmediate) {
+            return new Lad(dest, src);
+        }
         return new Ld(dest, src);
     }
     private TIrInstr<?> move(TIROperand dest, OperandRef<? extends IROperand> src) {
@@ -630,5 +633,14 @@ class Ir2TIrConverter implements IIrVisitor<Void> {
             tirInstructions.add(move(tempReg, operand));
             return tempReg;
         }
+    }
+
+    private TIROperand data(TIROperand operand) {
+        if (operand instanceof Immediate<?>) {
+            var tempReg = new VirtualRegister(tempRegisterSerialManager.New());
+            tirInstructions.add(move(tempReg, operand));
+            return tempReg;
+        }
+        return operand;
     }
 }
