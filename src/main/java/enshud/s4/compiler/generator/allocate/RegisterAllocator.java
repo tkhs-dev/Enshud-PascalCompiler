@@ -7,7 +7,7 @@ import enshud.s4.compiler.instruction.Instruction;
 import java.util.*;
 
 public class RegisterAllocator extends Allocator{
-    private final List<Register> allocatableRegisters;
+    private final TargetDescription description;
 
     // 干渉グラフ
     protected final InterferenceGraph graph;
@@ -26,7 +26,7 @@ public class RegisterAllocator extends Allocator{
 
     public RegisterAllocator(FunctionUnit<? extends AnalysableInstruction> function, TargetDescription targetDescription) {
         super(function, targetDescription);
-        this.allocatableRegisters = targetDescription.getAllocatableRegisters();
+        this.description = targetDescription;
         var liveness = new LivenessAnalyzer<>(function).analyze();
         this.graph = InterferenceGraph.build(function, liveness, targetDescription);
     }
@@ -73,7 +73,7 @@ public class RegisterAllocator extends Allocator{
     }
 
     private AllocatableRegister findRemovableNode() {
-        int K = allocatableRegisters.size();
+        int K = description.getAllocatableRegisters().size();
 
         for (AllocatableRegister r : graph.getNodes()) {
             // 事前割当レジスタかつ専用レジスタの場合除外
@@ -98,8 +98,27 @@ public class RegisterAllocator extends Allocator{
     //-------------------------------------------------------------
     private void selectPhase() {
         graph.restoreAll();
-        // コピーが存在する場合は先に処理
         var removeList = new ArrayList<AllocatableRegister>();
+        // 汎用レジスタが必要な場合は先に処理
+        for (var r : stack){
+            if (!r.needsGeneralPurpose()) {
+                continue;
+            }
+            removeList.add(r);
+            Register color = chooseColor(r, true);
+            if (color == null) {
+                spilled.add(r);
+            } else {
+                System.out.println("Pre-assigning general-purpose needed register color: " + color + " to " + r);
+                allocateRealRegister(r, color);
+            }
+        }
+        for (var r : removeList){
+            stack.remove(r);
+        }
+        removeList.clear();
+
+        // コピーが存在する場合は先に処理
         for (var r : stack){
             if (r.getPredefined().isPresent()){
                 continue;
@@ -107,7 +126,7 @@ public class RegisterAllocator extends Allocator{
             var regSets = copiedRegisterSets.keySet();
             for (var regSet : regSets) {
                 if (regSet.contains(r)) {
-                    Register assignedColor = chooseColor(r);
+                    Register assignedColor = chooseColor(r, false);
                     System.out.println("Pre-assigning copied register set color: " + assignedColor + " to " + r);
                     allocateRealRegister(r, assignedColor);
                     removeList.add(r);
@@ -127,7 +146,7 @@ public class RegisterAllocator extends Allocator{
                 continue;
             }
 
-            Register color = chooseColor(r);
+            Register color = chooseColor(r, false);
 
             if (color == null) {
                 spilled.add(r);
@@ -140,7 +159,7 @@ public class RegisterAllocator extends Allocator{
     //-------------------------------------------------------------
     // 利用可能な実レジスタを選択
     //-------------------------------------------------------------
-    private Register chooseColor(AllocatableRegister r) {
+    private Register chooseColor(AllocatableRegister r, boolean needsGeneralPurpose) {
         Set<AllocatableRegister> adjs = graph.getAdjacents(r);
 
         Set<Register> used = new HashSet<>();
@@ -171,8 +190,15 @@ public class RegisterAllocator extends Allocator{
             }
         }
 
+        List<Register> candidateRegisters;
+        if (needsGeneralPurpose) {
+            candidateRegisters = description.getScratchCandidates();
+        } else {
+            candidateRegisters = description.getAllocatableRegisters();
+        }
+
         // 利用可能な色から未使用のものを選択
-        for (Register reg : allocatableRegisters) {
+        for (Register reg : candidateRegisters) {
             if (!used.contains(reg)) return reg;
         }
 

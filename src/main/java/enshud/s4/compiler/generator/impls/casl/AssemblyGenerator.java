@@ -66,6 +66,7 @@ public class AssemblyGenerator {
         serial = new SerialManager("spill");
         var desc = new CaslDescription();
         Allocation allocation = null;
+        processAddressRegisters(function);
         while(true){
             var allocator = new RegisterAllocator(function, desc);
             allocation = allocator.allocate();
@@ -83,6 +84,18 @@ public class AssemblyGenerator {
         var converter = new TIRConverter(allocation, function);
         var funcInstructions = converter.getInstruction();
         editor.appendAll(funcInstructions);
+    }
+
+    private void processAddressRegisters(TIRFunction function){
+        for(var ir : function.getInstructions()){
+            var uses = ir.getUse();
+            for(var use : uses){
+                if(use instanceof Address addr && addr.offset instanceof VirtualRegister vreg){
+                    System.out.println("Address register needs general purpose: " + vreg);
+                    vreg.setNeedsGeneralPurpose(true);
+                }
+            }
+        }
     }
 
     private void spillFunction(TIRFunction function, Set<AllocatableRegister> spilled) {

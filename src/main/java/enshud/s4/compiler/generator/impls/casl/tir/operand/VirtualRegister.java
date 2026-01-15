@@ -10,11 +10,13 @@ public class VirtualRegister extends TIROperand implements AllocatableRegister {
     public String id;
     public double spillCost;
     private Register predefined;
+    private boolean needsGeneralPurpose;
 
     public VirtualRegister(String id, double spillCost) {
         this.id = id;
         this.spillCost = spillCost;
         predefined = null;
+        needsGeneralPurpose = false;
     }
 
     public VirtualRegister(String id) {
@@ -38,6 +40,10 @@ public class VirtualRegister extends TIROperand implements AllocatableRegister {
     public VirtualRegister withSpillCost(double spillCost) {
         this.spillCost = spillCost;
         return this;
+    }
+
+    public void setNeedsGeneralPurpose(boolean needsGeneralPurpose) {
+        this.needsGeneralPurpose = needsGeneralPurpose;
     }
 
     @Override
@@ -66,5 +72,10 @@ public class VirtualRegister extends TIROperand implements AllocatableRegister {
     @Override
     public double getSpillCost() {
         return spillCost;
+    }
+
+    @Override
+    public boolean needsGeneralPurpose() {
+        return needsGeneralPurpose;
     }
 }
