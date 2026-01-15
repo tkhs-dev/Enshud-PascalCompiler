@@ -292,40 +292,41 @@ class Ir2TIrConverter implements IIrVisitor<Void> {
         }
         switch(ir.opType){
             case ADD -> {
-                TIrInstr<?> adderInstr;
                 if (ir.right.get() instanceof Const) {
-                    adderInstr = new Lad(
-                            leftOperand,
-                            convertOperand(ir.right)
+                    tirInstructions.add(
+                            new Lad(
+                                    convertOperand(ir.result),
+                                    new Address(String.valueOf((int)((Const) ir.right.get()).value)).setOffset(register(convertOperand(ir.left)))
+                            )
                     );
                 } else {
-                    adderInstr = new Add(
-                            leftOperand,
-                            convertOperand(ir.right)
-                    );
+                    tirInstructions.addAll(List.of(
+                            new Add(
+                                    leftOperand,
+                                    convertOperand(ir.right)
+                            ),
+                            new Ld(convertOperand(ir.result), leftOperand)
+                    ));
                 }
-                tirInstructions.addAll(List.of(
-                    adderInstr,
-                    new Ld(convertOperand(ir.result), leftOperand)
-                ));
+
             }
             case SUB -> {
-                TIrInstr<?> subInstr;
                 if (ir.right.get() instanceof Const) {
-                    subInstr = new Lad(
-                            leftOperand,
-                            new NumericImmediate(-(int)((Const) ir.right.get()).value, NumericImmediate.Type.DECIMAL)
+                    tirInstructions.add(
+                            new Lad(
+                                    convertOperand(ir.result),
+                                    new Address(String.valueOf(-(int)((Const) ir.right.get()).value)).setOffset(register(convertOperand(ir.left)))
+                            )
                     );
                 } else {
-                    subInstr = new Sub(
-                            leftOperand,
-                            convertOperand(ir.right)
-                    );
+                    tirInstructions.addAll(List.of(
+                            new Sub(
+                                    leftOperand,
+                                    convertOperand(ir.right)
+                            ),
+                            new Ld(convertOperand(ir.result), leftOperand)
+                    ));
                 }
-                tirInstructions.addAll(List.of(
-                        subInstr,
-                        new Ld(convertOperand(ir.result), leftOperand)
-                ));
             }
             case MUL -> {
                 var in1 = VirtualRegister.tmpWithPredefined(CaslRegisters.GR1);
@@ -473,23 +474,25 @@ class Ir2TIrConverter implements IIrVisitor<Void> {
             case NEG -> {
                 TIrInstr<?> negInstr;
                 if (ir.operand.get() instanceof Const) {
-                    negInstr = new Lad(
-                            convertOperand(ir.result),
-                            new NumericImmediate(-(int)((Const) ir.operand.get()).value, NumericImmediate.Type.DECIMAL)
+                    tirInstructions.add(
+                            new Lad(
+                                    convertOperand(ir.result),
+                                    new NumericImmediate(-(int)((Const) ir.operand.get()).value, NumericImmediate.Type.DECIMAL)
+                            )
                     );
                 } else {
-                    negInstr = new Sub(
-                            convertOperand(ir.result),
-                            convertOperand(ir.operand)
-                    );
+                    tirInstructions.addAll(List.of(
+                            new Lad(
+                                    convertOperand(ir.result),
+                                    Immediate.ZERO
+                            ),
+                            new Sub(
+                                    convertOperand(ir.result),
+                                    convertOperand(ir.operand)
+                            )
+                    ));
                 }
-                tirInstructions.addAll(List.of(
-                        new Lad(
-                                convertOperand(ir.result),
-                                Immediate.ZERO
-                        ),
-                        negInstr
-                ));
+
             }
             case NOT -> {
                 tirInstructions.addAll(List.of(
