@@ -1,50 +1,39 @@
 package enshud.s4.compiler.generator.impls.casl.tir.instructions;
 
-import enshud.s4.compiler.generator.AllocatableRegister;
-import enshud.s4.compiler.generator.impls.casl.tir.operand.TIROperand;
+import enshud.s4.compiler.generator.impls.casl.tir.operand.AddressBasedOperand;
+import enshud.s4.compiler.generator.impls.casl.tir.operand.VirtualRegister;
+import enshud.s4.compiler.instruction.OperandRef;
 
 import java.util.Optional;
 import java.util.Set;
 
-public class Push extends TIrInstr<Push> {
-    private final OperandRef src;
-
-    public Push(TIROperand src) {
-        this.src = new OperandRef(src);
+public class Push extends Instr1Op<Push, AddressBasedOperand> {
+    public Push(AddressBasedOperand address) {
+        super(address);
     }
 
-    public TIROperand getSrc() {
-        return src.get();
+    public AddressBasedOperand getSrc() {
+        return op.get();
     }
 
     @Override
-    public <T> T accept(ITIRVisitor<T> visitor) {
+    public <R> R accept(ITIRVisitor<R> visitor) {
         return visitor.visit(this);
     }
 
     @Override
-    public String toString() {
-        return formatInstruction(src);
+    protected Set<OperandRef<?>> getUsedRefs() {
+        return Set.of(op);
     }
 
     @Override
-    public Set<AllocatableRegister> getUse() {
-        return registerSet(src);
+    protected Set<OperandRef<?>> getDefinedRefs() {
+        return Set.of();
     }
 
     @Override
-    public Set<AllocatableRegister> getDef() {
-        return registerSet();
-    }
-
-    @Override
-    public void replaceUse(AllocatableRegister oldReg, AllocatableRegister newReg) {
-        replaceAllocatable(oldReg, newReg, src);
-    }
-
-    @Override
-    public void replaceDef(AllocatableRegister oldReg, AllocatableRegister newReg) {
-
+    public Set<VirtualRegister> getCopiedRegisters() {
+        return Set.of();
     }
 
     @Override
@@ -65,10 +54,5 @@ public class Push extends TIrInstr<Push> {
     @Override
     public boolean isTerminal() {
         return false;
-    }
-
-    @Override
-    public Set<AllocatableRegister> getCopiedRegisters() {
-        return Set.of();
     }
 }

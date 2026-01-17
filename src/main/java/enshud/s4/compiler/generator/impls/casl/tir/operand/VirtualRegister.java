@@ -6,7 +6,7 @@ import enshud.util.SerialManager;
 
 import java.util.Optional;
 
-public class VirtualRegister extends TIROperand implements AllocatableRegister {
+public class VirtualRegister extends DataOperand implements AllocatableRegister {
     public String id;
     public double spillCost;
     private Register predefined;

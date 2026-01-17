@@ -1,27 +1,24 @@
 package enshud.s4.compiler.generator;
 
 import enshud.s4.compiler.generator.allocate.TargetDescription;
-import enshud.s4.compiler.instruction.BasicBlock;
 import enshud.s4.compiler.instruction.FunctionUnit;
-import enshud.s4.compiler.instruction.Instruction;
-import enshud.s4.compiler.instruction.UseDef;
 
 import java.util.*;
 
-public class InterferenceGraph {
+public class InterferenceGraph<T extends AllocatableRegister> {
 
     // 元の完全な干渉関係
-    private final Map<AllocatableRegister, Set<AllocatableRegister>> originalAdj = new HashMap<>();
+    private final Map<T, Set<T>> originalAdj = new HashMap<>();
 
     // 現在の干渉グラフ（Simplifyでノードが削除される）
-    private final Map<AllocatableRegister, Set<AllocatableRegister>> currentAdj = new HashMap<>();
+    private final Map<T, Set<T>> currentAdj = new HashMap<>();
 
-    public void addNode(AllocatableRegister r) {
+    public void addNode(T r) {
         originalAdj.putIfAbsent(r, new HashSet<>());
         currentAdj.putIfAbsent(r, new HashSet<>());
     }
 
-    public void addEdge(AllocatableRegister a, AllocatableRegister b) {
+    public void addEdge(T a, T b) {
         if (a.equals(b)) return;
 
         originalAdj.get(a).add(b);
@@ -34,14 +31,14 @@ public class InterferenceGraph {
     //---------------------------------------------------------
     // Simplify フェーズ: ノードを削除する（currentAdj から消す）
     //---------------------------------------------------------
-    public void removeNode(AllocatableRegister node) {
+    public void removeNode(T node) {
         // 1. ノード自身のエントリを削除する
-        Set<AllocatableRegister> neighbors = currentAdj.remove(node);
+        Set<T> neighbors = currentAdj.remove(node);
         if (neighbors == null) return;
 
         // 2. 他のノードの隣接リストから node を削除する
-        for (AllocatableRegister adj : neighbors) {
-            Set<AllocatableRegister> set = currentAdj.get(adj);
+        for (T adj : neighbors) {
+            Set<T> set = currentAdj.get(adj);
             if (set != null) {
                 set.remove(node);
             }
@@ -51,9 +48,9 @@ public class InterferenceGraph {
     //---------------------------------------------------------
     // Select フェーズ: ノードを復元する
     //---------------------------------------------------------
-    public void restoreNode(AllocatableRegister r) {
+    public void restoreNode(T r) {
         // originalAdj から復元すべき隣接ノード集合を取得
-        Set<AllocatableRegister> orig = originalAdj.get(r);
+        Set<T> orig = originalAdj.get(r);
         if (orig == null) {
             // originalAdj になければ干渉関係を持たないノード
             currentAdj.putIfAbsent(r, new HashSet<>());
@@ -64,7 +61,7 @@ public class InterferenceGraph {
         currentAdj.putIfAbsent(r, new HashSet<>());
 
         // 2. 隣接ノードを復元する
-        for (AllocatableRegister n : orig) {
+        for (T n : orig) {
             // 相手がまだグラフに残っていないなら（Simplify 済みなら）復元しない
             if (!currentAdj.containsKey(n)) {
                 continue;
@@ -88,18 +85,18 @@ public class InterferenceGraph {
     //---------------------------------------------------------
     // 現在のグラフ（Simplify 途中）の隣接取得
     //---------------------------------------------------------
-    public Set<AllocatableRegister> getAdjacents(AllocatableRegister r) {
+    public Set<T> getAdjacents(T r) {
         return currentAdj.getOrDefault(r, Set.of());
     }
 
-    public Set<AllocatableRegister> getNodes() {
+    public Set<T> getNodes() {
         return currentAdj.keySet();
     }
 
-    public static InterferenceGraph build(FunctionUnit<? extends AnalysableInstruction> function, Liveness<AllocatableRegister, ? extends AnalysableInstruction> liveness, TargetDescription desc) {
+    public static <T extends AllocatableRegister> InterferenceGraph<T> build(FunctionUnit<? extends AnalysableInstruction<T>> function, Liveness<T, ? extends AnalysableInstruction<T>> liveness, TargetDescription desc) {
         var blocks = function.getBlocks();
 
-        var graph = new InterferenceGraph();
+        var graph = new InterferenceGraph<T>();
 
         // 最初のブロックで　liveIn されている変数を擬似的にdef しているとみなす
         var entryBlock = blocks.getFirst();

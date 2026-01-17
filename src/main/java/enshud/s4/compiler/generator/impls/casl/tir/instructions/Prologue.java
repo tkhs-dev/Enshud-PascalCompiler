@@ -2,18 +2,20 @@ package enshud.s4.compiler.generator.impls.casl.tir.instructions;
 
 import enshud.s4.compiler.generator.AllocatableRegister;
 import enshud.s4.compiler.generator.impls.casl.CaslRegisters;
+import enshud.s4.compiler.generator.impls.casl.tir.operand.TIROperand;
 import enshud.s4.compiler.generator.impls.casl.tir.operand.VirtualRegister;
+import enshud.s4.compiler.instruction.OperandRef;
 
 import java.util.Optional;
 import java.util.Set;
 
 public class Prologue extends TIrInstr<Prologue> {
-    private final OperandRef dummyGR6;
-    private final OperandRef dummyGR7;
+    private final OperandRef<TIROperand> dummyGR6;
+    private final OperandRef<TIROperand> dummyGR7;
 
     public Prologue() {
-        this.dummyGR6 = new OperandRef(VirtualRegister.withPredefined("WRTGR6", CaslRegisters.GR6).withSpillCost(0));
-        this.dummyGR7 = new OperandRef(VirtualRegister.withPredefined("WRTGR7", CaslRegisters.GR7).withSpillCost(0));
+        this.dummyGR6 = new OperandRef<>(VirtualRegister.withPredefined("WRTGR6", CaslRegisters.GR6).withSpillCost(0));
+        this.dummyGR7 = new OperandRef<>(VirtualRegister.withPredefined("WRTGR7", CaslRegisters.GR7).withSpillCost(0));
     }
 
     @Override
@@ -22,23 +24,21 @@ public class Prologue extends TIrInstr<Prologue> {
     }
 
     @Override
-    public Set<AllocatableRegister> getUse() {
+    public Set<? extends TIROperand> getOperands() {
+        return Set.of(
+                dummyGR6.get(),
+                dummyGR7.get()
+        );
+    }
+
+    @Override
+    protected Set<OperandRef<?>> getUsedRefs() {
         return Set.of();
     }
 
     @Override
-    public Set<AllocatableRegister> getDef() {
-        return registerSet(dummyGR6, dummyGR7);
-    }
-
-    @Override
-    public void replaceUse(AllocatableRegister oldReg, AllocatableRegister newReg) {
-
-    }
-
-    @Override
-    public void replaceDef(AllocatableRegister oldReg, AllocatableRegister newReg) {
-        replaceAllocatable(oldReg, newReg, dummyGR6, dummyGR7);
+    protected Set<OperandRef<?>> getDefinedRefs() {
+        return Set.of(dummyGR6, dummyGR7);
     }
 
     @Override
@@ -62,7 +62,7 @@ public class Prologue extends TIrInstr<Prologue> {
     }
 
     @Override
-    public Set<AllocatableRegister> getCopiedRegisters() {
+    public Set<VirtualRegister> getCopiedRegisters() {
         return Set.of();
     }
 }

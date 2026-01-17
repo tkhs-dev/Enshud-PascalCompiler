@@ -2,62 +2,61 @@ package enshud.s4.compiler.generator.allocate;
 
 import enshud.s4.compiler.generator.*;
 import enshud.s4.compiler.instruction.FunctionUnit;
-import enshud.s4.compiler.instruction.Instruction;
 
 import java.util.*;
 
-public class RegisterAllocator extends Allocator{
+public class RegisterAllocator<T extends AllocatableRegister> extends Allocator<T>{
     private final TargetDescription description;
 
     // 干渉グラフ
-    protected final InterferenceGraph graph;
+    protected final InterferenceGraph<T> graph;
 
     // コピーされたレジスタの集合と対応する実レジスタ
-    protected final Map<Set<AllocatableRegister>, Register> copiedRegisterSets = new HashMap<>();
+    protected final Map<Set<T>, Register> copiedRegisterSets = new HashMap<>();
 
     // VirtualRegister → Register
-    private final Map<AllocatableRegister, Register> allocation = new HashMap<>();
+    private final Map<T, Register> allocation = new HashMap<>();
 
     // Spill が必要な register
-    private final Set<AllocatableRegister> spilled = new HashSet<>();
+    private final Set<T> spilled = new HashSet<>();
 
     // 彩色用スタック（Simplifyフェーズ）
-    private final Deque<AllocatableRegister> stack = new ArrayDeque<>();
+    private final Deque<T> stack = new ArrayDeque<>();
 
-    public RegisterAllocator(FunctionUnit<? extends AnalysableInstruction> function, TargetDescription targetDescription) {
+    public <I extends AnalysableInstruction<T>> RegisterAllocator(FunctionUnit<I> function, TargetDescription targetDescription) {
         super(function, targetDescription);
         this.description = targetDescription;
-        var liveness = new LivenessAnalyzer<>(function).analyze();
+        var liveness = new LivenessAnalyzer<T, I>(function).analyze();
         this.graph = InterferenceGraph.build(function, liveness, targetDescription);
     }
 
-    public Map<AllocatableRegister, Register> getAllocation() {
+    public Map<T, Register> getAllocation() {
         return allocation;
     }
 
-    public Set<AllocatableRegister> getSpilled() {
+    public Set<T> getSpilled() {
         return spilled;
     }
 
     //-------------------------------------------------------------
     // メイン処理
     //-------------------------------------------------------------
-    public Allocation allocate() {
+    public Allocation<T> allocate() {
         collectCopiedRegisters();
         System.out.println("Copied register sets: " + copiedRegisterSets.keySet());
         buildStack();
         selectPhase();
         // リロード退避用のスピルを求める
-        return new Allocation(allocation, spilled);
+        return new Allocation<>(allocation, spilled);
     }
 
     private void collectCopiedRegisters() {
         for (var instr : function.getInstructions()) {
-            var copied = ((AnalysableInstruction)instr).getCopiedRegisters();
+            var copied = ((AnalysableInstruction<T>)instr).getCopiedRegisters();
             // 共通部分がある場合はマージする
             boolean merged = false;
-            for (Set<AllocatableRegister> set : copiedRegisterSets.keySet()) {
-                Set<AllocatableRegister> intersection = new HashSet<>(set);
+            for (Set<T> set : copiedRegisterSets.keySet()) {
+                Set<T> intersection = new HashSet<>(set);
                 intersection.retainAll(copied);
                 if (!intersection.isEmpty()) {
                     copied.addAll(set);
@@ -72,10 +71,10 @@ public class RegisterAllocator extends Allocator{
         }
     }
 
-    private AllocatableRegister findRemovableNode() {
+    private T findRemovableNode() {
         int K = description.getAllocatableRegisters().size();
 
-        for (AllocatableRegister r : graph.getNodes()) {
+        for (var r : graph.getNodes()) {
             // 事前割当レジスタかつ専用レジスタの場合除外
             if (r.getPredefined().isPresent()){
                 var preReg = r.getPredefined().get();
@@ -85,7 +84,7 @@ public class RegisterAllocator extends Allocator{
             }
         }
 
-        for (AllocatableRegister r : graph.getNodes()) {
+        for (T r : graph.getNodes()) {
             if (graph.getAdjacents(r).size() < K) {
                 return r;
             }
@@ -98,7 +97,7 @@ public class RegisterAllocator extends Allocator{
     //-------------------------------------------------------------
     private void selectPhase() {
         graph.restoreAll();
-        var removeList = new ArrayList<AllocatableRegister>();
+        var removeList = new ArrayList<T>();
         // 汎用レジスタが必要な場合は先に処理
         for (var r : stack){
             if (!r.needsGeneralPurpose()) {
@@ -138,7 +137,7 @@ public class RegisterAllocator extends Allocator{
             stack.remove(r);
         }
         while (!stack.isEmpty()) {
-            AllocatableRegister r = stack.pop();
+            T r = stack.pop();
 
             // 事前割り当てレジスタは固定
             if (r.getPredefined().isPresent()) {
@@ -159,13 +158,13 @@ public class RegisterAllocator extends Allocator{
     //-------------------------------------------------------------
     // 利用可能な実レジスタを選択
     //-------------------------------------------------------------
-    private Register chooseColor(AllocatableRegister r, boolean needsGeneralPurpose) {
-        Set<AllocatableRegister> adjs = graph.getAdjacents(r);
+    private Register chooseColor(T r, boolean needsGeneralPurpose) {
+        Set<T> adjs = graph.getAdjacents(r);
 
         Set<Register> used = new HashSet<>();
 
         // 隣接ノードが使用している色を除外
-        for (AllocatableRegister neigh : adjs) {
+        for (T neigh : adjs) {
 
             // 事前割り当て色
             neigh.getPredefined().ifPresent(used::add);
@@ -177,7 +176,7 @@ public class RegisterAllocator extends Allocator{
 
         // コピーでかつ色が決まっている場合は優先して使用
         for (var entry : copiedRegisterSets.entrySet()) {
-            Set<AllocatableRegister> regSet = entry.getKey();
+            Set<T> regSet = entry.getKey();
             Register assignedColor = entry.getValue();
 
             if (assignedColor != null && regSet.contains(r)) {
@@ -208,34 +207,34 @@ public class RegisterAllocator extends Allocator{
     private void buildStack() {
         while (!graph.getNodes().isEmpty()) {
 
-            AllocatableRegister removable = findRemovableNode();
+            T removable = findRemovableNode();
 
             if (removable != null) {
                 graph.removeNode(removable);
                 stack.push(removable);
             } else {
                 // Simplify 不可 → spill 候補を 1 つ選ぶ
-                AllocatableRegister victim = chooseSpillCandidate();
+                T victim = chooseSpillCandidate();
                 graph.removeNode(victim);
                 spilled.add(victim);
             }
         }
     }
 
-    private AllocatableRegister chooseSpillCandidate() {
-        var reg = graph.getNodes().stream().min(Comparator.comparingDouble(AllocatableRegister::getSpillCost));
+    private T chooseSpillCandidate() {
+        var reg = graph.getNodes().stream().min(Comparator.comparingDouble(T::getSpillCost));
         if (reg.isPresent()) {
             return reg.get();
         }
         throw new IllegalStateException("No spill candidate");
     }
 
-    private void allocateRealRegister(AllocatableRegister r, Register realReg) {
+    private void allocateRealRegister(T r, Register realReg) {
         allocation.put(r, realReg);
 
         // コピーされたレジスタ集合に割り当てを記録
         for (var entry : copiedRegisterSets.entrySet()) {
-            Set<AllocatableRegister> regSet = entry.getKey();
+            Set<T> regSet = entry.getKey();
             if (regSet.contains(r)) {
                 copiedRegisterSets.put(regSet, realReg);
                 break;

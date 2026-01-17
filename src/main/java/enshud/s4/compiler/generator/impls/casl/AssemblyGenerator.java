@@ -1,8 +1,5 @@
 package enshud.s4.compiler.generator.impls.casl;
 
-import enshud.s4.compiler.generator.AllocatableRegister;
-import enshud.s4.compiler.generator.InterferenceGraph;
-import enshud.s4.compiler.generator.LivenessAnalyzer;
 import enshud.s4.compiler.generator.allocate.Allocation;
 import enshud.s4.compiler.generator.allocate.RegisterAllocator;
 import enshud.s4.compiler.generator.impls.casl.assembly.instructions.*;
@@ -65,10 +62,10 @@ public class AssemblyGenerator {
     private void processFunction(TIRFunction function) {
         serial = new SerialManager("spill");
         var desc = new CaslDescription();
-        Allocation allocation = null;
+        Allocation<VirtualRegister> allocation = null;
         processAddressRegisters(function);
         while(true){
-            var allocator = new RegisterAllocator(function, desc);
+            var allocator = new RegisterAllocator<>(function, desc);
             allocation = allocator.allocate();
             var spilled = allocation.getSpilled();
             System.out.println("Spilling registers: " + spilled);
@@ -88,9 +85,10 @@ public class AssemblyGenerator {
 
     private void processAddressRegisters(TIRFunction function){
         for(var ir : function.getInstructions()){
-            var uses = ir.getUse();
+            var uses = ir.getOperands();
             for(var use : uses){
-                if(use instanceof Address addr && addr.offset instanceof VirtualRegister vreg){
+                if(use instanceof AddressOperand addr && addr.getOffset().isPresent()){
+                    VirtualRegister vreg = addr.getOffset().get();
                     System.out.println("Address register needs general purpose: " + vreg);
                     vreg.setNeedsGeneralPurpose(true);
                 }
@@ -98,7 +96,7 @@ public class AssemblyGenerator {
         }
     }
 
-    private void spillFunction(TIRFunction function, Set<AllocatableRegister> spilled) {
+    private void spillFunction(TIRFunction function, Set<VirtualRegister> spilled) {
         var editor = function.getEditor();
         for (var vreg : spilled) {
             var slot = function.frameInfo.addSpill(1);
@@ -164,13 +162,13 @@ public class AssemblyGenerator {
 }
 
 class TIRConverter implements ITIRVisitor<Void>{
-    private final InstructionSet instructions;
+    private final InstructionSet<AssemblyInstr<?>> instructions;
     private final InstructionSetEditor<AssemblyInstr<?>> editor;
-    private final Allocation allocation;
+    private final Allocation<VirtualRegister> allocation;
     private final TIRFunction function;
 
-    public TIRConverter(Allocation allocation, TIRFunction function) {
-        this.instructions = new InstructionSet();
+    public TIRConverter(Allocation<VirtualRegister> allocation, TIRFunction function) {
+        this.instructions = new InstructionSet<AssemblyInstr<?>>();
         this.editor = instructions.getEditor();
         this.allocation = allocation;
         this.function = function;
@@ -243,7 +241,7 @@ class TIRConverter implements ITIRVisitor<Void>{
     @Override
     public Void visit(Lad ir) {
         addInstructions(ir,
-                new LAD(reg(ir.getDest()), mem(ir.getValue()))
+                new LAD(reg(ir.getDest()), mem(ir.getSrc()))
         );
         return null;
     }
@@ -418,36 +416,22 @@ class TIRConverter implements ITIRVisitor<Void>{
                     }
                     baseFrameReg = CaslRegisters.TEMP;
                 }
-                if (f.offset == null) {
+                if (f.getOffset().isPresent()) {
                     yield new MemoryOperand(String.valueOf(slotPtr), baseFrameReg);
                 }
-                if (f.offset instanceof Immediate i) {
-                    if(i instanceof NumericImmediate n){
-                        editor.append(new LAD(new RegisterOperand(CaslRegisters.TEMP), new MemoryOperand(String.valueOf(-(n.value - 1)), baseFrameReg))); // 配列のインデックスが1始まりのため1をたす
-                    } else {
-                        throw new IllegalArgumentException("FrameSlot offset must be NumericImmediate: " + i);
-                    }
-                } else {
-                    editor.append(
+
+//                editor.append(new LAD(new RegisterOperand(CaslRegisters.TEMP), new MemoryOperand(String.valueOf(-(n.value - 1)), baseFrameReg))); // 配列のインデックスが1始まりのため1をたす
+                editor.append(
                         new LAD(new RegisterOperand(CaslRegisters.TEMP), new MemoryOperand("1", baseFrameReg)),
-                        new SUBA(new RegisterOperand(CaslRegisters.TEMP), data(f.offset))
-                    ); // 配列のインデックスが1始まりのため1をたす
-                }
+                        new SUBA(new RegisterOperand(CaslRegisters.TEMP), data(f.getOffset().get()))
+                ); // 配列のインデックスが1始まりのため1をたす
                 yield new MemoryOperand(String.valueOf(slotPtr), CaslRegisters.TEMP);
             }
-            case Address a -> {
-                if (a.offset == null) {
+            case AddressOperand a -> {
+                if (a.getOffset().isEmpty()) {
                     yield new MemoryOperand(a.base);
                 } else {
-                    if (a.offset instanceof Immediate i) {
-                        if(i instanceof NumericImmediate n){
-                            editor.append(new LAD(new RegisterOperand(CaslRegisters.TEMP), new MemoryOperand(String.valueOf(n.value))));
-                        } else {
-                            throw new IllegalArgumentException("Address offset must be NumericImmediate: " + i);
-                        }
-                    } else {
-                        editor.append(new LD(new RegisterOperand(CaslRegisters.TEMP), data(a.offset)));
-                    }
+                    editor.append(new LD(new RegisterOperand(CaslRegisters.TEMP), data(a.getOffset().get())));
                     yield new MemoryOperand(a.base, CaslRegisters.TEMP);
                 }
             }

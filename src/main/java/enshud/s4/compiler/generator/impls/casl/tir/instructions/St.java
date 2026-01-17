@@ -1,26 +1,25 @@
 package enshud.s4.compiler.generator.impls.casl.tir.instructions;
 
 import enshud.s4.compiler.generator.AllocatableRegister;
+import enshud.s4.compiler.generator.impls.casl.tir.operand.FrameSlot;
 import enshud.s4.compiler.generator.impls.casl.tir.operand.TIROperand;
+import enshud.s4.compiler.generator.impls.casl.tir.operand.VirtualRegister;
+import enshud.s4.compiler.instruction.OperandRef;
 
 import java.util.Optional;
 import java.util.Set;
 
-public class St extends TIrInstr<St> {
-    private final OperandRef src;
-    private final OperandRef dest;
-
-    public St(TIROperand src, TIROperand dest) {
-        this.src = new OperandRef(src);
-        this.dest = new OperandRef(dest);
+public class St extends Instr2Op<St, VirtualRegister, FrameSlot> {
+    public St(VirtualRegister src, FrameSlot dest) {
+        super(src, dest);
     }
 
-    public TIROperand getDest() {
-        return dest.get();
+    public VirtualRegister getDest() {
+        return op1.get();
     }
 
-    public TIROperand getSrc() {
-        return src.get();
+    public FrameSlot getSrc() {
+        return op2.get();
     }
 
     @Override
@@ -29,28 +28,13 @@ public class St extends TIrInstr<St> {
     }
 
     @Override
-    public String toString() {
-        return formatInstruction(src, dest);
+    protected Set<OperandRef<?>> getUsedRefs() {
+        return Set.of(op1, op2);
     }
 
     @Override
-    public Set<AllocatableRegister> getUse() {
-        return registerSet(src);
-    }
-
-    @Override
-    public Set<AllocatableRegister> getDef() {
-        return registerSet(dest);
-    }
-
-    @Override
-    public void replaceUse(AllocatableRegister oldReg, AllocatableRegister newReg) {
-        replaceAllocatable(oldReg, newReg, src);
-    }
-
-    @Override
-    public void replaceDef(AllocatableRegister oldReg, AllocatableRegister newReg) {
-        replaceAllocatable(oldReg, newReg, dest);
+    protected Set<OperandRef<?>> getDefinedRefs() {
+        return Set.of();
     }
 
     @Override
@@ -74,7 +58,7 @@ public class St extends TIrInstr<St> {
     }
 
     @Override
-    public Set<AllocatableRegister> getCopiedRegisters() {
+    public Set<VirtualRegister> getCopiedRegisters() {
         return Set.of();
     }
 }

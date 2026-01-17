@@ -34,8 +34,8 @@ public class Ir2TIr {
         this.frameInfoMap = generateFrameInfoMap(irProgram);
         var main = convert(irProgram.main);
         main.getEditor().prependAll(true, List.of(
-                new Lad(VirtualRegister.withPredefined("WRTGR6", CaslRegisters.GR6).withSpillCost(0), new Address("0")),
-                new Lad(VirtualRegister.withPredefined("WRTGR7", CaslRegisters.GR7).withSpillCost(0), new Address("BUF"))
+                new Lad(VirtualRegister.withPredefined("WRTGR6", CaslRegisters.GR6).withSpillCost(0), new AddressOperand("0")),
+                new Lad(VirtualRegister.withPredefined("WRTGR7", CaslRegisters.GR7).withSpillCost(0), new AddressOperand("BUF"))
         ));
         var functions = irProgram.functions.entrySet().stream()
                 .collect(java.util.stream.Collectors.toMap(
@@ -136,20 +136,20 @@ class Ir2TIrConverter implements IIrVisitor<Void> {
         // push arguments
         ir.args.reversed().forEach(arg -> {
                     tirInstructions.add(
-                            new Push(new Address("0").setOffset(convertOperand(arg)))
+                            new Push(new AddressOperand("0").withOffset(register(convertOperand(arg))))
                     );
                 });
         // push static link
         var levelDiff = currentFunction.level - funcLevelMap.get(ir.functionLabel);
         if (levelDiff ==  -1) {
             tirInstructions.add(
-                    new Push(new Address("0").setOffset(VirtualRegister.tmpWithPredefined(CaslRegisters.FP)))
+                    new Push(new AddressOperand("0").withOffset(VirtualRegister.tmpWithPredefined(CaslRegisters.FP)))
             );
         }else{
             var staticLink = VirtualRegister.tmpWithPredefined(CaslRegisters.GR2);
             tirInstructions.addAll(List.of(
                     new Ld(staticLink, new FrameSlot(0, levelDiff)),
-                    new Push(new Address("0").setOffset(staticLink))
+                    new Push(new AddressOperand("0").withOffset(staticLink))
             ));
         }
         tirInstructions.add(new enshud.s4.compiler.generator.impls.casl.tir.instructions.Call(ir.functionLabel,
@@ -166,7 +166,7 @@ class Ir2TIrConverter implements IIrVisitor<Void> {
             tirInstructions.add(
                     new Lad(
                             VirtualRegister.tmpWithPredefined(CaslRegisters.SP),
-                            new Address(String.valueOf(ir.args.size())).setOffset(VirtualRegister.tmpWithPredefined(CaslRegisters.SP))
+                            new AddressOperand(String.valueOf(ir.args.size())).withOffset(VirtualRegister.tmpWithPredefined(CaslRegisters.SP))
                     )
             );
         }
@@ -182,11 +182,11 @@ class Ir2TIrConverter implements IIrVisitor<Void> {
                 tirInstructions.add(new Jmp(targetLabel, Jmp.Type.UNCONDITIONAL));
             }
             case TRUE ->  {
-                tirInstructions.add(new Cp(convertOperand(ir.condition), Immediate.FALSE));
+                tirInstructions.add(new Cp(register(convertOperand(ir.condition)), Immediate.FALSE));
                 tirInstructions.add(new Jmp(targetLabel, Jmp.Type.NONZERO));
             }
             case FALSE -> {
-                tirInstructions.add(new Cp(convertOperand(ir.condition), Immediate.FALSE));
+                tirInstructions.add(new Cp(register(convertOperand(ir.condition)), Immediate.FALSE));
                 tirInstructions.add(new Jmp(targetLabel, Jmp.Type.ZERO));
             }
         }
@@ -208,7 +208,7 @@ class Ir2TIrConverter implements IIrVisitor<Void> {
     public Void visit(LoadIndexed ir) {
         var slotOpt = lookupVariableSlot(ir.arrayVar.get());
         tirInstructions.addAll(List.of(
-            new Ld(register(convertOperand(ir.targetVar)), new FrameSlot(slotOpt.slot, slotOpt.levelDiff).setOffset(register(convertOperand(ir.indexVar))))
+            new Ld(register(convertOperand(ir.targetVar)), new FrameSlot(slotOpt.slot, slotOpt.levelDiff).withOffset(register(convertOperand(ir.indexVar))))
         ));
         return null;
     }
@@ -223,7 +223,7 @@ class Ir2TIrConverter implements IIrVisitor<Void> {
     public Void visit(StoreIndexed ir) {
         var slotOpt = lookupVariableSlot(ir.target.get());
         tirInstructions.addAll(List.of(
-            new St(register(convertOperand(ir.value)), new FrameSlot(slotOpt.slot, slotOpt.levelDiff).setOffset(register(convertOperand(ir.index))))
+            new St(register(convertOperand(ir.value)), new FrameSlot(slotOpt.slot, slotOpt.levelDiff).withOffset(register(convertOperand(ir.index))))
         ));
         return null;
     }
@@ -255,7 +255,7 @@ class Ir2TIrConverter implements IIrVisitor<Void> {
             }
             case STRING -> {
                 yield List.of(
-                        new Ld(VirtualRegister.tmpWithPredefined(CaslRegisters.GR1), new Address("-1").setOffset(convertOperand(ir.operand))),
+                        new Ld(VirtualRegister.tmpWithPredefined(CaslRegisters.GR1), new AddressOperand("-1").withOffset(register(convertOperand(ir.operand)))),
                         new enshud.s4.compiler.generator.impls.casl.tir.instructions.Call(
                                 "WRTSTR",
                                 false,
@@ -295,17 +295,20 @@ class Ir2TIrConverter implements IIrVisitor<Void> {
                 if (ir.right.get() instanceof Const) {
                     tirInstructions.add(
                             new Lad(
-                                    convertOperand(ir.result),
-                                    new Address(String.valueOf((int)((Const) ir.right.get()).value)).setOffset(register(convertOperand(ir.left)))
+                                    register(convertOperand(ir.result)),
+                                    new AddressOperand(String.valueOf((int)((Const) ir.right.get()).value)).withOffset(register(convertOperand(ir.left)))
                             )
                     );
                 } else {
                     tirInstructions.addAll(List.of(
                             new Add(
-                                    leftOperand,
-                                    convertOperand(ir.right)
+                                    register(leftOperand),
+                                    data(convertOperand(ir.right))
                             ),
-                            new Ld(convertOperand(ir.result), leftOperand)
+                            new Ld(
+                                    register(convertOperand(ir.result)),
+                                    data(leftOperand)
+                            )
                     ));
                 }
 
@@ -314,17 +317,20 @@ class Ir2TIrConverter implements IIrVisitor<Void> {
                 if (ir.right.get() instanceof Const) {
                     tirInstructions.add(
                             new Lad(
-                                    convertOperand(ir.result),
-                                    new Address(String.valueOf(-(int)((Const) ir.right.get()).value)).setOffset(register(convertOperand(ir.left)))
+                                    register(convertOperand(ir.result)),
+                                    new AddressOperand(String.valueOf(-(int)((Const) ir.right.get()).value)).withOffset(register(convertOperand(ir.left)))
                             )
                     );
                 } else {
                     tirInstructions.addAll(List.of(
                             new Sub(
-                                    leftOperand,
-                                    convertOperand(ir.right)
+                                    register(leftOperand),
+                                    data(convertOperand(ir.right))
                             ),
-                            new Ld(convertOperand(ir.result), leftOperand)
+                            new Ld(
+                                    register(convertOperand(ir.result)),
+                                    data(leftOperand)
+                            )
                     ));
                 }
             }
@@ -340,7 +346,10 @@ class Ir2TIrConverter implements IIrVisitor<Void> {
                                 List.of(in1, in2),
                                 List.of(out)
                         ),
-                        new Ld(convertOperand(ir.result), out)
+                        new Ld(
+                                register(convertOperand(ir.result)),
+                                out
+                        )
                 ));
             }
             case DIV -> {
@@ -355,7 +364,10 @@ class Ir2TIrConverter implements IIrVisitor<Void> {
                                 List.of(in1, in2),
                                 List.of(out)
                         ),
-                        new Ld(convertOperand(ir.result), out)
+                        new Ld(
+                                register(convertOperand(ir.result)),
+                                out
+                        )
                 ));
             }
             case MOD -> {
@@ -370,7 +382,10 @@ class Ir2TIrConverter implements IIrVisitor<Void> {
                                 List.of(in1, in2),
                                 List.of(out)
                         ),
-                        new Ld(convertOperand(ir.result), out)
+                        new Ld(
+                                register(convertOperand(ir.result)),
+                                out
+                        )
                 ));
             }
             case AND -> {
@@ -379,7 +394,10 @@ class Ir2TIrConverter implements IIrVisitor<Void> {
                                 register(leftOperand),
                                 data(convertOperand(ir.right))
                         ),
-                        new Ld(convertOperand(ir.result), leftOperand)
+                        new Ld(
+                                register(convertOperand(ir.result)),
+                                data(leftOperand)
+                        )
                 ));
             }
             case OR -> { // boolean OR
@@ -388,18 +406,30 @@ class Ir2TIrConverter implements IIrVisitor<Void> {
                                 register(leftOperand),
                                 data(convertOperand(ir.right))
                         ),
-                        new Ld(convertOperand(ir.result), leftOperand)
+                        new Ld(
+                                register(convertOperand(ir.result)),
+                                data(leftOperand)
+                        )
                 ));
             }
             case NEQ -> {
                 var labelFalse = serialManager.New();
                 var labelEnd = serialManager.New();
                 tirInstructions.addAll(List.of(
-                        new Cp(register(leftOperand), data(convertOperand(ir.right))),
+                        new Cp(
+                                register(leftOperand),
+                                data(convertOperand(ir.right))
+                        ),
                         new Jmp(labelFalse, Jmp.Type.ZERO),
-                        new Ld(convertOperand(ir.result), Immediate.TRUE),
+                        new Ld(
+                                register(convertOperand(ir.result)),
+                                Immediate.TRUE
+                        ),
                         new Jmp(labelEnd, Jmp.Type.UNCONDITIONAL),
-                        new Ld(convertOperand(ir.result), Immediate.FALSE).withLabel(labelFalse),
+                        new Ld(
+                                register(convertOperand(ir.result)),
+                                Immediate.FALSE
+                        ).withLabel(labelFalse),
                         new Nop().withLabel(labelEnd)
                 ));
             }
@@ -407,11 +437,20 @@ class Ir2TIrConverter implements IIrVisitor<Void> {
                 var labelFalse = serialManager.New();
                 var labelEnd = serialManager.New();
                 tirInstructions.addAll(List.of(
-                        new Cp(register(leftOperand), data(convertOperand(ir.right))),
+                        new Cp(
+                                register(leftOperand),
+                                data(convertOperand(ir.right))
+                        ),
                         new Jmp(labelFalse, Jmp.Type.NONZERO),
-                        new Ld(convertOperand(ir.result), Immediate.TRUE),
+                        new Ld(
+                                register(convertOperand(ir.result)),
+                                Immediate.TRUE
+                        ),
                         new Jmp(labelEnd, Jmp.Type.UNCONDITIONAL),
-                        new Ld(convertOperand(ir.result), Immediate.FALSE).withLabel(labelFalse),
+                        new Ld(
+                                register(convertOperand(ir.result)),
+                                Immediate.FALSE
+                        ).withLabel(labelFalse),
                         new Nop().withLabel(labelEnd)
                 ));
             }
@@ -419,11 +458,20 @@ class Ir2TIrConverter implements IIrVisitor<Void> {
                 var labelFalse = serialManager.New();
                 var labelEnd = serialManager.New();
                 tirInstructions.addAll(List.of(
-                        new Cp(register(leftOperand), data(convertOperand(ir.right))),
+                        new Cp(
+                                register(leftOperand),
+                                data(convertOperand(ir.right))
+                        ),
                         new Jmp(labelFalse, Jmp.Type.PLUS),
-                        new Ld(convertOperand(ir.result), Immediate.TRUE),
+                        new Ld(
+                                register(convertOperand(ir.result)),
+                                Immediate.TRUE
+                        ),
                         new Jmp(labelEnd, Jmp.Type.UNCONDITIONAL),
-                        new Ld(convertOperand(ir.result), Immediate.FALSE).withLabel(labelFalse),
+                        new Ld(
+                                register(convertOperand(ir.result)),
+                                Immediate.FALSE
+                        ).withLabel(labelFalse),
                         new Nop().withLabel(labelEnd)
                 ));
             }
@@ -431,11 +479,20 @@ class Ir2TIrConverter implements IIrVisitor<Void> {
                 var labelTrue = serialManager.New();
                 var labelEnd = serialManager.New();
                 tirInstructions.addAll(List.of(
-                        new Cp(register(leftOperand), data(convertOperand(ir.right))),
+                        new Cp(
+                                register(leftOperand),
+                                data(convertOperand(ir.right))
+                        ),
                         new Jmp(labelTrue, Jmp.Type.MINUS),
-                        new Ld(convertOperand(ir.result), Immediate.FALSE),
+                        new Ld(
+                                register(convertOperand(ir.result)),
+                                Immediate.FALSE
+                        ),
                         new Jmp(labelEnd, Jmp.Type.UNCONDITIONAL),
-                        new Ld(convertOperand(ir.result), Immediate.TRUE).withLabel(labelTrue),
+                        new Ld(
+                                register(convertOperand(ir.result)),
+                                Immediate.TRUE
+                        ).withLabel(labelTrue),
                         new Nop().withLabel(labelEnd)
                 ));
             }
@@ -443,11 +500,20 @@ class Ir2TIrConverter implements IIrVisitor<Void> {
                 var labelFalse = serialManager.New();
                 var labelEnd = serialManager.New();
                 tirInstructions.addAll(List.of(
-                        new Cp(register(leftOperand), data(convertOperand(ir.right))),
+                        new Cp(
+                                register(leftOperand),
+                                data(convertOperand(ir.right))
+                        ),
                         new Jmp(labelFalse, Jmp.Type.MINUS),
-                        new Ld(convertOperand(ir.result), Immediate.TRUE),
+                        new Ld(
+                                register(convertOperand(ir.result)),
+                                Immediate.TRUE
+                        ),
                         new Jmp(labelEnd, Jmp.Type.UNCONDITIONAL),
-                        new Ld(convertOperand(ir.result), Immediate.FALSE).withLabel(labelFalse),
+                        new Ld(
+                                register(convertOperand(ir.result)),
+                                Immediate.FALSE
+                        ).withLabel(labelFalse),
                         new Nop().withLabel(labelEnd)
                 ));
             }
@@ -455,11 +521,20 @@ class Ir2TIrConverter implements IIrVisitor<Void> {
                 var labelFalse = serialManager.New();
                 var labelEnd = serialManager.New();
                 tirInstructions.addAll(List.of(
-                        new Cp(register(leftOperand), data(convertOperand(ir.right))),
+                        new Cp(
+                                register(leftOperand),
+                                data(convertOperand(ir.right))
+                        ),
                         new Jmp(labelFalse, Jmp.Type.PLUS),
-                        new Ld(convertOperand(ir.result), Immediate.FALSE),
+                        new Ld(
+                                register(convertOperand(ir.result)),
+                                Immediate.FALSE
+                        ),
                         new Jmp(labelEnd, Jmp.Type.UNCONDITIONAL),
-                        new Ld(convertOperand(ir.result), Immediate.TRUE).withLabel(labelFalse),
+                        new Ld(
+                                register(convertOperand(ir.result)),
+                                Immediate.TRUE
+                        ).withLabel(labelFalse),
                         new Nop().withLabel(labelEnd)
                 ));
             }
@@ -472,23 +547,22 @@ class Ir2TIrConverter implements IIrVisitor<Void> {
     public Void visit(UnaryOp ir) {
         switch (ir.opType) {
             case NEG -> {
-                TIrInstr<?> negInstr;
                 if (ir.operand.get() instanceof Const) {
                     tirInstructions.add(
                             new Lad(
-                                    convertOperand(ir.result),
+                                    register(convertOperand(ir.result)),
                                     new NumericImmediate(-(int)((Const) ir.operand.get()).value, NumericImmediate.Type.DECIMAL)
                             )
                     );
                 } else {
                     tirInstructions.addAll(List.of(
                             new Lad(
-                                    convertOperand(ir.result),
+                                    register(convertOperand(ir.result)),
                                     Immediate.ZERO
                             ),
                             new Sub(
-                                    convertOperand(ir.result),
-                                    convertOperand(ir.operand)
+                                    register(convertOperand(ir.result)),
+                                    data(convertOperand(ir.operand))
                             )
                     ));
                 }
@@ -497,12 +571,12 @@ class Ir2TIrConverter implements IIrVisitor<Void> {
             case NOT -> {
                 tirInstructions.addAll(List.of(
                         new Xor(
-                                convertOperand(ir.operand),
-                                new Address("TRUE")
+                                register(convertOperand(ir.operand)),
+                                new AddressOperand("TRUE")
                         ),
                         new Ld(
-                                convertOperand(ir.result),
-                                convertOperand(ir.operand)
+                                register(convertOperand(ir.result)),
+                                data(convertOperand(ir.operand))
                         )
                 ));
             }
@@ -513,13 +587,23 @@ class Ir2TIrConverter implements IIrVisitor<Void> {
 
     @Override
     public Void visit(Load ir) {
-        tirInstructions.add(new Ld(register(convertOperand(ir.targetVar)), convertOperand(ir.var)));
+        tirInstructions.add(
+                new Ld(
+                        register(convertOperand(ir.targetVar)),
+                        data(convertOperand(ir.var))
+                )
+        );
         return null;
     }
 
     @Override
     public Void visit(Store ir) {
-        tirInstructions.add(new St(register(convertOperand(ir.value)), convertOperand(ir.target)));
+        tirInstructions.add(
+                new St(
+                        register(convertOperand(ir.value)),
+                        frame(convertOperand(ir.target))
+                )
+        );
         return null;
     }
 
@@ -531,10 +615,16 @@ class Ir2TIrConverter implements IIrVisitor<Void> {
         var src = srcRef.get();
         return switch (src) {
             case Const c -> {
-                yield new Lad(convertOperand(dest), convertOperand(src));
+                yield new Lad(
+                        register(convertOperand(dest)),
+                        data(convertOperand(src))
+                );
             }
             default -> {
-                yield new Ld(convertOperand(dest), convertOperand(src));
+                yield new Ld(
+                        register(convertOperand(dest)),
+                        data(convertOperand(src))
+                );
             }
         };
     }
@@ -542,20 +632,20 @@ class Ir2TIrConverter implements IIrVisitor<Void> {
     private TIrInstr<?> move(TIROperand dest, IROperand src) {
         return switch (src) {
             case Const c -> {
-                yield new Lad(dest, convertOperand(src));
+                yield new Lad(register(dest), data(convertOperand(src)));
             }
             default -> {
-                yield new Ld(dest, convertOperand(src));
+                yield new Ld(register(dest), data(convertOperand(src)));
             }
         };
     }
     private TIrInstr<?> move(Register dest, IROperand src) {
         return switch (src) {
             case Const c -> {
-                yield new Lad(VirtualRegister.tmpWithPredefined(dest), convertOperand(src));
+                yield new Lad(VirtualRegister.tmpWithPredefined(dest), data(convertOperand(src)));
             }
             default -> {
-                yield new Ld(VirtualRegister.tmpWithPredefined(dest), convertOperand(src));
+                yield new Ld(VirtualRegister.tmpWithPredefined(dest), data(convertOperand(src)));
             }
         };
     }
@@ -564,9 +654,9 @@ class Ir2TIrConverter implements IIrVisitor<Void> {
     }
     private TIrInstr<?> move(TIROperand dest, TIROperand src) {
         if (src instanceof NumericImmediate || src instanceof CharImmediate) {
-            return new Lad(dest, src);
+            return new Lad(register(dest), data(src));
         }
-        return new Ld(dest, src);
+        return new Ld(register(dest), data(src));
     }
     private TIrInstr<?> move(TIROperand dest, OperandRef<? extends IROperand> src) {
         return move(dest, src.get());
@@ -628,7 +718,7 @@ class Ir2TIrConverter implements IIrVisitor<Void> {
         return convertOperand(irOperandRef.get());
     }
 
-    private TIROperand register(TIROperand operand) {
+    private VirtualRegister register(TIROperand operand) {
         if (operand instanceof VirtualRegister vr) {
             return vr;
         } else {
@@ -638,12 +728,21 @@ class Ir2TIrConverter implements IIrVisitor<Void> {
         }
     }
 
-    private TIROperand data(TIROperand operand) {
-        if (operand instanceof Immediate<?>) {
+    private DataOperand data(TIROperand operand) {
+        if (operand instanceof DataOperand dataOp) {
+            return dataOp;
+        } else {
             var tempReg = new VirtualRegister(tempRegisterSerialManager.New());
             tirInstructions.add(move(tempReg, operand));
             return tempReg;
         }
-        return operand;
+    }
+
+    private FrameSlot frame(TIROperand operand) {
+        if (operand instanceof FrameSlot frameSlot) {
+            return frameSlot;
+        } else {
+            throw new IllegalArgumentException("Operand is not a FrameSlot: " + operand);
+        }
     }
 }

@@ -35,8 +35,8 @@ public class IrOptimizer {
 
     private void initializePasses(OptimizerPipeline<IrFunction> pipeline) {
         // 最適化パスの追加はここで行う
-//        pipeline.addPass(new ConstantFoldingPass());
-//        pipeline.addPass(new ConstantPropagationPass());
+        pipeline.addPass(new ConstantFoldingPass());
+        pipeline.addPass(new ConstantPropagationPass());
     }
 }
 

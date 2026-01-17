@@ -2,19 +2,45 @@ package enshud.s4.compiler.generator.impls.casl.tir.instructions;
 
 import enshud.s4.compiler.generator.AllocatableRegister;
 import enshud.s4.compiler.generator.AnalysableInstruction;
-import enshud.s4.compiler.generator.impls.casl.tir.operand.Address;
-import enshud.s4.compiler.generator.impls.casl.tir.operand.FrameSlot;
-import enshud.s4.compiler.generator.impls.casl.tir.operand.TIROperand;
+import enshud.s4.compiler.generator.impls.casl.tir.operand.*;
+import enshud.s4.compiler.instruction.OperandRef;
 
 import java.util.Arrays;
+import java.util.Objects;
 import java.util.Set;
 
-public abstract class TIrInstr<T extends TIrInstr<T>> extends AnalysableInstruction {
+public abstract class TIrInstr<T extends TIrInstr<T>> extends AnalysableInstruction<VirtualRegister> {
     public abstract <R> R accept(ITIRVisitor<R> visitor);
 
     public T withLabel(String label) {
         setLabel(label);
         return (T) this;
+    }
+
+    public abstract Set<? extends TIROperand> getOperands();
+
+    protected abstract Set<OperandRef<?>> getUsedRefs();
+
+    protected abstract Set<OperandRef<?>> getDefinedRefs();
+
+    @Override
+    public Set<VirtualRegister> getUse() {
+        return registerSet(getDefinedRefs());
+    }
+
+    @Override
+    public Set<VirtualRegister> getDef() {
+        return registerSet(getUsedRefs());
+    }
+
+    @Override
+    public void replaceUse(VirtualRegister oldUse, VirtualRegister newUse) {
+        replaceVirtualRegister(oldUse, newUse, getUsedRefs().toArray(new OperandRef<?>[0]));
+    }
+
+    @Override
+    public void replaceDef(VirtualRegister oldDef, VirtualRegister newDef) {
+        replaceVirtualRegister(oldDef, newDef, getDefinedRefs().toArray(new OperandRef<?>[0]));
     }
 
     protected String formatInstructionWithOpCode(String opCode, Object... operands) {
@@ -42,70 +68,40 @@ public abstract class TIrInstr<T extends TIrInstr<T>> extends AnalysableInstruct
         return formatInstructionWithOpCode(this.getClass().getSimpleName().toUpperCase());
     }
 
-    protected Set<AllocatableRegister> registerSet(OperandRef... ops) {
-        var allocatableReg =  Arrays.stream(ops)
-                .map(opRef -> opRef.get())
-                .filter(op -> op instanceof AllocatableRegister)
-                .map(op -> (AllocatableRegister) op)
+    protected Set<VirtualRegister> registerSet(Set<OperandRef<?>> ops) {
+        var allocatableReg =  ops.stream()
+                .map(OperandRef::get)
+                .filter(op -> op instanceof VirtualRegister)
+                .map(op -> (VirtualRegister) op)
                 .collect(java.util.stream.Collectors.toSet());
-        var fromAddressOffset = Arrays.stream(ops)
-                .map(opRef -> opRef.get())
-                .filter(op -> op instanceof Address)
-                .map(op -> (Address) op)
-                .map(addr -> addr.offset)
-                .filter(offset -> offset instanceof AllocatableRegister)
-                .map(offset -> (AllocatableRegister) offset)
+        var fromOffset = ops.stream()
+                .map(OperandRef::get)
+                .filter(op -> op instanceof AddressBasedOperand)
+                .map(op -> (AddressBasedOperand) op)
+                .map(slot -> slot.getOffset().orElse(null))
+                .filter(Objects::nonNull)
                 .collect(java.util.stream.Collectors.toSet());
-        var fromFrameSlotOffset = Arrays.stream(ops)
-                .map(opRef -> opRef.get())
-                .filter(op -> op instanceof FrameSlot)
-                .map(op -> (FrameSlot) op)
-                .map(slot -> slot.offset)
-                .filter(offset -> offset instanceof AllocatableRegister)
-                .map(offset -> (AllocatableRegister) offset)
-                .collect(java.util.stream.Collectors.toSet());
-        allocatableReg.addAll(fromAddressOffset);
-        allocatableReg.addAll(fromFrameSlotOffset);
+        allocatableReg.addAll(fromOffset);
         return allocatableReg;
     }
 
-    protected void replaceAllocatable(AllocatableRegister oldReg, AllocatableRegister newReg, OperandRef... ops) {
-        if (oldReg instanceof TIROperand oldOp && newReg instanceof TIROperand newOp) {
-            replaceOperand(oldOp, newOp, ops);
-            return;
-        }
-        throw new IllegalArgumentException("Both oldReg and newReg must be TIROperand instances.");
-    }
-
-    public boolean isRegisterUsed(AllocatableRegister reg) {
-        return this.getUse().contains(reg);
-    }
-
-    public boolean isRegisterDefined(AllocatableRegister reg) {
-        return this.getDef().contains(reg);
-    }
-
-    protected void replaceOperand(TIROperand oldOp, TIROperand newOp, OperandRef... ops) {
-        for (OperandRef opRef : ops) {
-            if (opRef.get().equals(oldOp)) {
-                opRef.set(newOp);
-            } else if (opRef.get() instanceof Address addr) {
-                if (addr.offset != null && addr.offset.equals(oldOp)) {
-                    opRef.set(new Address(addr.base).setOffset(newOp));
-                }
-            } else if(opRef.get() instanceof FrameSlot slot) {
-                if (slot.offset.equals(oldOp)) {
-                    FrameSlot newSlot = new FrameSlot(slot.slot, slot.levelDiff);
-                    newSlot.setOffset(newOp);
-                    opRef.set(newSlot);
+    protected void replaceVirtualRegister(VirtualRegister oldReg, VirtualRegister newReg, OperandRef... ops) {
+        for(var opRef : ops) {
+            if(opRef.get().equals(oldReg)) {
+                opRef.set(newReg);
+            } else if (opRef.get() instanceof AddressBasedOperand addr) {
+                if (addr.getOffset().isPresent() && addr.getOffset().get().equals(oldReg)) {
+                    addr.setOffset(newReg);
                 }
             }
         }
     }
 
-    protected static class OperandRef extends enshud.s4.compiler.instruction.OperandRef<TIROperand> {
-        public OperandRef(TIROperand operand) {
-            super(operand);
-        }
+    public boolean isRegisterUsed(VirtualRegister reg) {
+        return this.getUse().contains(reg);
+    }
+
+    public boolean isRegisterDefined(VirtualRegister reg) {
+        return this.getDef().contains(reg);
     }
 }

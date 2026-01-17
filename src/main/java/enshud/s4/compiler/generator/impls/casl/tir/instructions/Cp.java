@@ -1,26 +1,25 @@
 package enshud.s4.compiler.generator.impls.casl.tir.instructions;
 
 import enshud.s4.compiler.generator.AllocatableRegister;
+import enshud.s4.compiler.generator.impls.casl.tir.operand.DataOperand;
 import enshud.s4.compiler.generator.impls.casl.tir.operand.TIROperand;
+import enshud.s4.compiler.generator.impls.casl.tir.operand.VirtualRegister;
+import enshud.s4.compiler.instruction.OperandRef;
 
 import java.util.Optional;
 import java.util.Set;
 
-public class Cp extends TIrInstr<Cp> {
-    private final OperandRef left;
-    private final OperandRef right;
-
-    public Cp(TIROperand left, TIROperand right) {
-        this.left = new OperandRef(left);
-        this.right = new OperandRef(right);
+public class Cp extends Instr2Op<Cp, VirtualRegister, DataOperand>{
+    public Cp(VirtualRegister left, DataOperand right) {
+        super(left, right);
     }
 
-    public TIROperand getLeft() {
-        return left.get();
+    public VirtualRegister getLeft() {
+        return op1.get();
     }
 
-    public TIROperand getRight() {
-        return right.get();
+    public DataOperand getRight() {
+        return op2.get();
     }
 
     @Override
@@ -29,27 +28,18 @@ public class Cp extends TIrInstr<Cp> {
     }
 
     @Override
-    public String toString() {
-        return formatInstruction(left, right);
+    protected Set<OperandRef<?>> getUsedRefs() {
+        return Set.of(op1, op2);
     }
 
     @Override
-    public Set<AllocatableRegister> getUse() {
-        return registerSet(left, right);
-    }
-
-    @Override
-    public Set<AllocatableRegister> getDef() {
+    protected Set<OperandRef<?>> getDefinedRefs() {
         return Set.of();
     }
 
     @Override
-    public void replaceUse(AllocatableRegister oldReg, AllocatableRegister newReg) {
-        replaceAllocatable(oldReg, newReg, left, right);
-    }
-
-    @Override
-    public void replaceDef(AllocatableRegister oldReg, AllocatableRegister newReg) {
+    public Set<VirtualRegister> getCopiedRegisters() {
+        return Set.of();
     }
 
     @Override
@@ -70,10 +60,5 @@ public class Cp extends TIrInstr<Cp> {
     @Override
     public boolean isTerminal() {
         return false;
-    }
-
-    @Override
-    public Set<AllocatableRegister> getCopiedRegisters() {
-        return Set.of();
     }
 }

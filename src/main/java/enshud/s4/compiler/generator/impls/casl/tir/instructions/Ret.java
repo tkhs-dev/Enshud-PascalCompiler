@@ -1,6 +1,9 @@
 package enshud.s4.compiler.generator.impls.casl.tir.instructions;
 
 import enshud.s4.compiler.generator.AllocatableRegister;
+import enshud.s4.compiler.generator.impls.casl.tir.operand.TIROperand;
+import enshud.s4.compiler.generator.impls.casl.tir.operand.VirtualRegister;
+import enshud.s4.compiler.instruction.OperandRef;
 
 import java.util.Optional;
 import java.util.Set;
@@ -12,23 +15,18 @@ public class Ret extends TIrInstr<Ret> {
     }
 
     @Override
-    public Set<AllocatableRegister> getUse() {
+    public Set<? extends TIROperand> getOperands() {
         return Set.of();
     }
 
     @Override
-    public Set<AllocatableRegister> getDef() {
+    protected Set<OperandRef<?>> getUsedRefs() {
         return Set.of();
     }
 
     @Override
-    public void replaceUse(AllocatableRegister oldReg, AllocatableRegister newReg) {
-
-    }
-
-    @Override
-    public void replaceDef(AllocatableRegister oldReg, AllocatableRegister newReg) {
-
+    protected Set<OperandRef<?>> getDefinedRefs() {
+        return Set.of();
     }
 
     @Override
@@ -52,7 +50,7 @@ public class Ret extends TIrInstr<Ret> {
     }
 
     @Override
-    public Set<AllocatableRegister> getCopiedRegisters() {
+    public Set<VirtualRegister> getCopiedRegisters() {
         return Set.of();
     }
 }

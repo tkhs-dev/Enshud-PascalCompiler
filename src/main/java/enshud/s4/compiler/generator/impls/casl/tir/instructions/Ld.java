@@ -1,27 +1,26 @@
 package enshud.s4.compiler.generator.impls.casl.tir.instructions;
 
 import enshud.s4.compiler.generator.AllocatableRegister;
+import enshud.s4.compiler.generator.impls.casl.tir.operand.DataOperand;
 import enshud.s4.compiler.generator.impls.casl.tir.operand.TIROperand;
+import enshud.s4.compiler.generator.impls.casl.tir.operand.VirtualRegister;
+import enshud.s4.compiler.instruction.OperandRef;
 
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 
-public class Ld extends TIrInstr<Ld> {
-    private final OperandRef dest;
-    private final OperandRef src;
-
-    public Ld(TIROperand dest, TIROperand src) {
-        this.dest = new OperandRef(dest);
-        this.src = new OperandRef(src);
+public class Ld extends Instr2Op<Ld, VirtualRegister, DataOperand> {
+    public Ld(VirtualRegister dest, DataOperand src) {
+        super(dest, src);
     }
 
-    public TIROperand getDest() {
-        return dest.get();
+    public VirtualRegister getDest() {
+        return op1.get();
     }
 
-    public TIROperand getSrc() {
-        return src.get();
+    public DataOperand getSrc() {
+        return op2.get();
     }
 
     @Override
@@ -30,28 +29,13 @@ public class Ld extends TIrInstr<Ld> {
     }
 
     @Override
-    public String toString() {
-        return formatInstruction(dest, src);
+    protected Set<OperandRef<?>> getUsedRefs() {
+        return Set.of(op2);
     }
 
     @Override
-    public Set<AllocatableRegister> getUse() {
-        return registerSet(src);
-    }
-
-    @Override
-    public Set<AllocatableRegister> getDef() {
-        return registerSet(dest);
-    }
-
-    @Override
-    public void replaceUse(AllocatableRegister oldReg, AllocatableRegister newReg) {
-        replaceAllocatable(oldReg, newReg, src);
-    }
-
-    @Override
-    public void replaceDef(AllocatableRegister oldReg, AllocatableRegister newReg) {
-        replaceAllocatable(oldReg, newReg, dest);
+    protected Set<OperandRef<?>> getDefinedRefs() {
+        return Set.of(op1);
     }
 
     @Override
@@ -75,10 +59,10 @@ public class Ld extends TIrInstr<Ld> {
     }
 
     @Override
-    public Set<AllocatableRegister> getCopiedRegisters() {
-        var set = new HashSet<AllocatableRegister>();
-        if (dest.get() instanceof AllocatableRegister destReg &&
-                src.get() instanceof AllocatableRegister srcReg) {
+    public Set<VirtualRegister> getCopiedRegisters() {
+        var set = new HashSet<VirtualRegister>();
+        if (op1.get() instanceof VirtualRegister destReg &&
+                op2.get() instanceof VirtualRegister srcReg) {
             set.add(destReg);
             set.add(srcReg);
         }

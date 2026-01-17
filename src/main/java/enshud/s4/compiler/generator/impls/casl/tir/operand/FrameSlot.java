@@ -1,10 +1,10 @@
 package enshud.s4.compiler.generator.impls.casl.tir.operand;
 
 import java.util.Objects;
+import java.util.Optional;
 
-public class FrameSlot extends TIROperand {
+public class FrameSlot extends AddressBasedOperand{
     public final int slot;
-    public TIROperand offset = null;
     public final int levelDiff;
 
     public FrameSlot(int slot, int levelDiff) {
@@ -12,8 +12,8 @@ public class FrameSlot extends TIROperand {
         this.levelDiff = levelDiff;
     }
 
-    public FrameSlot setOffset(TIROperand offset) {
-        this.offset = offset;
+    public FrameSlot withOffset(VirtualRegister offset) {
+        this.setOffset(offsetRegister);
         return this;
     }
 
@@ -26,11 +26,11 @@ public class FrameSlot extends TIROperand {
 
         if (slot != frameSlot.slot) return false;
         if (levelDiff != frameSlot.levelDiff) return false;
-        return Objects.equals(offset, frameSlot.offset);
+        return Objects.equals(offsetRegister, frameSlot.offsetRegister);
     }
 
     @Override
     public String toString() {
-        return "FrameSlot(slot=" + slot + ", levelDiff=" + levelDiff + (offset != null ? ", offset=" + offset : "") + ")";
+        return "FrameSlot(slot=" + slot + ", levelDiff=" + levelDiff + (offsetRegister != null ? ", offset=" + offsetRegister : "") + ")";
     }
 }
