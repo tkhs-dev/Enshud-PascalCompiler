@@ -13,7 +13,7 @@ public class FrameSlot extends AddressBasedOperand{
     }
 
     public FrameSlot withOffset(VirtualRegister offset) {
-        this.setOffset(offsetRegister);
+        this.setOffset(offset);
         return this;
     }
 

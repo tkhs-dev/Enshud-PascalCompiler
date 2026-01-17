@@ -14,12 +14,12 @@ public class St extends Instr2Op<St, VirtualRegister, FrameSlot> {
         super(src, dest);
     }
 
-    public VirtualRegister getDest() {
-        return op1.get();
+    public FrameSlot getDest() {
+        return op2.get();
     }
 
-    public FrameSlot getSrc() {
-        return op2.get();
+    public VirtualRegister getSrc() {
+        return op1.get();
     }
 
     @Override

@@ -416,7 +416,7 @@ class TIRConverter implements ITIRVisitor<Void>{
                     }
                     baseFrameReg = CaslRegisters.TEMP;
                 }
-                if (f.getOffset().isPresent()) {
+                if (f.getOffset().isEmpty()) {
                     yield new MemoryOperand(String.valueOf(slotPtr), baseFrameReg);
                 }
 
