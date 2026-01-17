@@ -25,12 +25,12 @@ public abstract class TIrInstr<T extends TIrInstr<T>> extends AnalysableInstruct
 
     @Override
     public Set<VirtualRegister> getUse() {
-        return registerSet(getDefinedRefs());
+        return registerSet(getUsedRefs());
     }
 
     @Override
     public Set<VirtualRegister> getDef() {
-        return registerSet(getUsedRefs());
+        return registerSet(getDefinedRefs());
     }
 
     @Override
