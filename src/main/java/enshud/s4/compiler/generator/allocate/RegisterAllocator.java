@@ -100,7 +100,7 @@ public class RegisterAllocator<T extends AllocatableRegister> extends Allocator<
         var removeList = new ArrayList<T>();
         // 汎用レジスタが必要な場合は先に処理
         for (var r : stack){
-            if (!r.needsGeneralPurpose()) {
+            if (!r.needsGeneralPurpose() || r.getPredefined().isPresent()){
                 continue;
             }
             removeList.add(r);
