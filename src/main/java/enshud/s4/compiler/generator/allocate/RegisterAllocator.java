@@ -161,17 +161,17 @@ public class RegisterAllocator<T extends AllocatableRegister> extends Allocator<
     private Register chooseColor(T r, boolean needsGeneralPurpose) {
         Set<T> adjs = graph.getAdjacents(r);
 
-        Set<Register> used = new HashSet<>();
+        Map<Register, T> used = new HashMap<>();
 
         // 隣接ノードが使用している色を除外
         for (T neigh : adjs) {
 
             // 事前割り当て色
-            neigh.getPredefined().ifPresent(used::add);
+            neigh.getPredefined().ifPresent(x -> used.put(x, neigh));
 
             // 既に割り当て済み
             Register c = allocation.get(neigh);
-            if (c != null) used.add(c);
+            if (c != null) used.put(c, neigh);
         }
 
         // コピーでかつ色が決まっている場合は優先して使用
@@ -180,12 +180,13 @@ public class RegisterAllocator<T extends AllocatableRegister> extends Allocator<
             Register assignedColor = entry.getValue();
 
             if (assignedColor != null && regSet.contains(r)) {
-                System.out.println("Trying to assign copied register set color: " + assignedColor + " to " + r);
-                // 隣接ノードが同じ色を使っていなければその色を使う
-                if (!used.contains(assignedColor)) {
-                    return assignedColor;
+                System.out.println("Trying to assign copied register set color: " + assignedColor + " to " + r + " from " + regSet);
+                // もしregSetに含まれない隣接ノードがあれば使用不可
+                if(used.containsKey(assignedColor) && !regSet.contains(used.get(assignedColor))) {
+                    System.out.println("  But color " + assignedColor + " is already used by " + used.get(assignedColor));
+                    continue;
                 }
-                System.out.println("  but color is used by adjacent, skipping.");
+                return assignedColor;
             }
         }
 
@@ -198,7 +199,7 @@ public class RegisterAllocator<T extends AllocatableRegister> extends Allocator<
 
         // 利用可能な色から未使用のものを選択
         for (Register reg : candidateRegisters) {
-            if (!used.contains(reg)) return reg;
+            if (!used.containsKey(reg)) return reg;
         }
 
         return null; // Spill 必要
