@@ -23,6 +23,14 @@ public class Ld extends Instr2Op<Ld, VirtualRegister, DataOperand> {
         return op2.get();
     }
 
+    public void setSrc(DataOperand src) {
+        this.op2.set(src);
+    }
+
+    public void setDest(VirtualRegister dest) {
+        this.op1.set(dest);
+    }
+
     @Override
     public <T> T accept(ITIRVisitor<T> visitor) {
         return visitor.visit(this);

@@ -15,7 +15,7 @@ public class CaslDescription implements TargetDescription {
 
     @Override
     public List<Register> getAllocatableRegisters() {
-        return List.of( GR0, GR3, GR4, GR6, GR7);
+        return List.of( GR3, GR4, GR6, GR7, GR0);
     }
 
     @Override

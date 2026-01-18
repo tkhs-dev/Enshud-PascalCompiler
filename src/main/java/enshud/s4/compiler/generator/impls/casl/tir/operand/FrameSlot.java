@@ -30,6 +30,14 @@ public class FrameSlot extends AddressBasedOperand{
     }
 
     @Override
+    public int hashCode() {
+        int result = slot;
+        result = 31 * result + levelDiff;
+        result = 31 * result + (offsetRegister != null ? offsetRegister.hashCode() : 0);
+        return result;
+    }
+
+    @Override
     public String toString() {
         return "FrameSlot(slot=" + slot + ", levelDiff=" + levelDiff + (offsetRegister != null ? ", offset=" + offsetRegister : "") + ")";
     }
