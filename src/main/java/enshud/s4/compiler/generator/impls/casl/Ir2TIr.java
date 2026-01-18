@@ -617,7 +617,7 @@ class Ir2TIrConverter implements IIrVisitor<Void> {
             case Const c -> {
                 yield new Lad(
                         register(convertOperand(dest)),
-                        data(convertOperand(src))
+                        convertOperand(src)
                 );
             }
             default -> {
@@ -632,7 +632,7 @@ class Ir2TIrConverter implements IIrVisitor<Void> {
     private TIrInstr<?> move(TIROperand dest, IROperand src) {
         return switch (src) {
             case Const c -> {
-                yield new Lad(register(dest), data(convertOperand(src)));
+                yield new Lad(register(dest), convertOperand(src));
             }
             default -> {
                 yield new Ld(register(dest), data(convertOperand(src)));
@@ -642,7 +642,7 @@ class Ir2TIrConverter implements IIrVisitor<Void> {
     private TIrInstr<?> move(Register dest, IROperand src) {
         return switch (src) {
             case Const c -> {
-                yield new Lad(VirtualRegister.tmpWithPredefined(dest), data(convertOperand(src)));
+                yield new Lad(VirtualRegister.tmpWithPredefined(dest), convertOperand(src));
             }
             default -> {
                 yield new Ld(VirtualRegister.tmpWithPredefined(dest), data(convertOperand(src)));
@@ -654,7 +654,7 @@ class Ir2TIrConverter implements IIrVisitor<Void> {
     }
     private TIrInstr<?> move(TIROperand dest, TIROperand src) {
         if (src instanceof NumericImmediate || src instanceof CharImmediate) {
-            return new Lad(register(dest), data(src));
+            return new Lad(register(dest), src);
         }
         return new Ld(register(dest), data(src));
     }

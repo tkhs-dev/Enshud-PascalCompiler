@@ -1,6 +1,6 @@
 package enshud.s4.compiler.generator.impls.casl.tir.operand;
 
-public abstract class Immediate<T> extends AddressBasedOperand {
+public abstract class Immediate<T> extends TIROperand {
     public final T value;
 
     public static final Immediate<Integer> ZERO = new NumericImmediate(0, NumericImmediate.Type.DECIMAL);

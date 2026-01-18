@@ -9,12 +9,12 @@ import enshud.s4.compiler.instruction.OperandRef;
 import java.util.Optional;
 import java.util.Set;
 
-public class Lad extends Instr2Op<Lad, VirtualRegister, DataOperand> {
-    public Lad(VirtualRegister dest, DataOperand value) {
+public class Lad extends Instr2Op<Lad, VirtualRegister, TIROperand> {
+    public Lad(VirtualRegister dest, TIROperand value) {
         super(dest, value);
     }
 
-    public TIROperand getDest() {
+    public VirtualRegister getDest() {
         return op1.get();
     }
 
