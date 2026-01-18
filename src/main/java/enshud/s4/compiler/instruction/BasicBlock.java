@@ -7,10 +7,13 @@ public class BasicBlock<R extends Instruction> {
     private List<BasicBlock<R>> successors;
     private List<BasicBlock<R>> predecessors;
 
-    public BasicBlock(InstructionSet<R> instructions) {
+    public final boolean isEntryBlock;
+
+    public BasicBlock(InstructionSet<R> instructions, boolean isEntryBlock) {
         this.instructions = instructions;
         this.successors = new java.util.ArrayList<>();
         this.predecessors = new java.util.ArrayList<>();
+        this.isEntryBlock = isEntryBlock;
     }
 
     public InstructionSet<R> getInstructions() {

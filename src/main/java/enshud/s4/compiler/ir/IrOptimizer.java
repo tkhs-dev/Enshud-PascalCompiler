@@ -1,5 +1,6 @@
 package enshud.s4.compiler.ir;
 
+import enshud.s4.compiler.instruction.CFGBuilder;
 import enshud.s4.compiler.instruction.OperandRef;
 import enshud.s4.compiler.ir.instructions.*;
 import enshud.s4.compiler.ir.operand.Const;
@@ -11,6 +12,8 @@ import enshud.s4.compiler.optimizer.OptimizerPipeline;
 import enshud.s4.compiler.optimizer.pass.OptimizePass;
 
 import java.util.*;
+
+import static enshud.s4.compiler.ir.instructions.Jump.Type.*;
 
 public class IrOptimizer {
     public void optimize(IrProgram program) {
@@ -37,6 +40,10 @@ public class IrOptimizer {
         // 最適化パスの追加はここで行う
         pipeline.addPass(new ConstantFoldingPass());
         pipeline.addPass(new ConstantPropagationPass());
+        pipeline.addPass(new UseUnconditionalJumpPass());
+        pipeline.addPass(new RemoveUnreachableCodePass());
+        pipeline.addPass(new RemoveRedundantJumpsPass());
+        pipeline.addPass(new RemoveUnusedLabelsPass());
     }
 }
 
@@ -64,16 +71,27 @@ class ConstantFoldingPass implements OptimizePass<IrFunction> {
                         case MUL -> (Integer) leftConst.value * (Integer) rightConst.value;
                         case DIV -> (Integer) leftConst.value / (Integer) rightConst.value;
                         case MOD -> (Integer) leftConst.value % (Integer) rightConst.value;
-                        case AND -> (Integer) leftConst.value & (Integer) rightConst.value;
-                        case OR  -> (Integer) leftConst.value | (Integer) rightConst.value;
+                        case AND -> (Boolean) leftConst.value & (Boolean) rightConst.value;
+                        case OR  -> (Boolean)  leftConst.value | (Boolean)  rightConst.value;
                         case EQ  -> leftConst.value.equals(rightConst.value);
                         case NEQ -> !leftConst.value.equals(rightConst.value);
-                        case LT  -> (Integer) leftConst.value < (Integer) rightConst.value;
-                        case LTE -> (Integer) leftConst.value <= (Integer) rightConst.value;
-                        case GT  -> (Integer) leftConst.value > (Integer) rightConst.value;
-                        case GTE -> (Integer) leftConst.value >= (Integer) rightConst.value;
+                        case LT  -> cast(leftConst.value) < cast(rightConst.value);
+                        case LTE -> cast(leftConst.value) <= cast(rightConst.value);
+                        case GT  -> cast(leftConst.value) > cast(rightConst.value);
+                        case GTE -> cast(leftConst.value) >= cast(rightConst.value);
                     };
                     constantValues.put(binOp.result.get(), result);
+                    found = true;
+                }
+                case UnaryOp unaryOp -> {
+                    if(!(unaryOp.operand.get() instanceof Const operandConst)) {
+                        break;
+                    }
+                    Object result = switch (unaryOp.opType) {
+                        case NEG -> -(Integer) operandConst.value;
+                        case NOT -> !(Boolean) operandConst.value;
+                    };
+                    constantValues.put(unaryOp.result.get(), result);
                     found = true;
                 }
                 case Move move -> {
@@ -111,6 +129,15 @@ class ConstantFoldingPass implements OptimizePass<IrFunction> {
         return optimized;
     }
 
+    private int cast(Object obj) {
+        if (obj instanceof Integer i) {
+            return i;
+        }else if (obj instanceof Boolean b) {
+            return b ? 1 : 0;
+        }
+        throw new IllegalArgumentException("Object is not an Integer: " + obj);
+    }
+
     private Set<OperandRef> getUsedOperand(IRInstruction instr) {
         switch (instr){
             case BinaryOp binOp -> {
@@ -139,6 +166,11 @@ class ConstantFoldingPass implements OptimizePass<IrFunction> {
             }
             case Write write -> {
                 return Set.of(write.operand);
+            }
+            case Jump jump -> {
+                if (jump.condition.get() != null) {
+                    return Set.of(jump.condition);
+                }
             }
             default -> {}
         }
@@ -184,6 +216,130 @@ class ConstantPropagationPass implements OptimizePass<IrFunction> {
     }
 
     private boolean isBreakableInstruction(IRInstruction instr) {
-        return instr.isBranch() || instr.isTerminal() || instr instanceof Call || instr.getLabel().isPresent();
+        return instr instanceof Jump || instr.isTerminal() || instr instanceof Call || instr instanceof Label;
+    }
+}
+
+class UseUnconditionalJumpPass implements OptimizePass<IrFunction> {
+    @Override
+    public boolean apply(IrFunction function) {
+        var editor = function.getEditor();
+        boolean optimized = false;
+
+        while(editor.hasNext()) {
+            var instr = editor.next();
+
+            if(instr instanceof Jump jump && jump.condition.get() instanceof Const c) {
+                if(c.value instanceof Boolean boolValue) {
+                    if((boolValue && jump.type == TRUE) || (!boolValue && jump.type == FALSE)) {
+                        // 条件が常に真の場合、無条件ジャンプに置き換え
+                        editor.prev();
+                        editor.replace(new Jump(jump.target, null, UNCONDITIONAL));
+                        optimized = true;
+                    }else if((!boolValue && jump.type == TRUE) || (boolValue && jump.type == FALSE)) {
+                        // 条件が常に偽の場合、ジャンプ命令を削除
+                        editor.prev();
+                        editor.remove();
+                        optimized = true;
+                    }
+                }
+            }
+        }
+
+        return optimized;
+    }
+}
+
+class RemoveUnreachableCodePass implements OptimizePass<IrFunction> {
+    @Override
+    public boolean apply(IrFunction function) {
+        var cfg = CFGBuilder.build(function.getInstructions());
+        var removalInstructions = new HashSet<IRInstruction>();
+        for (var block : cfg) {
+            if (!block.isEntryBlock && block.getPredecessors().isEmpty()){
+                removalInstructions.addAll(block.getInstructions().toList());
+            }
+        }
+
+        var editor = function.getEditor();
+        boolean optimized = false;
+
+        if(!removalInstructions.isEmpty()) {
+            while(editor.hasNext()) {
+                var instr = editor.next();
+                if(removalInstructions.contains(instr)) {
+                    System.out.println("Removing unreachable instruction: " + instr);
+                    editor.prev();
+                    editor.remove();
+                    optimized = true;
+                }
+            }
+        }
+
+        return optimized;
+    }
+}
+
+// すぐとなりへのジャンプを削除
+class RemoveRedundantJumpsPass implements OptimizePass<IrFunction> {
+    @Override
+    public boolean apply(IrFunction function) {
+        var editor = function.getEditor();
+        boolean optimized = false;
+
+        while(editor.hasNext()) {
+            var instr = editor.next();
+
+            if(instr instanceof Jump jump) {
+                if(editor.hasNext()) {
+                    var nextInstr = editor.peekNext();
+                    if(nextInstr.getLabel().isPresent() && nextInstr.getLabel().get().equals(jump.target)) {
+                        // すぐ隣へのジャンプは不要
+                        System.out.println("Removing redundant jump to adjacent label: " + jump);
+                        editor.prev();
+                        editor.remove();
+                        optimized = true;
+                    }
+                }
+            }
+        }
+
+        return optimized;
+    }
+}
+
+// 未使用のラベルを削除
+class RemoveUnusedLabelsPass implements OptimizePass<IrFunction> {
+    @Override
+    public boolean apply(IrFunction function) {
+        var usedLabels = new HashSet<String>();
+        var editor = function.getEditor();
+        boolean optimized = false;
+
+        // 使用されているラベルを収集
+        while(editor.hasNext()) {
+            var instr = editor.next();
+            if(instr instanceof Jump) {
+                instr.getBranchTarget().ifPresent(usedLabels::add);
+            }else if(instr instanceof Call call) {
+                usedLabels.add(call.functionLabel);
+            }
+        }
+
+        // ラベルが不要な命令を削除
+        editor.resetToStart();
+        while(editor.hasNext()) {
+            var instr = editor.next();
+            if(instr instanceof Label labelInstr && !labelInstr.name.startsWith("F")) {
+                if(!usedLabels.contains(labelInstr.name)) {
+                    System.out.println("Removing unused label: " + labelInstr.name);
+                    editor.prev();
+                    editor.remove();
+                    optimized = true;
+                }
+            }
+        }
+
+        return optimized;
     }
 }

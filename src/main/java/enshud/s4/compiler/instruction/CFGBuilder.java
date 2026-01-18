@@ -15,7 +15,7 @@ public class CFGBuilder {
         for (T instr : instructions) {
             if (instr.getLabel().isPresent() && !instrs.isEmpty()) {
                 // ラベルで始まる命令が現れた場合、現在の命令リストをブロックとして切り出す
-                var block = new BasicBlock<>(InstructionSet.of(instrs));
+                var block = new BasicBlock<>(InstructionSet.of(instrs), blocks.isEmpty());
                 blocks.add(block);
                 if (instrs.getFirst().getLabel().isPresent()) {
                     labelToBlock.put(instrs.getFirst().getLabel().get(), block);
@@ -24,7 +24,7 @@ public class CFGBuilder {
             }
             instrs.add(instr);
             if (instr.isBranch() || instr.isTerminal()) {
-                var block = new BasicBlock<>(InstructionSet.of(instrs));
+                var block = new BasicBlock<>(InstructionSet.of(instrs), blocks.isEmpty());
                 blocks.add(block);
                 if (instrs.size() > 1 && instrs.getFirst().getLabel().isPresent()) {
                     labelToBlock.put(instrs.getFirst().getLabel().get(), block);
@@ -33,7 +33,7 @@ public class CFGBuilder {
             }
         }
         if (!instrs.isEmpty()) {
-            var block = new BasicBlock<>(InstructionSet.of(instrs));
+            var block = new BasicBlock<>(InstructionSet.of(instrs), blocks.isEmpty());
             blocks.add(block);
             if (instrs.getFirst().getLabel().isPresent()) {
                 labelToBlock.put(instrs.getFirst().getLabel().get(), block);
