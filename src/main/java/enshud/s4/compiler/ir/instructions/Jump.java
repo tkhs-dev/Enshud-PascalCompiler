@@ -48,7 +48,7 @@ public class Jump extends IRInstruction {
 
     @Override
     public String toString() {
-        return String.format("Goto: %s", target);
+        return String.format("Jump: %s %s %s", type, condition.get() != null ? condition.get().toString() : "", target);
     }
 
     public enum Type {
