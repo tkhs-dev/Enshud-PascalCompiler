@@ -10,6 +10,7 @@ public interface IIrVisitor<T> {
     T visit(Move ir);
     T visit(StoreIndexed ir);
     T visit(Write ir);
+    T visit(Read ir);
     T visit(BinaryOp ir);
     T visit(UnaryOp ir);
     T visit(Load ir);

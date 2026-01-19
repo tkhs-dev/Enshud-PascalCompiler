@@ -292,17 +292,17 @@ public class AstParser {
     private ReadNode parseRead() {
         Token start = peek();
         expect(TokenDef.READLN);
-        List<String> varNames = new java.util.ArrayList<>();
+        List<VarNode> variables = new java.util.ArrayList<>();
         expect(TokenDef.LPAREN); // '('
-        varNames.add(expect(TokenDef.IDENT).token);
+        variables.add(parseVar());
         while (check(TokenDef.COMMA)) {
             consume(); // ','
-            varNames.add(expect(TokenDef.IDENT).token);
+            variables.add(parseVar());
         }
         expect(TokenDef.RPAREN); // ')'
         Token end = peek();
         AstNode.Position position = AstNode.Position.fromToken(start, end);
-        return new ReadNode(position, varNames);
+        return new ReadNode(position, variables);
     }
 
     private IfNode parseIf() {

@@ -187,7 +187,20 @@ class IrConverterVisitor implements IAstVisitor<Optional<IROperand>> {
 
     @Override
     public Optional<IROperand> visit(ReadNode node) {
-        visitAll(node);
+        for(var variable : node.variables) {
+            var temp = variable.accept(this);
+            Type type = variable.getType().get();
+            if (type == INTEGER) {
+                currentEditor.append(new Read(temp.get(), Read.ReadType.INT));
+            } else if (type == CHAR) {
+                currentEditor.append(new Read(temp.get(), Read.ReadType.CHAR));
+            } else if (type instanceof ArrayType arrayType && arrayType.elementType == CHAR) {
+                currentEditor.append(new Read(temp.get(), Read.ReadType.STRING));
+            } else {
+                throw new IllegalStateException("Unexpected value: " + type);
+            }
+        }
+        currentEditor.append(new Read());
         return Optional.empty();
     }
 

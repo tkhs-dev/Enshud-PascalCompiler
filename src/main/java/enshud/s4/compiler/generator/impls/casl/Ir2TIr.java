@@ -280,6 +280,12 @@ class Ir2TIrConverter implements IIrVisitor<Void> {
     }
 
     @Override
+    public Void visit(Read ir) {
+        // CASLではRead命令は実装しない
+        throw new UnsupportedOperationException("Read instruction is not supported in CASL TIR generation.");
+    }
+
+    @Override
     public Void visit(BinaryOp ir) {
         TIROperand leftOperand;
         if(ir.left.get() instanceof Temp){

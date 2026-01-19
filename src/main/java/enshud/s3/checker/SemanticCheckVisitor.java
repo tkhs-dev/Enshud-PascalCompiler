@@ -188,6 +188,9 @@ public class SemanticCheckVisitor implements IAstVisitor<Object> {
 
     @Override
     public Void visit(ReadNode node) {
+        for (VarNode var : node.variables) {
+            var.accept(this);
+        }
         return null;
     }
 
