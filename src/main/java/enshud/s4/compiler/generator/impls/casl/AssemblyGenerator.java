@@ -1,5 +1,8 @@
 package enshud.s4.compiler.generator.impls.casl;
 
+import enshud.s4.compiler.generator.Liveness;
+import enshud.s4.compiler.generator.LivenessAnalyzer;
+import enshud.s4.compiler.generator.Register;
 import enshud.s4.compiler.generator.allocate.Allocation;
 import enshud.s4.compiler.generator.allocate.RegisterAllocator;
 import enshud.s4.compiler.generator.impls.casl.assembly.instructions.*;
@@ -18,6 +21,7 @@ import enshud.s4.compiler.instruction.InstructionSetEditor;
 import enshud.util.Ascii;
 import enshud.util.SerialManager;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -61,7 +65,7 @@ public class AssemblyGenerator {
 
     private void processFunction(TIRFunction function) {
         serial = new SerialManager("spill");
-        var desc = new CaslDescription();
+        var desc = CaslDescription.getInstance();
         Allocation<VirtualRegister> allocation = null;
         processAddressRegisters(function);
         while(true){
@@ -166,12 +170,14 @@ class TIRConverter implements ITIRVisitor<Void>{
     private final InstructionSetEditor<AssemblyInstr<?>> editor;
     private final Allocation<VirtualRegister> allocation;
     private final TIRFunction function;
+    private final Liveness<VirtualRegister, TIrInstr<?>> liveness;
 
     public TIRConverter(Allocation<VirtualRegister> allocation, TIRFunction function) {
         this.instructions = new InstructionSet<AssemblyInstr<?>>();
         this.editor = instructions.getEditor();
         this.allocation = allocation;
         this.function = function;
+        this.liveness = new LivenessAnalyzer<>(function).analyze();
     }
 
     public InstructionSet<AssemblyInstr<?>> getInstruction() {
@@ -199,8 +205,48 @@ class TIRConverter implements ITIRVisitor<Void>{
 
     @Override
     public Void visit(Call ir) {
-        addInstructions(ir,
+        // レジスタの退避も行う
+        var desc = CaslDescription.getInstance();
+        var callerSaved = desc.getCallerSaved();
+        var liveIn = liveness.getLiveIn(ir);
+        var instructions = new ArrayList<AssemblyInstr<?>>();
+
+        // 退避すべきレジスタを求める
+        var regsToSave = new ArrayList<Register>();
+        for(var reg : callerSaved){
+            for(var vreg : liveIn){
+                var allocated = allocation.getAllocationMap().get(vreg);
+                if(allocated != null && allocated.equals(reg)){
+                    System.out.println("Saving caller-saved register " + reg + " for live virtual register " + vreg + " at call to " + ir.functionName);
+                    regsToSave.add(reg);
+                }
+            }
+        }
+
+        // レジスタ退避
+        for(var reg : regsToSave){
+            if(!desc.getScratchCandidates().contains(reg)){
+                // スクラッチレジスタでない場合、一時レジスタに移してから退避
+                instructions.addAll(List.of(
+                        new LD(new RegisterOperand(CaslRegisters.TEMP), new RegisterOperand(reg)),
+                        new PUSH(new MemoryOperand("0", CaslRegisters.TEMP))
+                ));
+            }
+            instructions.add(
+                    new PUSH(new MemoryOperand("0", reg))
+            );
+        }
+        instructions.add(
                 new CALL(ir.functionName)
+        );
+        // レジスタ復帰
+        for(var reg : regsToSave){
+            instructions.add(
+                    new POP(new RegisterOperand(reg))
+            );
+        }
+        addInstructions(ir,
+                instructions.toArray(new AssemblyInstr<?>[0])
         );
         return null;
     }
