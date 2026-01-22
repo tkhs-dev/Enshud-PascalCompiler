@@ -5,8 +5,8 @@ import enshud.s4.compiler.generator.impls.cproc.assembly.operand.LabelOperand;
 import java.util.Optional;
 
 public abstract class JumpInstr<T> extends Instr1Op<T, LabelOperand> {
-    public JumpInstr(String target) {
-        super(new LabelOperand(target));
+    public JumpInstr(LabelOperand target) {
+        super(target);
     }
 
     @Override

@@ -8,6 +8,7 @@ import enshud.s1.lexer.Lexer;
 import enshud.s3.checker.SemanticCheckVisitor;
 import enshud.s3.checker.SemanticException;
 import enshud.s4.compiler.generator.impls.casl.CaslGenerator;
+import enshud.s4.compiler.generator.impls.cproc.CProcGenerator;
 import enshud.s4.compiler.ir.IrConverter;
 import enshud.s4.compiler.ir.IrOptimizer;
 import enshud.token.FileFormatException;
@@ -62,12 +63,13 @@ public class Compiler {
             System.out.println("---- IR Code ----");
             prog.getInstructions().forEach(System.out::println);
             System.out.println("---- CASL II Code ----");
-			CaslGenerator generator = new CaslGenerator();
+			var generator = new CProcGenerator();
 			String caslCode = generator.generate(prog);
+			System.out.println("---- CASL II Code ----");
 			System.out.println(caslCode);
             // ファイルに書き出し
             java.nio.file.Files.writeString(java.nio.file.Path.of(outputFileName), caslCode);
-            CaslSimulator.appendLibcas(outputFileName);
+//            CaslSimulator.appendLibcas(outputFileName);
             // 構文解析が成功した場合
             return "OK";
         } catch (FileFormatException | IOException e) {

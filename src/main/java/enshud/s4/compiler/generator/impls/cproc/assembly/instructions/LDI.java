@@ -42,4 +42,9 @@ public class LDI extends AssemblyInstr<LDI> {
     public boolean isTerminal() {
         return false;
     }
+
+    @Override
+    public String toString() {
+        return String.format("%s %s %s", super.toString(), dest.toString(), value.toString());
+    }
 }

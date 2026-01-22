@@ -12,6 +12,6 @@ public abstract class Instr1Op<T, Op extends AssemblyOperand> extends AssemblyIn
 
     @Override
     public String toString() {
-        return String.format("%s %s", this.getClass().getSimpleName(), op.toString());
+        return String.format("%s %s", super.toString(), op.toString());
     }
 }

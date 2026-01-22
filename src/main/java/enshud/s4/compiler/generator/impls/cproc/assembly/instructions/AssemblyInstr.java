@@ -7,4 +7,13 @@ public abstract class AssemblyInstr<T> extends Instruction {
         setLabel(label);
         return (T) this;
     }
+
+    @Override
+    public String toString() {
+        if (getLabel().isEmpty()) {
+            return String.format("\t%s", this.getClass().getSimpleName());
+        } else {
+            return String.format("%s:\t%s", getLabel().get(), this.getClass().getSimpleName());
+        }
+    }
 }

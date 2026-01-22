@@ -1,7 +1,11 @@
 program testBasic;
 var i: integer;
-    a: array[1..10] of integer;
 
 begin
-    readln(i);
+    i := 1;
+    while i <= 10 do
+    begin
+        writeln(i);
+        i := i + 1;
+    end;
 end.
