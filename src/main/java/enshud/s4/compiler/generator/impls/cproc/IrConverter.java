@@ -102,6 +102,42 @@ public class IrConverter implements IIrVisitor<Void> {
 
     @Override
     public Void visit(Read ir) {
+        switch(ir.readType){
+            case INT -> {
+                var startLabel = new LabelOperand(labelSerialManager.New());
+                var endLabel = new LabelOperand(labelSerialManager.New());
+                var operand = register(convertOperand(ir.operand.get()));
+                instructions.addAll(List.of(
+                        new Ldd(
+                                operand,
+                                new LabelOperand("0xFFFE")
+                        ).withLabel(startLabel.getLabel()),
+                        new Dec(operand),
+                        new Jmp(endLabel, Jmp.Type.ZERO),
+                        new Jmp(startLabel, Jmp.Type.UNCONDITIONAL),
+                        new Ldd(
+                                operand,
+                                new LabelOperand("0xFFFF")
+                        ).withLabel(endLabel.getLabel())
+                ));
+            }
+            case NEWLINE -> {
+                var startLabel = new LabelOperand(labelSerialManager.New());
+                var endLabel = new LabelOperand(labelSerialManager.New());
+                var tmpReg = new VirtualRegister(tmpSerialManager.New());
+                instructions.addAll(List.of(
+                        new Ldd(
+                                tmpReg,
+                                new LabelOperand("0xFFFE")
+                        ).withLabel(startLabel.getLabel()),
+                        new Dec(tmpReg),
+                        new Jmp(endLabel, Jmp.Type.ZERO),
+                        new Jmp(startLabel, Jmp.Type.UNCONDITIONAL),
+                        new Nop().withLabel(endLabel.getLabel())
+                ));
+            }
+            default -> throw new IllegalArgumentException("Read type is not supported: " + ir.readType);
+        }
         return null;
     }
 
@@ -109,8 +145,6 @@ public class IrConverter implements IIrVisitor<Void> {
     public Void visit(BinaryOp ir) {
         switch (ir.opType){
             case ADD -> {
-                var res = new VirtualRegister(tmpSerialManager.New());
-
                 var leftReg = register(convertOperand(ir.left.get()));
                 var rightReg = register(convertOperand(ir.right.get()));
                 var resultReg = register(convertOperand(ir.result.get()));
@@ -120,14 +154,12 @@ public class IrConverter implements IIrVisitor<Void> {
                                 rightReg
                         ),
                         new Mov(
-                                res,
+                                resultReg,
                                 leftReg
                         )
                 ));
             }
             case SUB -> {
-                var res = new VirtualRegister(tmpSerialManager.New());
-
                 var leftReg = register(convertOperand(ir.left.get()));
                 var rightReg = register(convertOperand(ir.right.get()));
                 var resultReg = register(convertOperand(ir.result.get()));
@@ -137,14 +169,12 @@ public class IrConverter implements IIrVisitor<Void> {
                                 rightReg
                         ),
                         new Mov(
-                                res,
+                                resultReg,
                                 leftReg
                         )
                 ));
             }
             case MUL -> {
-                var res = new VirtualRegister(tmpSerialManager.New());
-
                 var leftReg = register(convertOperand(ir.left.get()));
                 var rightReg = register(convertOperand(ir.right.get()));
                 var resultReg = register(convertOperand(ir.result.get()));
@@ -154,7 +184,7 @@ public class IrConverter implements IIrVisitor<Void> {
                                 rightReg
                         ),
                         new Mov(
-                                res,
+                                resultReg,
                                 leftReg
                         )
                 ));
@@ -166,8 +196,6 @@ public class IrConverter implements IIrVisitor<Void> {
                 throw new UnsupportedOperationException("Modulo is not supported.");
             }
             case AND -> {
-                var res = new VirtualRegister(tmpSerialManager.New());
-
                 var leftReg = register(convertOperand(ir.left.get()));
                 var rightReg = register(convertOperand(ir.right.get()));
                 var resultReg = register(convertOperand(ir.result.get()));
@@ -177,14 +205,12 @@ public class IrConverter implements IIrVisitor<Void> {
                                 rightReg
                         ),
                         new Mov(
-                                res,
+                                resultReg,
                                 leftReg
                         )
                 ));
             }
             case OR -> {
-                var res = new VirtualRegister(tmpSerialManager.New());
-
                 var leftReg = register(convertOperand(ir.left.get()));
                 var rightReg = register(convertOperand(ir.right.get()));
                 var resultReg = register(convertOperand(ir.result.get()));
@@ -194,7 +220,7 @@ public class IrConverter implements IIrVisitor<Void> {
                                 rightReg
                         ),
                         new Mov(
-                                res,
+                                resultReg,
                                 leftReg
                         )
                 ));
@@ -272,12 +298,12 @@ public class IrConverter implements IIrVisitor<Void> {
                         new Jmp(new LabelOperand(trueLabel), Jmp.Type.ZERO),
                         new Ldi(
                                 resultReg,
-                                new ImmediateOperand(0)
+                                new ImmediateOperand(1)
                         ),
                         new Jmp(new LabelOperand(endLabel), Jmp.Type.UNCONDITIONAL),
                         new Ldi(
                                 resultReg,
-                                new ImmediateOperand(1)
+                                new ImmediateOperand(0)
                         ).withLabel(trueLabel),
                         new Nop().withLabel(endLabel)
                 ));
@@ -303,12 +329,12 @@ public class IrConverter implements IIrVisitor<Void> {
                         new Jmp(new LabelOperand(trueLabel), Jmp.Type.ZERO),
                         new Ldi(
                                 resultReg,
-                                new ImmediateOperand(1)
+                                new ImmediateOperand(0)
                         ),
                         new Jmp(new LabelOperand(endLabel), Jmp.Type.UNCONDITIONAL),
                         new Ldi(
                                 resultReg,
-                                new ImmediateOperand(0)
+                                new ImmediateOperand(1)
                         ).withLabel(trueLabel),
                         new Nop().withLabel(endLabel)
                 ));
@@ -334,12 +360,12 @@ public class IrConverter implements IIrVisitor<Void> {
                         new Jmp(new LabelOperand(trueLabel), Jmp.Type.ZERO),
                         new Ldi(
                                 resultReg,
-                                new ImmediateOperand(0)
+                                new ImmediateOperand(1)
                         ),
                         new Jmp(new LabelOperand(endLabel), Jmp.Type.UNCONDITIONAL),
                         new Ldi(
                                 resultReg,
-                                new ImmediateOperand(1)
+                                new ImmediateOperand(0)
                         ).withLabel(trueLabel),
                         new Nop().withLabel(endLabel)
                 ));
@@ -365,12 +391,12 @@ public class IrConverter implements IIrVisitor<Void> {
                         new Jmp(new LabelOperand(trueLabel), Jmp.Type.ZERO),
                         new Ldi(
                                 resultReg,
-                                new ImmediateOperand(1)
+                                new ImmediateOperand(0)
                         ),
                         new Jmp(new LabelOperand(endLabel), Jmp.Type.UNCONDITIONAL),
                         new Ldi(
                                 resultReg,
-                                new ImmediateOperand(0)
+                                new ImmediateOperand(1)
                         ).withLabel(trueLabel),
                         new Nop().withLabel(endLabel)
                 ));
@@ -439,7 +465,9 @@ public class IrConverter implements IIrVisitor<Void> {
                 return new ImmediateOperand((Integer) constOp.value);
             }
             case Variable varOp -> {
-                variableMap.putIfAbsent(varOp.name, new LabelOperand(variableSerialManager.New()));
+                if (!variableMap.containsKey(varOp.name)){
+                    variableMap.put(varOp.name, new LabelOperand(variableSerialManager.New()));
+                }
                 return variableMap.get(varOp.name);
             }
             default -> throw new IllegalArgumentException("Operand is not supported: " + operand);
