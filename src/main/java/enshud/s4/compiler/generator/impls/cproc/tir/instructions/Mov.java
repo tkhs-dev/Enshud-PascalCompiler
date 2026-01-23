@@ -1,5 +1,6 @@
 package enshud.s4.compiler.generator.impls.cproc.tir.instructions;
 
+import enshud.s4.compiler.generator.impls.cproc.CProcRegisters;
 import enshud.s4.compiler.generator.impls.cproc.tir.operand.VirtualRegister;
 import enshud.s4.compiler.instruction.OperandRef;
 
@@ -9,6 +10,14 @@ import java.util.Set;
 public class Mov extends Instr2Op<Mov, VirtualRegister, VirtualRegister> {
     public Mov(VirtualRegister virtualRegister, VirtualRegister virtualRegister2) {
         super(virtualRegister, virtualRegister2);
+        if (virtualRegister2.getPredefined().isPresent()){
+            var reg = virtualRegister2.getPredefined().get();
+            if (reg.equals(CProcRegisters.RA)){
+                virtualRegister.setPredefined(CProcRegisters.RB);
+            }else{
+                virtualRegister.setPredefined(CProcRegisters.RA);
+            }
+        }
     }
 
     public VirtualRegister getDest() {
@@ -36,7 +45,7 @@ public class Mov extends Instr2Op<Mov, VirtualRegister, VirtualRegister> {
 
     @Override
     public Set<VirtualRegister> getCopiedRegisters() {
-        return Set.of(op1.get(), op2.get());
+        return Set.of();
     }
 
     @Override
