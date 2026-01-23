@@ -8,6 +8,7 @@ import java.util.Optional;
 public class VirtualRegister extends TIROperand implements AllocatableRegister {
     private final String name;
     private int spillCost;
+    private Register predefined;
 
     public VirtualRegister(String name) {
         this.name = name;
@@ -22,9 +23,13 @@ public class VirtualRegister extends TIROperand implements AllocatableRegister {
         this.spillCost = cost;
     }
 
+    public void setPredefined(Register reg) {
+        this.predefined = reg;
+    }
+
     @Override
     public Optional<Register> getPredefined() {
-        return Optional.empty();
+        return Optional.ofNullable(predefined);
     }
 
     @Override
