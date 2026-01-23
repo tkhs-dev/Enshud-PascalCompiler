@@ -149,7 +149,30 @@ public class TIrConverter implements ITIRVisitor<Void> {
     }
 
     @Override
+    public Void visit(Dec ir) {
+
+        addInstructions(
+                ir,
+                new DEC(
+                        register(convertOperand(ir.getOperand()))
+                )
+        );
+        return null;
+    }
+
+    @Override
     public Void visit(End ir) {
+        return null;
+    }
+
+    @Override
+    public Void visit(Inc ir) {
+        addInstructions(
+                ir,
+                new INC(
+                        register(convertOperand(ir.getOperand()))
+                )
+        );
         return null;
     }
 
