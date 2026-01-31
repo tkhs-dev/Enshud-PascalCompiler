@@ -23,6 +23,7 @@ public class IrConverter implements IIrVisitor<Void> {
     List<TIRInstr<?>> instructions = new ArrayList<>();
 
     Map<String, LabelOperand> variableMap = new java.util.HashMap<>();
+    Map<Temp, VirtualRegister> tempMap = new java.util.HashMap<>();
 
     SerialManager variableSerialManager = new SerialManager("V");
     SerialManager tmpSerialManager = new SerialManager("");
@@ -456,7 +457,10 @@ public class IrConverter implements IIrVisitor<Void> {
     private TIROperand convertOperand(IROperand operand) {
         switch (operand) {
             case Temp temp -> {
-                return new VirtualRegister(temp.id);
+                if (!tempMap.containsKey(temp)){
+                    tempMap.put(temp, new VirtualRegister(temp.id));
+                }
+                return tempMap.get(temp);
             }
             case Const constOp -> {
                 if (!(constOp.value instanceof Integer)){
