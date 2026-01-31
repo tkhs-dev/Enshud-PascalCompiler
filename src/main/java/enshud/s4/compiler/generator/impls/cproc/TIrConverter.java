@@ -217,10 +217,18 @@ public class TIrConverter implements ITIRVisitor<Void> {
 
     @Override
     public Void visit(Mov ir) {
+        // 割り当てレジスタが同じ場合は何もしない
+        var destOp = register(convertOperand(ir.getDest()));
+        var srcOp = register(convertOperand(ir.getSrc()));
+        if (destOp.register.equals(srcOp.register)) {
+            System.out.println("Skipping redundant MOV for register: " + destOp.register);
+            return null;
+        }
+
         addInstructions(
                 ir,
                 new MOV(
-                        register(convertOperand(ir.getDest()))
+                        destOp
                 )
         );
         return null;
